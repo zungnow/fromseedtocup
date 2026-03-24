@@ -833,19 +833,15 @@ function checkCafeEligibility() {
   if (total>=20) {
     btn.style.display='block';
     desc.innerHTML='재료가 충분히 모였어요! 카페를 오픈할 수 있어요 🎉';
-  } else {
-    btn.style.display='none';
-    desc.innerHTML=`재료를 모으면 카페를 열 수 있어요<br><span style="color:var(--grass);font-size:11px;">현재 창고: ${total}/20개</span>`;
-     // ← 카페오픈알림!
     if (!G._cafeNotified) {
       G._cafeNotified = true;
       addLog('☕ 재료가 모였어요! 카페탭에서 카페를 오픈할 수 있어요!');
       showNotif('☕ 카페 오픈 준비 완료! 카페탭을 확인하세요 🎉');
     }
-
   } else {
-    btn.style.display = 'none';
-    G._cafeNotified = false; // 재료 부족해지면 리셋
+    btn.style.display='none';
+    G._cafeNotified = false;
+    desc.innerHTML=`재료를 모으면 카페를 열 수 있어요<br><span style="color:var(--grass);font-size:11px;">현재 창고: ${total}/20개</span>`;
   }
 }
 
