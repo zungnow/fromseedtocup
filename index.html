@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>씨앗에서 카페까지 🌱</title>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nanum+Myeongjo:wght@400;700;800&family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{
+  --soil:#6B4226;--grass:#5A8A3C;--sun:#F4C430;
+  --cream:#FFF8F0;--latte:#C8956C;--espresso:#3B1F0F;
+  --gold:#D4A017;--text:#2C1A0E;
+  --panel:rgba(255,248,240,0.96);
+  --shadow:0 4px 20px rgba(59,31,15,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Gowun Dodum',sans-serif;color:var(--text);min-height:100vh;overflow-x:hidden;transition:background 3s ease;}
+#app{display:grid;grid-template-rows:auto 1fr;min-height:100vh;max-width:1400px;margin:0 auto;padding:10px;gap:8px;}
+
+/* HEADER */
+header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);border:2px solid rgba(212,160,23,0.25);flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:8px;flex:1;min-width:160px;}
+.brand-icon{font-size:26px;}
+.brand-name{font-family:'Nanum Myeongjo',serif;font-size:20px;font-weight:800;color:var(--espresso);}
+.brand-sub{font-size:10px;color:var(--latte);}
+#season-badge{font-family:'Jua',sans-serif;font-size:12px;padding:5px 12px;border-radius:20px;white-space:nowrap;border:1.5px solid;transition:all 1s;}
+.stage-badge{background:linear-gradient(135deg,var(--gold),var(--sun));color:var(--espresso);font-family:'Jua',sans-serif;font-size:12px;padding:5px 12px;border-radius:20px;white-space:nowrap;}
+.stats-bar{display:flex;gap:12px;align-items:center;}
+.stat{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--espresso);}
+#game-time{font-family:'Jua',sans-serif;font-size:12px;color:var(--soil);background:rgba(107,66,38,0.1);padding:3px 9px;border-radius:8px;}
+.header-btns{display:flex;gap:7px;}
+
+/* BUTTONS */
+.btn{cursor:pointer;border:none;border-radius:10px;font-family:'Gowun Dodum',sans-serif;font-size:13px;font-weight:600;padding:7px 13px;transition:all 0.15s;display:flex;align-items:center;gap:4px;}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.06);}
+.btn:active{transform:none;}
+.btn-primary{background:var(--espresso);color:var(--cream);}
+.btn-secondary{background:var(--latte);color:white;}
+.btn-green{background:var(--grass);color:white;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--sun));color:var(--espresso);}
+.btn-purple{background:#8e44ad;color:white;}
+.btn-blue{background:#2980b9;color:white;}
+.btn-sm{padding:4px 9px;font-size:11px;border-radius:7px;}
+.btn-danger{background:#c0392b;color:white;}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+
+/* MAIN GRID */
+#game-main{display:grid;grid-template-columns:290px 1fr 285px;gap:8px;align-items:start;}
+.panel{background:var(--panel);border-radius:14px;padding:13px;box-shadow:var(--shadow);border:1.5px solid rgba(200,149,108,0.18);display:flex;flex-direction:column;gap:9px;}
+.panel-title{font-family:'Nanum Myeongjo',serif;font-size:14px;font-weight:700;color:var(--espresso);padding-bottom:7px;border-bottom:2px dashed rgba(200,149,108,0.28);display:flex;align-items:center;gap:5px;}
+
+/* SEASON STRIP */
+.season-strip{background:rgba(107,66,38,0.06);border-radius:8px;padding:6px 10px;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--soil);}
+.season-bar-bg{flex:1;height:5px;background:rgba(107,66,38,0.15);border-radius:3px;overflow:hidden;}
+.season-bar-fill{height:100%;border-radius:3px;transition:width 1s;}
+
+/* FARM */
+#farm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.plot{aspect-ratio:1;border-radius:9px;border:2px solid rgba(107,66,38,0.4);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;transition:all 0.15s;position:relative;overflow:hidden;user-select:none;}
+.plot:hover{transform:scale(1.06);border-color:var(--gold);}
+.plot.empty{background:linear-gradient(145deg,#A0785A,#8B6340);}
+.plot.growing{background:linear-gradient(145deg,#7FA66A,#5A8A3C);border-color:var(--grass);}
+.plot.ready{background:linear-gradient(145deg,#5A8A3C,#3D6B28);border-color:var(--sun);animation:pulse-plot 1.2s infinite;}
+.plot.staff-tending{border-color:#2980b9;box-shadow:0 0 8px rgba(41,128,185,0.4);}
+@keyframes pulse-plot{0%,100%{box-shadow:0 0 6px rgba(244,196,48,0.3)}50%{box-shadow:0 0 14px rgba(244,196,48,0.7)}}
+.plot-label{font-size:9px;color:rgba(255,255,255,0.85);margin-top:1px;}
+.plot-bar{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(255,255,255,0.15);}
+.plot-bar-fill{height:100%;background:var(--sun);transition:width 0.5s;}
+
+/* INVENTORY */
+.inv-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;}
+.inv-item{background:rgba(107,66,38,0.07);border-radius:7px;padding:6px 8px;display:flex;align-items:center;gap:5px;font-size:12px;}
+.inv-icon{font-size:16px;}.inv-name{flex:1;}.inv-qty{font-weight:700;background:rgba(244,196,48,0.2);padding:1px 5px;border-radius:5px;}
+.inv-qty.low{background:rgba(231,76,60,0.2);color:#c0392b;}
+
+/* CAFE LOCKED */
+#cafe-locked{background:var(--panel);border-radius:14px;padding:30px 20px;box-shadow:var(--shadow);border:1.5px solid rgba(200,149,108,0.18);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;}
+#cafe-locked .lock-icon{font-size:52px;}
+#cafe-locked h3{font-family:'Jua',sans-serif;font-size:18px;color:var(--espresso);}
+#cafe-locked p{font-size:12px;color:var(--latte);line-height:1.7;}
+#open-cafe-btn{background:linear-gradient(135deg,var(--espresso),#5C3A1E);color:var(--cream);border:2px solid var(--gold);border-radius:12px;padding:12px 24px;font-family:'Jua',sans-serif;font-size:16px;cursor:pointer;transition:all 0.2s;animation:glow 2s infinite;display:none;}
+#open-cafe-btn:hover{transform:scale(1.04);}
+@keyframes glow{0%,100%{box-shadow:0 4px 16px rgba(212,160,23,0.3)}50%{box-shadow:0 4px 24px rgba(212,160,23,0.6)}}
+
+/* CAFE OPEN */
+#cafe-open{background:var(--panel);border-radius:14px;box-shadow:var(--shadow);border:1.5px solid rgba(200,149,108,0.18);display:none;flex-direction:column;overflow:hidden;}
+.cafe-topbar{background:linear-gradient(135deg,var(--espresso),#5C3A1E);padding:11px 16px;display:flex;align-items:center;gap:10px;}
+.cafe-topbar-title{font-family:'Jua',sans-serif;font-size:15px;color:#FFF8F0;flex:1;}
+.cafe-topbar-desc{font-size:10px;color:rgba(255,248,240,0.6);margin-top:1px;}
+.sat-display{display:flex;align-items:center;gap:5px;}
+.sat-stars{font-size:14px;letter-spacing:1px;}.sat-val{font-family:'Jua',sans-serif;font-size:15px;color:var(--gold);}
+.cafe-body{padding:12px;display:flex;flex-direction:column;gap:11px;}
+.prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--soil);margin-bottom:3px;}
+.prog-bg{height:9px;background:rgba(107,66,38,0.13);border-radius:5px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--grass),var(--sun));border-radius:5px;transition:width 0.6s ease;}
+
+/* MENU */
+.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.menu-card{background:rgba(200,149,108,0.1);border:1.5px solid rgba(200,149,108,0.22);border-radius:9px;padding:8px 6px;text-align:center;}
+.menu-card.unlocked{border-color:rgba(212,160,23,0.4);}
+.menu-card.locked{opacity:0.4;filter:grayscale(0.4);}
+.menu-card.seasonal{border-color:#5dade2;background:rgba(93,173,226,0.1);}
+.menu-icon{font-size:22px;}.menu-name{font-size:10px;font-weight:700;margin-top:2px;line-height:1.3;}.menu-price{font-size:10px;color:var(--grass);}.menu-lock{font-size:9px;color:var(--latte);margin-top:1px;}
+
+/* CUSTOMERS */
+.cust-card{display:flex;align-items:center;gap:7px;border-radius:8px;padding:7px 9px;font-size:12px;margin-bottom:5px;background:rgba(107,66,38,0.07);}
+.cust-card.vip{background:rgba(155,89,182,0.1);border:1.5px solid rgba(155,89,182,0.3);}
+.cust-card.fussy{background:rgba(231,76,60,0.07);border:1.5px solid rgba(231,76,60,0.25);}
+.cust-card.blogger{background:rgba(52,152,219,0.08);border:1.5px solid rgba(52,152,219,0.25);}
+.cust-card.regular{background:rgba(90,138,60,0.08);border:1.5px solid rgba(90,138,60,0.25);}
+.cust-avatar{font-size:20px;flex-shrink:0;}.cust-info{flex:1;min-width:0;}.cust-name{font-weight:600;font-size:12px;display:flex;align-items:center;gap:4px;}.cust-order{color:var(--latte);font-size:10px;}
+.cust-tag{font-size:9px;padding:1px 4px;border-radius:4px;}
+.ctag-vip{background:rgba(155,89,182,0.2);color:#8e44ad;}
+.ctag-fussy{background:rgba(231,76,60,0.2);color:#c0392b;}
+.ctag-blogger{background:rgba(52,152,219,0.2);color:#2980b9;}
+.ctag-regular{background:rgba(90,138,60,0.2);color:var(--grass);}
+.cust-pat-bg{height:3px;background:rgba(107,66,38,0.15);border-radius:2px;margin-top:3px;}
+.cust-pat-fill{height:100%;border-radius:2px;transition:width 0.8s linear,background 0.8s;}
+.cust-empty{text-align:center;color:var(--latte);font-size:12px;padding:14px 0;}
+
+/* RIGHT PANEL TABS */
+.tab-bar{display:flex;gap:3px;}
+.tab-btn{flex:1;padding:5px 2px;font-size:11px;font-family:'Gowun Dodum',sans-serif;border:none;border-radius:7px;cursor:pointer;background:rgba(107,66,38,0.08);color:var(--soil);font-weight:600;transition:all 0.15s;}
+.tab-btn.active{background:var(--espresso);color:var(--cream);}
+.tab-pane{display:none;flex-direction:column;gap:5px;}.tab-pane.active{display:flex;}
+
+/* RECIPE ROWS */
+.recipe-row{background:rgba(107,66,38,0.07);border-radius:8px;padding:7px 9px;font-size:12px;cursor:pointer;transition:all 0.15s;border:1.5px solid transparent;}
+.recipe-row:hover:not(.r-locked):not(.r-learned){border-color:var(--latte);background:rgba(200,149,108,0.12);}
+.recipe-row.r-locked{opacity:0.38;cursor:not-allowed;}.recipe-row.r-learned{cursor:default;}
+.recipe-row.r-seasonal{border-color:#5dade2;}
+.rr-head{display:flex;align-items:center;gap:5px;}
+.rr-icon{font-size:18px;}.rr-name{font-weight:700;flex:1;}
+.rr-tag{font-size:10px;padding:1px 5px;border-radius:5px;}
+.t-learned{background:rgba(90,138,60,0.2);color:var(--grass);}
+.t-buy{background:rgba(212,160,23,0.2);color:#8B6A00;}
+.t-lock{background:rgba(107,66,38,0.15);color:var(--soil);}
+.t-seasonal{background:rgba(93,173,226,0.2);color:#2471a3;}
+.rr-ingr{font-size:10px;color:var(--latte);margin-top:2px;}
+
+/* UPGRADES */
+.upg-row{display:flex;align-items:center;gap:7px;background:rgba(107,66,38,0.07);border-radius:8px;padding:7px 9px;font-size:12px;}
+.upg-info{flex:1;}.upg-name{font-weight:700;font-size:12px;}.upg-desc{font-size:10px;color:var(--latte);}
+
+/* STAFF */
+.staff-row{background:rgba(107,66,38,0.07);border-radius:8px;padding:8px 10px;font-size:12px;border:1.5px solid transparent;}
+.staff-row.hired{border-color:rgba(90,138,60,0.3);background:rgba(90,138,60,0.06);}
+.staff-head{display:flex;align-items:center;gap:6px;}
+.staff-icon{font-size:20px;}.staff-name{font-weight:700;flex:1;}
+.staff-desc{font-size:10px;color:var(--latte);margin-top:2px;}
+.staff-status{font-size:10px;color:var(--grass);}
+
+/* REVIEWS */
+.review-list{display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto;}
+.review-row{background:rgba(107,66,38,0.06);border-radius:7px;padding:6px 9px;font-size:11px;border-left:3px solid var(--sun);}
+.review-row.rv-special{border-left-color:#9b59b6;}
+.rv-stars{color:var(--gold);font-size:11px;}.rv-text{margin-top:1px;}.rv-name{color:var(--latte);font-size:10px;margin-top:1px;}
+
+/* STORY EVENT BANNER */
+.story-banner{background:linear-gradient(135deg,#2c3e50,#3d566e);color:white;border-radius:10px;padding:10px 14px;font-size:12px;line-height:1.6;animation:slideInBanner 0.4s ease;}
+@keyframes slideInBanner{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.story-banner-title{font-family:'Jua',sans-serif;font-size:14px;color:#f39c12;margin-bottom:4px;}
+.story-banner-btns{display:flex;gap:6px;margin-top:8px;}
+
+/* FOOTER LOG — single column */
+.log-entry{font-size:11px;color:var(--soil);line-height:1.4;}
+.log-entry:not(:first-child){opacity:0.5;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(59,31,15,0.65);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:var(--cream);border-radius:18px;padding:24px;width:90%;max-width:440px;box-shadow:0 16px 50px rgba(59,31,15,0.28);border:2px solid rgba(200,149,108,0.25);transform:scale(0.92) translateY(14px);transition:transform 0.25s;}
+.modal-overlay.show .modal{transform:scale(1) translateY(0);}
+.modal-title{font-family:'Nanum Myeongjo',serif;font-size:18px;font-weight:800;color:var(--espresso);text-align:center;margin-bottom:14px;}
+.modal-body{margin-bottom:16px;}.modal-btns{display:flex;gap:8px;justify-content:center;}
+.input-field{width:100%;padding:9px 12px;border:2px solid rgba(200,149,108,0.3);border-radius:9px;font-size:15px;font-family:'Gowun Dodum',sans-serif;background:white;color:var(--text);outline:none;transition:border-color 0.2s;}
+.input-field:focus{border-color:var(--latte);}
+
+/* SEED PICKER */
+.seed-picker{display:flex;flex-direction:column;gap:5px;}
+.seed-row{display:flex;align-items:center;gap:8px;background:rgba(107,66,38,0.07);border-radius:7px;padding:7px 10px;font-size:12px;}
+.seed-row-info{flex:1;}.seed-row-name{font-weight:600;}.seed-row-detail{font-size:10px;color:var(--latte);}
+
+/* NOTIF */
+.notif{position:fixed;top:62px;right:16px;z-index:200;background:var(--espresso);color:var(--cream);padding:9px 14px;border-radius:10px;font-size:13px;font-family:'Gowun Dodum',sans-serif;box-shadow:0 4px 18px rgba(59,31,15,0.35);animation:nIn 0.25s ease,nOut 0.25s ease 2.3s forwards;max-width:280px;}
+@keyframes nIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes nOut{to{opacity:0;transform:translateX(20px)}}
+
+/* STAGE ANNOUNCE */
+.stage-announce{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(59,31,15,0.75);}
+.sa-box{background:linear-gradient(135deg,var(--espresso),#5C3A1E);color:var(--cream);border-radius:22px;padding:36px 56px;text-align:center; display:flex; flex-direction:column; align-items:center; border:3px solid var(--gold);box-shadow:0 0 50px rgba(212,160,23,0.4);animation:saIn 0.4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes saIn{from{transform:scale(0.6)}to{transform:scale(1)}}
+.sa-emoji{font-size:64px;}.sa-title{font-family:'Jua',sans-serif;font-size:28px;color:var(--gold);margin:8px 0 4px;}.sa-sub{font-size:14px;opacity:0.8;}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(200,149,108,0.4);border-radius:3px}
+
+/* ══════════════════════════════
+   모바일 하단 탭바 (기본 숨김)
+══════════════════════════════ */
+#mobile-tabbar { display:none; }
+
+@media (max-width: 768px) {
+  /* 앱 패딩 — 하단 탭바 공간 확보 */
+  #app { padding:8px 8px 74px; gap:6px; }
+
+  /* 헤더 압축 */
+  header { padding:8px 12px; gap:8px; border-radius:12px; }
+  .brand-name { font-size:16px; }
+  .brand-sub { display:none; }
+  #season-badge { font-size:11px; padding:3px 8px; }
+  .stage-badge { font-size:11px; padding:3px 8px; }
+  .stats-bar { gap:8px; }
+  .stat { font-size:12px; }
+  #game-time { font-size:11px; padding:2px 7px; }
+  .header-btns .btn { padding:5px 9px; font-size:11px; }
+
+  /* 3열 그리드 → 블록으로 해제 */
+  #game-main { display:block; }
+
+  /* 모바일 탭 패널 — 기본 숨김 */
+  .mob-col { display:none; flex-direction:column; gap:8px; }
+  .mob-col.mob-active { display:flex; }
+
+  /* 밭 터치 영역 키우기 */
+  .plot { font-size:28px; }
+  .plot-label { font-size:10px; }
+
+  /* 인벤토리 3열 */
+  .inv-grid { grid-template-columns:repeat(3,1fr); }
+
+  /* 메뉴판 4열 */
+  .menu-grid { grid-template-columns:repeat(4,1fr); gap:5px; }
+  .menu-icon { font-size:20px; }
+  .menu-name { font-size:9px; }
+
+  /* 손님 카드 */
+  .cust-card { padding:6px 8px; }
+
+  /* 리뷰 높이 */
+  .review-list { max-height:140px; }
+
+  /* 스테이지 팝업 좁게 */
+  .sa-box { padding:28px 24px; }
+  .sa-title { font-size:22px; }
+
+  /* ── 하단 탭바 ── */
+  #mobile-tabbar {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 50;
+    background: var(--panel);
+    border-top: 2px solid rgba(200,149,108,0.25);
+    box-shadow: 0 -4px 16px rgba(59,31,15,0.1);
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    gap: 4px;
+  }
+  .mob-tab-btn {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 6px 4px;
+    border: none; border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+    font-family: 'Gowun Dodum', sans-serif;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mob-tab-btn.mob-active { background: rgba(107,66,38,0.1); }
+  .mob-tab-icon { font-size: 24px; line-height: 1; }
+  .mob-tab-label { font-size: 10px; color: var(--soil); font-weight: 600; }
+  .mob-tab-btn.mob-active .mob-tab-label { color: var(--espresso); }
+  .mob-tab-btn.mob-active .mob-tab-icon { filter: drop-shadow(0 0 3px rgba(212,160,23,0.5)); }
+}
+</style>
+</head>
+<body>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="nameModal">
+  <div class="modal">
+    <div class="modal-title">🌱 나만의 카페 시작하기</div>
+    <div class="modal-body">
+      <p style="text-align:center;color:var(--latte);font-size:13px;margin-bottom:14px;">농장을 키우고, 재료를 모아<br>나만의 카페를 열어보세요!</p>
+      <input class="input-field" id="brandInput" placeholder="브랜드 이름 (예: 햇살농장 카페)" maxlength="20">
+    </div>
+    <div class="modal-btns"><button class="btn btn-primary" onclick="startGame()">✨ 시작하기</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="plantModal">
+  <div class="modal">
+    <div class="modal-title" id="plantModalTitle">씨앗 고르기</div>
+    <div class="modal-body" id="plantModalBody"></div>
+    <div class="modal-btns"><button class="btn btn-secondary" onclick="closeModal('plantModal')">닫기</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="saveModal">
+  <div class="modal">
+    <div class="modal-title">💾 저장 / 불러오기</div>
+    <div class="modal-body" id="saveModalBody"></div>
+    <div class="modal-btns"><button class="btn btn-secondary" onclick="closeModal('saveModal')">닫기</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="storyModal">
+  <div class="modal">
+    <div class="modal-title" id="storyModalTitle">📖 이야기</div>
+    <div class="modal-body" id="storyModalBody"></div>
+    <div class="modal-btns" id="storyModalBtns"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="brand-icon" id="brandIcon">🌱</div>
+      <div><div class="brand-name" id="brandNameDisplay">내 농장</div><div class="brand-sub">씨앗에서 카페까지</div></div>
+    </div>
+    <div id="season-badge">🌸 봄</div>
+    <div class="stage-badge" id="stageBadge">🌱 농장 단계</div>
+    <div class="stats-bar">
+      <div class="stat">💰 <span id="moneyDisplay">500000</span>원</div>
+      <div class="stat">⭐ <span id="repDisplay">0</span></div>
+      <div class="stat">📅 Day <span id="dayDisplay">1</span></div>
+      <div id="game-time">00:00</div>
+    </div>
+    <div class="header-btns">
+      <button class="btn btn-gold btn-sm" onclick="openSaveModal()">💾 저장</button>
+      <button class="btn btn-secondary btn-sm" onclick="togglePause()">⏸ <span id="pauseLabel">일시정지</span></button>
+    </div>
+  </header>
+
+  <div id="game-main">
+    <!-- LEFT: 농장 탭 -->
+    <div class="mob-col mob-active" id="mob-farm" style="display:flex;flex-direction:column;gap:8px;">
+      <div class="panel">
+        <div class="panel-title">🌾 농장</div>
+        <div class="season-strip">
+          <span id="seasonEmoji">🌸</span>
+          <span id="seasonName">봄</span>
+          <div class="season-bar-bg"><div class="season-bar-fill" id="seasonBar" style="width:0%"></div></div>
+          <span id="seasonDay" style="font-size:10px;white-space:nowrap;">Day 1/30</span>
+        </div>
+        <div id="farm-grid"></div>
+        <div style="font-size:11px;color:var(--latte);text-align:center;">빈 밭 클릭 → 씨앗 선택 <br> 🌟반짝이는 밭 클릭 → 즉시 수확!</div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">🎒 창고</div>
+        <div class="inv-grid" id="inventoryGrid"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">📢 알림</div>
+        <div id="logEntries" style="display:flex;flex-direction:column;gap:3px;"></div>
+      </div>
+    </div>
+
+    <!-- CENTER: 카페 탭 -->
+    <div class="mob-col" id="mob-cafe" style="flex-direction:column;gap:8px;">
+      <div id="cafe-center">
+        <div id="cafe-locked">
+          <div class="lock-icon">🔐</div>
+          <h3>카페가 아직 닫혀 있어요</h3>
+          <p id="cafe-lock-desc">농장에서 재료를 충분히 모은 후<br>카페를 오픈할 수 있어요!</p>
+          <button id="open-cafe-btn" onclick="openCafe()">☕ 카페 오픈하기!</button>
+        </div>
+        <div id="cafe-open">
+          <div class="cafe-topbar">
+            <div class="cafe-topbar-title" id="cafeStageLabel">☕ 노점 카페</div>
+            <div style="flex:1"></div>
+            <div class="sat-display">
+              <span class="sat-stars" id="satStars">☆☆☆☆☆</span>
+              <span class="sat-val" id="satVal">0.0</span>
+            </div>
+          </div>
+          <div class="cafe-body">
+            <div id="storyBannerArea"></div>
+            <div>
+              <div class="prog-label"><span>다음 단계까지</span><span id="progressText">0 / 100 명성</span></div>
+              <div class="prog-bg"><div class="prog-fill" id="progressFill" style="width:0%"></div></div>
+            </div>
+            <div>
+              <div class="panel-title" style="margin-bottom:7px;">📋 메뉴판</div>
+              <div class="menu-grid" id="menuGrid"></div>
+            </div>
+            <div>
+              <div class="panel-title" style="margin-bottom:6px;">👥 방문 손님 <span id="custCount" style="font-size:11px;color:var(--latte);font-weight:400;"></span></div>
+              <div id="customerList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: 관리 탭 -->
+    <div class="mob-col" id="mob-manage" style="flex-direction:column;gap:8px;">
+      <div class="panel">
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="switchTab('recipes')">📖 레시피</button>
+          <button class="tab-btn" onclick="switchTab('staff')">👥 직원</button>
+          <button class="tab-btn" onclick="switchTab('upgrades')">🔧 업그레이드</button>
+        </div>
+        <div class="tab-pane active" id="tab-recipes"></div>
+        <div class="tab-pane" id="tab-staff"></div>
+        <div class="tab-pane" id="tab-upgrades"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">💬 손님 리뷰</div>
+        <div class="review-list" id="reviewList">
+          <div style="text-align:center;color:var(--latte);font-size:12px;padding:10px;">아직 리뷰가 없어요</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모바일 하단 탭바 (데스크탑에서는 CSS로 숨김) -->
+  <div id="mobile-tabbar">
+    <button class="mob-tab-btn mob-active" id="mobtab-farm" onclick="switchMobTab('farm')">
+      <span class="mob-tab-icon">🌾</span>
+      <span class="mob-tab-label">농장</span>
+    </button>
+    <button class="mob-tab-btn" id="mobtab-cafe" onclick="switchMobTab('cafe')">
+      <span class="mob-tab-icon">☕</span>
+      <span class="mob-tab-label">카페</span>
+    </button>
+    <button class="mob-tab-btn" id="mobtab-manage" onclick="switchMobTab('manage')">
+      <span class="mob-tab-icon">📋</span>
+      <span class="mob-tab-label">관리</span>
+    </button>
+    <button class="mob-tab-btn" id="mobtab-save" onclick="openSaveModal()">
+      <span class="mob-tab-icon">💾</span>
+      <span class="mob-tab-label">저장</span>
+    </button>
+  </div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════
+//  STATIC DATA
+// ══════════════════════════════════════════
+
+const SEASONS = [
+  { id:'spring', name:'봄',   emoji:'🌸', bg:'linear-gradient(160deg,#fce4ec 0%,#e8f5e9 60%,#c8e6c9 100%)', barColor:'#f48fb1', dayCrops:['wheat','strawb','milk_c','sugar_c'] },
+  { id:'summer', name:'여름', emoji:'🌞', bg:'linear-gradient(160deg,#fffde7 0%,#e0f7fa 60%,#b2ebf2 100%)', barColor:'#ffb300', dayCrops:['peach','bean','milk_c','sugar_c'] },
+  { id:'autumn', name:'가을', emoji:'🍂', bg:'linear-gradient(160deg,#fff3e0 0%,#ffe0b2 60%,#ffcc80 100%)', barColor:'#e65100', dayCrops:['wheat','strawb','peach','sugar_c'] },
+  { id:'winter', name:'겨울', emoji:'❄️', bg:'linear-gradient(160deg,#e3f2fd 0%,#e8eaf6 60%,#c5cae9 100%)', barColor:'#5c6bc0', dayCrops:['bean','milk_c','wheat'] },
+];
+
+const CROPS = {
+  wheat:   {emoji:'🌾',name:'밀',      growTime:20,cost:2000,yield:3,gives:'wheat'},
+  strawb:  {emoji:'🍓',name:'딸기',    growTime:30,cost:4000,yield:2,gives:'strawb'},
+  peach:   {emoji:'🍑',name:'복숭아',  growTime:45,cost:5500,yield:2,gives:'peach'},
+  bean:    {emoji:'🫘',name:'커피콩',  growTime:50,cost:6500,yield:2,gives:'bean'},
+  milk_c:  {emoji:'🥛',name:'유제품',  growTime:25,cost:3000,yield:3,gives:'milk'},
+  sugar_c: {emoji:'🍬',name:'설탕수수',growTime:15,cost:1500,yield:4,gives:'sugar'},
+};
+
+const ITEMS = {
+  wheat: {name:'밀',emoji:'🌾'}, strawb:{name:'딸기',emoji:'🍓'},
+  peach: {name:'복숭아',emoji:'🍑'}, bean:{name:'커피콩',emoji:'🫘'},
+  milk:  {name:'우유',emoji:'🥛'}, sugar:{name:'설탕',emoji:'🍬'},
+};
+
+// stageReq: 0=농장개방, 1=노점, 2=소형카페, 3=카페, 4=프랜차이즈
+// season: null = 항상, 'spring','summer','autumn','winter' = 계절한정
+const RECIPES = {
+  plain_cookie:   {emoji:'🍪',name:'플레인 쿠키',   price:1500,  stageReq:1, ingredients:{wheat:1,sugar:1},              learnCost:0,   season:null,     reviews:['바삭하고 고소해요!','쿠키가 완벽해요!','고소한 냄새~']},
+  strawb_cake:    {emoji:'🍰',name:'딸기 케이크',   price:5500, stageReq:1, ingredients:{wheat:1,strawb:1,sugar:1},     learnCost:1000, season:null,     reviews:['새콤달콤 최고!','딸기향이 좋아요~','친구한테 추천!']},
+  peach_tea:      {emoji:'🫖',name:'복숭아 티',     price:5000, stageReq:1, ingredients:{peach:1,sugar:1},              learnCost:1500,  season:null,     reviews:['복숭아향 진해요!','여름에 딱이에요~','향기 너무 좋아요']},
+  latte:          {emoji:'☕',name:'라떼',           price:4500, stageReq:2, ingredients:{bean:1,milk:1},               learnCost:1500, season:null,     reviews:['부드러운 라떼!','커피 향이 진해요!','진짜 카페 느낌~']},
+  strawb_latte:   {emoji:'🍓',name:'딸기 라떼',     price:6000, stageReq:3, ingredients:{bean:1,strawb:1,milk:1},      learnCost:1500, season:null,     reviews:['이 메뉴 진짜 맛있어요!','인스타에 올렸어요!','완전 특별해요!']},
+  peach_smoothie: {emoji:'🥤',name:'복숭아 스무디', price:6500, stageReq:3, ingredients:{peach:2,milk:1,sugar:1},      learnCost:1500, season:null,     reviews:['복숭아가 달콤해요!','시원하고 맛있어요!','매일 마시고 싶어요!']},
+  premium_set:    {emoji:'🎂',name:'프리미엄 세트', price:9500, stageReq:4, ingredients:{wheat:2,strawb:1,peach:1,milk:1,sugar:1}, learnCost:3000, season:null, reviews:['이런 건 처음이에요!','특별한 날에 딱!','최고급 맛!']},
+  spring_blossom: {emoji:'🌸',name:'봄꽃 라떼',     price:6500, stageReq:2, ingredients:{bean:1,milk:1,sugar:1},       learnCost:3000, season:'spring', reviews:['봄 느낌 물씬~','계절 한정이라 아쉬워요!','또 먹고 싶어요!']},
+  summer_ice:     {emoji:'🧊',name:'썸머 아이스티', price:7000, stageReq:2, ingredients:{peach:1,sugar:2},             learnCost:3000, season:'summer', reviews:['시원해서 너무 좋아요!','여름엔 이게 최고!','매일 마실 것 같아요!']},
+  autumn_latte:   {emoji:'🍂',name:'가을 호박 라떼',price:7000, stageReq:2, ingredients:{bean:1,milk:1,sugar:2},       learnCost:3000, season:'autumn', reviews:['가을 감성이에요!','호박향이 은은해요~','따뜻하고 좋아요!']},
+  winter_choco:   {emoji:'☃️',name:'겨울 핫초코',  price:6000, stageReq:2, ingredients:{milk:2,sugar:2},              learnCost:3000, season:'winter', reviews:['따뜻하고 달콤해요!','겨울에 딱!','몸이 녹는 것 같아요~']},
+};
+
+const UPGRADES = {
+  fertilizer: {name:'비료 시스템',     emoji:'🌿',desc:'작물 성장 30% 단축',         cost:10000, stageReq:0},
+  display:     {name:'예쁜 진열대',    emoji:'🖼', desc:'손님 만족도 +10%',          cost:25000, stageReq:1},
+  espresso_m:  {name:'에스프레소 머신',emoji:'⚙️',desc:'커피류 재료 필요량 1개 절감', cost:15000, stageReq:2},
+  loyalty:     {name:'단골 카드',      emoji:'🃏',desc:'단골 손님 방문 빈도 +20%',   cost:40000, stageReq:2},
+  premium_mat: {name:'프리미엄 식재료',emoji:'✨',desc:'메뉴 판매가 +15%',           cost:20000, stageReq:3},
+  auto_harvest:{name:'자동 수확기',    emoji:'🚜',desc:'익은 작물 자동 수확',         cost:10000, stageReq:2},
+};
+
+// STAFF definitions
+// role: 'farmer'=자동 씨앗 심기+수확, 'barista'=자동 서빙, 'manager'=재료 부족시 자동 보충
+const STAFF_DEFS = {
+  parttime: {name:'아르바이트생', emoji:'👧',role:'barista',  desc:'손님 1명 자동 서빙 (30초마다)',   hireCost:30000, dailyCost:5000,  stageReq:1},
+  farmer_w: {name:'농장 일꾼',   emoji:'👨‍🌾',role:'farmer',   desc:'빈 밭에 자동으로 씨앗 심고 수확', hireCost:40000, dailyCost:6000,  stageReq:0},
+  barista:  {name:'바리스타',    emoji:'👨‍🍳',role:'barista',  desc:'손님 자동 서빙 (15초마다)',       hireCost:60000, dailyCost:10000, stageReq:2},
+  manager:  {name:'재료 관리자', emoji:'🧑‍💼',role:'manager',  desc:'부족한 재료 자동 파악 & 씨앗 심기',hireCost:70000, dailyCost:12000, stageReq:2},
+  head_chef:{name:'수석 셰프',   emoji:'👨‍🍳',role:'barista',  desc:'메뉴 판매가 +10% & 자동 서빙',   hireCost:120000,dailyCost:20000, stageReq:3},
+};
+
+const STAGE_DATA = [
+  {name:'🌱 농장',       building:'🏕️',desc:'작물을 재배하고 재료를 모아보세요',     repReq:0},
+  {name:'🛖 노점',       building:'🛖', desc:'노점에서 첫 메뉴를 팔아보세요!',       repReq:100},
+  {name:'☕ 소형카페',   building:'🏠', desc:'다양한 메뉴로 손님을 맞이하세요',      repReq:400},
+  {name:'🏪 카페',       building:'🏪', desc:'본격 카페 운영으로 명성을 높이세요',   repReq:1000},
+  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드가 됐어요!',    repReq:2500},
+];
+
+// SPECIAL GUEST types
+const SPECIAL_TYPES = {
+  regular: {name:'단골손님',   emoji:'🥰',tag:'ctag-regular', label:'단골',   patBonus:30, repMult:1.2, moneyMult:1.0, fussiness:0,   spawnChance:0.25},
+  vip:     {name:'VIP 손님',   emoji:'🤩',tag:'ctag-vip',     label:'VIP',    patBonus:10, repMult:2.0, moneyMult:1.5, fussiness:0.2, spawnChance:0.10},
+  fussy:   {name:'까다로운 손님',emoji:'😤',tag:'ctag-fussy', label:'까다로움',patBonus:-20,repMult:3.0, moneyMult:1.0, fussiness:0.5, spawnChance:0.10},
+  blogger: {name:'푸드 블로거',emoji:'📸',tag:'ctag-blogger', label:'블로거', patBonus:0,  repMult:5.0, moneyMult:1.2, fussiness:0.1, spawnChance:0.05},
+};
+
+// STORY EVENTS (triggered at rep milestones or random)
+const STORY_EVENTS = [
+  {id:'rival_cafe',    triggerRep:200,  title:'🏪 경쟁 카페 등장!', text:'골목 맞은편에 새로운 카페가 오픈했어요. "리베라 카페" — 메뉴도 비슷하고 손님들이 비교하기 시작했어요.', choices:[{label:'품질로 승부하기',reward:{rep:30},msg:'품질 향상에 집중! 명성 +30'},{label:'프로모션 행사하기',reward:{money:20000,rep:10},msg:'할인 행사 진행! +200원 +명성10'}]},
+  {id:'regular_chan',  triggerRep:150,  title:'👴 단골손님 찬호 씨', text:'"저 여기 매일 오거든요. 오늘도 항상 먹던 거 주세요." 찬호 씨는 이제 카페의 숨은 홍보대사가 됐어요.', choices:[{label:'감사 선물 드리기',reward:{rep:50,money:-10000},msg:'찬호 씨 감동! 명성 +50'},{label:'메뉴 이름 붙여주기',reward:{rep:80},msg:'"찬호 특선" 탄생! 명성 +80'}]},
+  {id:'food_magazine', triggerRep:500,  title:'📰 잡지 취재 요청!', text:'지역 음식 잡지에서 취재 요청이 왔어요. 기사가 실리면 대박날 수도 있어요!', choices:[{label:'취재 수락하기',reward:{rep:150},msg:'잡지 기사 게재! 명성 +150'},{label:'정중히 거절하기',reward:{money:0},msg:'다음 기회로...'}]},
+  {id:'staff_story',   triggerRep:300,  title:'👧 아르바이트생 소연', text:'"사장님, 저 카페 창업이 꿈이에요. 많이 배우고 싶어요!" 소연이의 열정이 카페 분위기를 밝게 만들어요.', choices:[{label:'열심히 가르쳐주기',reward:{rep:40},msg:'소연이 성장! 명성 +40'},{label:'카페 운영 노하우 전수',reward:{rep:80,money:-5000},msg:'소연이 감동! 명성 +80'}]},
+  {id:'rainy_day',     triggerRep:0,    title:'🌧 비 오는 날', text:'갑자기 비가 내리기 시작했어요. 빗소리와 함께 카페 안이 더 아늑해진 것 같아요. 손님들이 더 오래 머물러요.', choices:[{label:'무료 음료 한 잔 제공',reward:{rep:60,money:-8000},msg:'따뜻한 서비스! 명성 +60'},{label:'분위기 음악 틀기',reward:{rep:30},msg:'카페 분위기 UP! 명성 +30'}]},
+  {id:'celeb_visit',   triggerRep:800,  title:'🌟 연예인 방문!', text:'SNS에서 화제인 인플루언서가 카페에 왔어요! 이미 팔로워들에게 위치를 공유했다고 해요.', choices:[{label:'특별 서비스 제공',reward:{rep:200,money:-15000},msg:'SNS 대박! 명성 +200'},{label:'자연스럽게 응대하기',reward:{rep:100},msg:'쿨한 대응! 명성 +100'}]},
+  {id:'health_dept',   triggerRep:600,  title:'🏥 위생 점검 방문', text:'보건소에서 위생 점검 나왔어요. 평소 청결 관리를 잘 했다면 문제없겠죠?', choices:[{label:'자신 있게 보여주기',reward:{rep:50},msg:'우수 판정! 명성 +50'},{label:'긴장해서 실수하기',reward:{rep:-30,money:-10000},msg:'지적 사항 몇 가지... 명성 -30'}]},
+];
+
+const CUST_NAMES  = ['민준','서연','지호','예은','준서','하은','도현','소율','재원','나연','시우','지아','건우','다은','현준','태양','하린','유진','찬호','보미','서연','다솜','국화','에스더','영현','소호','정훈','정우','석주','일향','혜진','규연','민현'];
+const CUST_EMOJIS = ['👩','👨','🧑','👧','👦','🧒','👴','👵','🧔','🧕'];
+
+// ══════════════════════════════════════════
+//  GAME STATE
+// ══════════════════════════════════════════
+let G = {
+  brandName:'내 농장', money:100000, reputation:0, day:1,
+  stage:0, cafeOpen:false, satisfaction:0, totalServed:0,
+  paused:false, secondsPlayed:0, dayTimer:0,
+  seasonIndex:0, seasonDay:1,
+  plots:Array(16).fill(null).map(()=>({crop:null,plantedAt:null,growTime:null,stage:'empty'})),
+  inventory:{wheat:0,strawb:0,peach:0,bean:0,milk:0,sugar:0},
+  learnedRecipes:['plain_cookie'],
+  upgrades:[],
+  staff:{},      // {staffId: true}
+  customers:[],
+  reviews:[],
+  triggeredEvents:new Set(),
+  activeStory:null,
+};
+
+// ══════════════════════════════════════════
+//  TIMERS
+// ══════════════════════════════════════════
+let tickTimer=null, spawnTimer=null, staffTimer=null;
+
+// ══════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════
+window.onload = () => {
+  if (localStorage.getItem('farmcafe_v3')) {
+    const el=document.createElement('div'); el.className='modal-overlay show';
+    el.innerHTML=`<div class="modal"><div class="modal-title">🌱 저장된 게임 발견!</div>
+      <div class="modal-body" style="text-align:center;color:var(--latte);font-size:13px;">이전 게임을 이어할까요?</div>
+      <div class="modal-btns" style="flex-direction:column;gap:8px;">
+        <button class="btn btn-primary" onclick="loadGame();this.closest('.modal-overlay').remove()">💾 이어하기</button>
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove();showModal('nameModal')">🆕 새 게임</button>
+      </div></div>`;
+    document.body.appendChild(el);
+  } else showModal('nameModal');
+};
+
+function startGame() {
+  const v=document.getElementById('brandInput').value.trim();
+  if (v) G.brandName=v;
+  closeModal('nameModal'); boot();
+}
+
+function boot() {
+  if (!(G.triggeredEvents instanceof Set)) G.triggeredEvents=new Set(G.triggeredEvents||[]);
+  if (!G.staff) G.staff={};
+  document.getElementById('brandNameDisplay').textContent=G.brandName;
+  if (G.cafeOpen) {
+    document.getElementById('cafe-locked').style.display='none';
+    document.getElementById('cafe-open').style.cssText='display:flex;flex-direction:column';
+  }
+  applySeasonBg();
+  renderAll();
+  if (!tickTimer) startTimers();
+  addLog(`🌱 ${G.brandName}의 이야기가 시작됩니다!`);
+}
+
+function startTimers() {
+  tickTimer=setInterval(tick,1000);
+  resetSpawnTimer();
+  resetStaffTimer();
+}
+
+function resetSpawnTimer() {
+  clearInterval(spawnTimer);
+  if (!G.cafeOpen) return;
+  const base=[null,14000,10000,7000,5000,3500];
+  let rate=base[G.stage]||8000;
+  if (hasStaff('loyalty')) rate*=0.8;
+  spawnTimer=setInterval(spawnCustomer,rate);
+}
+
+function resetStaffTimer() {
+  clearInterval(staffTimer);
+  staffTimer=setInterval(runStaffActions,15000);
+}
+
+// ══════════════════════════════════════════
+//  MAIN TICK
+// ══════════════════════════════════════════
+function tick() {
+  if (G.paused) return;
+  G.secondsPlayed++;
+  G.dayTimer++;
+
+  // Day change (every 90 sec)
+  if (G.dayTimer>=90) {
+    G.dayTimer=0; G.day++;
+    G.seasonDay++;
+    // Pay daily staff wages
+    let wages=0;
+    Object.keys(G.staff).forEach(sid=>{
+      wages+=STAFF_DEFS[sid]?.dailyCost||0;
+    });
+    if (wages>0) {
+      G.money=Math.max(0,G.money-wages);
+      addLog(`💸 직원 일급 -${wages}원`);
+    }
+    // Season change (every 30 game-days)
+    if (G.seasonDay>30) { G.seasonDay=1; advanceSeason(); }
+    addLog(`📅 Day ${G.day} 시작! (${SEASONS[G.seasonIndex].name})`);
+    saveToStorage();
+    renderSeasonStrip();
+  }
+
+  // Auto-harvest
+  const sm=G.upgrades.includes('fertilizer')?0.7:1;
+  let farmChanged=false;
+  G.plots.forEach(p=>{
+    if (p.stage==='growing') {
+      const elapsed=(Date.now()-p.plantedAt)/1000;
+      if (elapsed>=p.growTime*sm) {
+        p.stage='ready'; farmChanged=true;
+        // If auto_harvest upgrade, harvest immediately
+        if (G.upgrades.includes('auto_harvest')) {
+          const crop=CROPS[p.crop];
+          G.inventory[crop.gives]=(G.inventory[crop.gives]||0)+crop.yield;
+          p.stage='empty'; p.crop=null;
+          addLog(`🚜 자동수확! ${crop.emoji}${crop.name} ${crop.yield}개`);
+        } else {
+          addLog(`🌿 ${CROPS[p.crop].name} 수확 준비!`);
+        }
+      }
+    }
+  });
+  if (farmChanged) { renderFarm(); renderInventory(); }
+
+  // Customer patience
+  if (G.cafeOpen && G.customers.length>0) {
+    let removed=false;
+    for (let i=G.customers.length-1;i>=0;i--) {
+      G.customers[i].patience-=1.5;
+      if (G.customers[i].patience<=0) {
+        const c=G.customers[i];
+        G.customers.splice(i,1);
+        document.querySelector(`[data-cid="${c.id}"]`)?.remove();
+        G.satisfaction=Math.max(0,G.satisfaction-0.15);
+        removed=true;
+        addLog(`😤 ${c.name}님이 기다리다 떠났어요`);
+      }
+    }
+    if (removed && G.customers.length===0) showCustEmpty();
+    else updatePatBars();
+    document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
+  }
+
+  checkCafeEligibility();
+  checkStageUp();
+  checkStoryEvents();
+  if (Math.random()<0.003) randomEvent();
+  updateHeader();
+  updateTimeDisplay();
+}
+
+// ══════════════════════════════════════════
+//  SEASONS
+// ══════════════════════════════════════════
+function advanceSeason() {
+  G.seasonIndex=(G.seasonIndex+1)%4;
+  const s=SEASONS[G.seasonIndex];
+  applySeasonBg();
+  showStageAnnounce(null, s.emoji+' '+s.name+' 시작!', '계절이 바뀌었어요! 새로운 메뉴와 작물이 준비됐어요.');
+  addLog(`${s.emoji} ${s.name} 시작! 계절 한정 메뉴를 확인하세요`);
+  renderAll();
+}
+
+function applySeasonBg() {
+  const s=SEASONS[G.seasonIndex];
+  document.body.style.background=s.bg;
+  const badge=document.getElementById('season-badge');
+  if (badge) {
+    badge.textContent=s.emoji+' '+s.name;
+    const colors=[
+      {bg:'#fce4ec',border:'#f48fb1',color:'#880e4f'},
+      {bg:'#fffde7',border:'#ffb300',color:'#e65100'},
+      {bg:'#fff3e0',border:'#e65100',color:'#bf360c'},
+      {bg:'#e3f2fd',border:'#5c6bc0',color:'#1a237e'},
+    ];
+    const c=colors[G.seasonIndex];
+    badge.style.cssText=`background:${c.bg};border-color:${c.border};color:${c.color};font-family:'Jua',sans-serif;font-size:12px;padding:5px 12px;border-radius:20px;white-space:nowrap;border:1.5px solid;`;
+  }
+}
+
+function renderSeasonStrip() {
+  const s=SEASONS[G.seasonIndex];
+  document.getElementById('seasonEmoji').textContent=s.emoji;
+  document.getElementById('seasonName').textContent=s.name;
+  document.getElementById('seasonDay').textContent=`Day ${G.seasonDay}/30`;
+  const fill=document.getElementById('seasonBar');
+  if (fill) { fill.style.width=(G.seasonDay/30*100)+'%'; fill.style.background=s.barColor; }
+}
+
+// ══════════════════════════════════════════
+//  CAFE ELIGIBILITY
+// ══════════════════════════════════════════
+function checkCafeEligibility() {
+  if (G.cafeOpen) return;
+  const total=Object.values(G.inventory).reduce((a,b)=>a+b,0);
+  const btn=document.getElementById('open-cafe-btn');
+  const desc=document.getElementById('cafe-lock-desc');
+  if (total>=10) {
+    btn.style.display='block';
+    desc.innerHTML='재료가 충분히 모였어요! 카페를 오픈할 수 있어요 🎉';
+  } else {
+    btn.style.display='none';
+    desc.innerHTML=`재료를 모으면 카페를 열 수 있어요<br><span style="color:var(--grass);font-size:11px;">현재 창고: ${total}/10개</span>`;
+  }
+}
+
+function openCafe() {
+  G.cafeOpen=true; G.stage=1;
+  document.getElementById('cafe-locked').style.display='none';
+  document.getElementById('cafe-open').style.cssText='display:flex;flex-direction:column';
+  resetSpawnTimer();
+  showStageAnnounce(1);
+  addLog(`☕ ${G.brandName} 카페 오픈!!`);
+  renderAll();
+}
+
+// ══════════════════════════════════════════
+//  STAGE UP
+// ══════════════════════════════════════════
+function checkStageUp() {
+  if (!G.cafeOpen||G.stage>=4) return;
+  const next=STAGE_DATA[G.stage+1];
+  if (next&&G.reputation>=next.repReq) {
+    G.stage++;
+    showStageAnnounce(G.stage);
+    addLog(`🎊 ${STAGE_DATA[G.stage].name} 달성!`);
+    resetSpawnTimer(); renderAll();
+  }
+}
+
+function showStageAnnounce(stageIdx, customTitle, customSub) {
+  const el=document.createElement('div'); el.className='stage-announce';
+  let emoji,title,sub;
+  if (stageIdx!==null && stageIdx!==undefined) {
+    const sd=STAGE_DATA[stageIdx];
+    emoji=sd.building; title=sd.name+' 달성!'; sub=sd.desc;
+  } else {
+    emoji='🎉'; title=customTitle; sub=customSub;
+  }
+  el.innerHTML=`<div class="sa-box">
+    <div class="sa-emoji">${emoji}</div>
+    <div class="sa-title">${title}</div>
+    <div class="sa-sub">${sub}</div>
+    <button class="btn btn-gold" style="margin-top:18px; display:block; margin:18px auto 0;" onclick="this.closest('.stage-announce').remove()">계속하기 🚀</button>
+  </div>`;
+  document.body.appendChild(el);
+}
+
+// ══════════════════════════════════════════
+//  STORY EVENTS
+// ══════════════════════════════════════════
+function checkStoryEvents() {
+  if (!G.cafeOpen) return;
+  // ↓ 이 한 줄 추가!
+  if (document.getElementById('storyModal').classList.contains('show')) return;
+  // Random rainy day event (low probability)
+  if (Math.random()<0.001 && !G.triggeredEvents.has('rainy_day_recent')) {
+    G.triggeredEvents.add('rainy_day_recent');
+    setTimeout(()=>G.triggeredEvents.delete('rainy_day_recent'), 300000);
+    triggerStoryEvent(STORY_EVENTS.find(e=>e.id==='rainy_day'));
+    return;
+  }
+  // Rep-based events
+  for (const ev of STORY_EVENTS) {
+    if (ev.triggerRep>0 && G.reputation>=ev.triggerRep && !G.triggeredEvents.has(ev.id)) {
+      G.triggeredEvents.add(ev.id);
+      triggerStoryEvent(ev);
+      return;
+    }
+  }
+}
+
+function triggerStoryEvent(ev) {
+  if (!ev) return;
+  document.getElementById('storyModalTitle').textContent=ev.title;
+  document.getElementById('storyModalBody').innerHTML=`<p style="font-size:13px;line-height:1.7;color:var(--text);">${ev.text}</p>`;
+  document.getElementById('storyModalBtns').innerHTML=ev.choices.map((c,i)=>
+    `<button class="btn btn-primary" onclick="resolveStory(${i})" style="flex:1">${c.label}</button>`
+  ).join('');
+  G.activeStory=ev;
+  showModal('storyModal');
+}
+
+function resolveStory(choiceIdx) {
+  if (!G.activeStory) return;
+  const choice=G.activeStory.choices[choiceIdx];
+  const r=choice.reward||{};
+  if (r.money) G.money=Math.max(0,G.money+r.money);
+  if (r.rep) G.reputation=Math.max(0,G.reputation+r.rep);
+  G.activeStory=null;
+  closeModal('storyModal');
+  showNotif('📖 '+choice.msg);
+  addLog(`📖 스토리 선택: ${choice.label}`);
+  updateHeader(); updateProgressBar();
+}
+
+// ══════════════════════════════════════════
+//  FARM
+// ══════════════════════════════════════════
+function plotClick(idx) {
+  const p=G.plots[idx];
+  if (p.stage==='ready') { harvestPlot(idx); return; }
+  if (p.stage==='growing') {
+    const sm=G.upgrades.includes('fertilizer')?0.7:1;
+    const rem=Math.max(0,Math.ceil(p.growTime*sm-(Date.now()-p.plantedAt)/1000));
+    showNotif(`🌱 ${CROPS[p.crop].name} 성장 중... 약 ${rem}초 남음`); return;
+  }
+  openPlantModal(idx);
+}
+
+function harvestPlot(idx) {
+  const p=G.plots[idx]; if (p.stage!=='ready') return;
+  const crop=CROPS[p.crop];
+  G.inventory[crop.gives]=(G.inventory[crop.gives]||0)+crop.yield;
+  G.plots[idx]={crop:null,plantedAt:null,growTime:null,stage:'empty'};
+  addLog(`🎉 ${crop.emoji} ${crop.name} ${crop.yield}개 수확!`);
+  checkCafeEligibility(); renderFarm(); renderInventory();
+}
+
+function openPlantModal(idx) {
+  const season=SEASONS[G.seasonIndex];
+  document.getElementById('plantModalTitle').textContent=`🌱 밭 ${idx+1}번 — 씨앗 고르기`;
+  document.getElementById('plantModalBody').innerHTML=`
+    <p style="font-size:11px;color:var(--latte);margin-bottom:8px;">${season.emoji} ${season.name} 추천 작물: ${season.dayCrops.map(k=>CROPS[k]?.emoji+CROPS[k]?.name).join(', ')}</p>
+    <div class="seed-picker">${Object.entries(CROPS).map(([k,c])=>{
+      const isSeasonal=season.dayCrops.includes(k);
+      return `<div class="seed-row" style="${isSeasonal?'border:1.5px solid rgba(93,173,226,0.5);background:rgba(93,173,226,0.07)':''}">
+        <span style="font-size:22px;">${c.emoji}</span>
+        <div class="seed-row-info">
+          <div class="seed-row-name">${c.name}${isSeasonal?' 🌟':''}</div>
+          <div class="seed-row-detail">⏱ ${c.growTime}초 · 수확 ${c.yield}개</div>
+        </div>
+        <span style="font-size:12px;color:var(--gold);font-weight:700;margin-right:6px;">💰${c.cost}</span>
+        <button class="btn btn-green btn-sm" ${G.money<c.cost?'disabled':''} onclick="plantCrop(${idx},'${k}')">심기</button>
+      </div>`;
+    }).join('')}
+    </div>`;
+  showModal('plantModal');
+}
+
+function plantCrop(idx, cropKey) {
+  const crop=CROPS[cropKey];
+  if (G.money<crop.cost) { showNotif('💰 돈이 부족해요!'); return; }
+  G.money-=crop.cost;
+  G.plots[idx]={crop:cropKey,plantedAt:Date.now(),growTime:crop.growTime,stage:'growing'};
+  closeModal('plantModal');
+  addLog(`🌱 ${crop.emoji} ${crop.name} 심기! (${crop.growTime}초 후 수확)`);
+  renderFarm(); updateHeader();
+}
+
+// ══════════════════════════════════════════
+//  STAFF ACTIONS
+// ══════════════════════════════════════════
+function hasStaff(id) { return !!G.staff[id]; }
+
+function runStaffActions() {
+  if (G.paused) return;
+
+  // FARMER: plant empty plots with season-recommended crops
+  if (hasStaff('farmer_w')) {
+    const season=SEASONS[G.seasonIndex];
+    let planted=0;
+    G.plots.forEach((p,i)=>{
+      if (p.stage==='empty' && planted<2) {
+        // Pick cheapest season crop we can afford
+        const candidates=season.dayCrops.filter(k=>G.money>=CROPS[k].cost);
+        if (candidates.length>0) {
+          const cropKey=candidates[Math.floor(Math.random()*candidates.length)];
+          const crop=CROPS[cropKey];
+          G.money-=crop.cost;
+          G.plots[i]={crop:cropKey,plantedAt:Date.now(),growTime:crop.growTime,stage:'growing'};
+          planted++;
+        }
+      }
+      // Also harvest ready plots
+      if (p.stage==='ready') harvestPlot(i);
+    });
+    if (planted>0) { addLog(`👨‍🌾 농장 일꾼이 씨앗 ${planted}개 심었어요`); renderFarm(); updateHeader(); }
+  }
+
+  // MANAGER: identify most-needed ingredients for learned recipes and plant accordingly
+  if (hasStaff('manager')) {
+    // Find ingredient most lacking
+    const needs={};
+    G.learnedRecipes.forEach(rk=>{
+      const r=RECIPES[rk];
+      if (!r||r.stageReq>G.stage) return;
+      Object.entries(r.ingredients).forEach(([item,qty])=>{
+        const cropKey=Object.keys(CROPS).find(ck=>CROPS[ck].gives===item);
+        if (cropKey) needs[cropKey]=(needs[cropKey]||0)+qty;
+      });
+    });
+    // Subtract what we already have
+    Object.keys(CROPS).forEach(ck=>{
+      const gives=CROPS[ck].gives;
+      needs[ck]=Math.max(0,(needs[ck]||0)-(G.inventory[gives]||0));
+    });
+    // Plant the most needed crop in first empty plot
+    const sorted=Object.entries(needs).sort((a,b)=>b[1]-a[1]);
+    if (sorted.length>0 && sorted[0][1]>0) {
+      const cropKey=sorted[0][0];
+      const crop=CROPS[cropKey];
+      const emptyIdx=G.plots.findIndex(p=>p.stage==='empty');
+      if (emptyIdx>=0 && G.money>=crop.cost) {
+        G.money-=crop.cost;
+        G.plots[emptyIdx]={crop:cropKey,plantedAt:Date.now(),growTime:crop.growTime,stage:'growing'};
+        addLog(`🧑‍💼 관리자가 부족한 ${crop.emoji}${crop.name} 자동 재배 시작!`);
+        renderFarm(); updateHeader();
+      }
+    }
+  }
+
+  // BARISTA / PARTTIME: auto-serve one customer
+  const autoServe=hasStaff('head_chef')||hasStaff('barista')||hasStaff('parttime');
+  if (autoServe && G.cafeOpen && G.customers.length>0) {
+    // Serve the customer with most patience loss (most urgent)
+    const sorted=[...G.customers].sort((a,b)=>a.patience-b.patience);
+    const target=sorted[0];
+    const recipe=RECIPES[target.order];
+    // Check if we have ingredients
+    const canServe=Object.entries(recipe.ingredients).every(([item,qty])=>(G.inventory[item]||0)>=qty);
+    if (canServe) {
+      const staffName=hasStaff('head_chef')?'수석 셰프':hasStaff('barista')?'바리스타':'아르바이트생';
+      serveCustomer(target.id, true, staffName);
+    }
+  }
+}
+
+// ══════════════════════════════════════════
+//  CUSTOMERS
+// ══════════════════════════════════════════
+function spawnCustomer() {
+  if (G.paused||!G.cafeOpen||G.customers.length>=6) return;
+  const avail=Object.keys(RECIPES).filter(k=>{
+    const r=RECIPES[k];
+    if (r.stageReq>G.stage||!G.learnedRecipes.includes(k)) return false;
+    if (r.season && r.season!==SEASONS[G.seasonIndex].id) return false;
+    return true;
+  });
+  // Fallback to non-seasonal if no seasonal available
+  const fallback=Object.keys(RECIPES).filter(k=>RECIPES[k].stageReq<=G.stage&&G.learnedRecipes.includes(k)&&!RECIPES[k].season);
+  const pool=avail.length>0?avail:fallback;
+  if (!pool.length) return;
+
+  const orderKey=pool[Math.floor(Math.random()*pool.length)];
+
+  // Determine customer type
+  let custType='normal';
+  const roll=Math.random();
+  let cum=0;
+  for (const [tid,td] of Object.entries(SPECIAL_TYPES)) {
+    cum+=td.spawnChance;
+    if (roll<cum) { custType=tid; break; }
+  }
+
+  const typeData=SPECIAL_TYPES[custType];
+  const cust={
+    id:Date.now()+Math.random(),
+    name:CUST_NAMES[Math.floor(Math.random()*CUST_NAMES.length)],
+    emoji:typeData?typeData.emoji:CUST_EMOJIS[Math.floor(Math.random()*CUST_EMOJIS.length)],
+    order:orderKey,
+    patience:Math.min(100,100+(typeData?.patBonus||0)),
+    type:custType,
+  };
+  G.customers.push(cust);
+  const recipe=RECIPES[orderKey];
+  addLog(`${cust.emoji} ${cust.name}님 방문 — ${recipe.emoji}${recipe.name} 주문`);
+  appendCustCard(cust);
+  document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
+}
+
+function appendCustCard(c) {
+  const list=document.getElementById('customerList');
+  list.querySelector('.cust-empty')?.remove();
+  const td=SPECIAL_TYPES[c.type];
+  const typeClass=td?c.type:'';
+  const tag=td?`<span class="cust-tag ${td.tag}">${td.label}</span>`:'';
+  const div=document.createElement('div');
+  div.className=`cust-card ${typeClass}`; div.setAttribute('data-cid',c.id);
+  div.innerHTML=`
+    <span class="cust-avatar">${c.emoji}</span>
+    <div class="cust-info">
+      <div class="cust-name">${c.name}${tag}</div>
+      <div class="cust-order">${RECIPES[c.order].emoji} ${RECIPES[c.order].name}</div>
+      <div class="cust-pat-bg"><div class="cust-pat-fill" style="width:${c.patience}%;background:var(--grass)"></div></div>
+    </div>
+    <button class="btn btn-green btn-sm" onclick="serveCustomer(${c.id},false,'')">서빙 ✓</button>`;
+  list.appendChild(div);
+}
+
+function showCustEmpty() {
+  const list=document.getElementById('customerList');
+  if (!list.querySelector('.cust-empty')) list.innerHTML='<div class="cust-empty">손님을 기다리는 중...</div>';
+}
+
+function updatePatBars() {
+  G.customers.forEach(c=>{
+    const bar=document.querySelector(`[data-cid="${c.id}"] .cust-pat-fill`);
+    if (bar) { bar.style.width=c.patience+'%'; bar.style.background=c.patience>60?'var(--grass)':c.patience>30?'var(--sun)':'#e74c3c'; }
+  });
+}
+
+function serveCustomer(custId, isAuto, staffName) {
+  const idx=G.customers.findIndex(c=>c.id==custId); if (idx===-1) return;
+  const cust=G.customers[idx]; const recipe=RECIPES[cust.order];
+  const missing=[];
+  let ingr={...recipe.ingredients};
+  // espresso machine: reduce bean by 1 if bean required
+  if (G.upgrades.includes('espresso_m') && ingr.bean) ingr.bean=Math.max(0,ingr.bean-1);
+  for (const [item,qty] of Object.entries(ingr)) if ((G.inventory[item]||0)<qty) missing.push(ITEMS[item]?.name);
+  if (missing.length) { if (!isAuto) showNotif(`⚠️ 재료 부족: ${missing.join(', ')}`); return; }
+  for (const [item,qty] of Object.entries(ingr)) G.inventory[item]-=qty;
+
+  const td=SPECIAL_TYPES[cust.type];
+  let price=recipe.price*(td?.moneyMult||1);
+  if (G.upgrades.includes('premium_mat')) price*=1.15;
+  if (hasStaff('head_chef')) price*=1.1;
+  price=Math.floor(price);
+  G.money+=price;
+
+  G.totalServed++;
+  const patPct=cust.patience/100;
+  let newSat=3+Math.round(patPct*2);
+  if (G.upgrades.includes('display')) newSat+=0.5;
+  newSat*=(td?.repMult||1)*0.4+0.6; // partial multiplier
+  newSat=Math.min(5,newSat);
+  G.satisfaction=Math.min(5,(G.satisfaction*(G.totalServed-1)+newSat)/G.totalServed);
+  G.reputation+=Math.round(newSat*(td?.repMult||1)*5);
+
+  const txt=recipe.reviews[Math.floor(Math.random()*recipe.reviews.length)];
+  const isSpecial=cust.type!=='normal';
+  G.reviews.unshift({name:cust.name,stars:Math.min(5,Math.round(newSat)),text:txt,special:isSpecial});
+  if (G.reviews.length>25) G.reviews.pop();
+
+  G.customers.splice(idx,1);
+  document.querySelector(`[data-cid="${custId}"]`)?.remove();
+  if (G.customers.length===0) showCustEmpty();
+  document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
+
+  const who=isAuto?`[${staffName}] `:'';
+  addLog(`✅ ${who}${cust.name}님 서빙! +${price}원`);
+  renderInventory(); renderReviews(); updateHeader(); updateSatisfaction(); updateProgressBar();
+}
+
+// ══════════════════════════════════════════
+//  RECIPES & UPGRADES & STAFF
+// ══════════════════════════════════════════
+function learnRecipe(key) {
+  const r=RECIPES[key];
+  if (G.learnedRecipes.includes(key)) return;
+  if (r.stageReq>G.stage) { showNotif('카페 단계가 더 높아야 해요!'); return; }
+  if (G.money<r.learnCost) { showNotif('💰 돈이 부족해요!'); return; }
+  G.money-=r.learnCost; G.learnedRecipes.push(key);
+  addLog(`📖 ${r.emoji} ${r.name} 레시피 습득!`);
+  renderTab('recipes'); renderMenu(); updateHeader();
+}
+
+function buyUpgrade(key) {
+  const u=UPGRADES[key];
+  if (G.upgrades.includes(key)) return;
+  if (u.stageReq>G.stage) { showNotif('카페 단계가 더 높아야 해요!'); return; }
+  if (G.money<u.cost) { showNotif('💰 돈이 부족해요!'); return; }
+  G.money-=u.cost; G.upgrades.push(key);
+  if (key==='loyalty') resetSpawnTimer();
+  addLog(`🔧 ${u.emoji} ${u.name} 완료!`);
+  renderTab('upgrades'); updateHeader();
+}
+
+function hireStaff(key) {
+  const s=STAFF_DEFS[key];
+  if (G.staff[key]) return;
+  if (s.stageReq>G.stage) { showNotif('카페 단계가 더 높아야 해요!'); return; }
+  if (G.money<s.hireCost) { showNotif('💰 돈이 부족해요!'); return; }
+  G.money-=s.hireCost; G.staff[key]=true;
+  addLog(`🎉 ${s.emoji} ${s.name} 고용 완료! (일급 ${s.dailyCost}원)`);
+  renderTab('staff'); updateHeader();
+}
+
+// ══════════════════════════════════════════
+//  RANDOM EVENTS
+// ══════════════════════════════════════════
+function randomEvent() {
+  const evts=[
+    ()=>{G.money+=150; addLog('📰 지역 신문 소개! +150원');},
+    ()=>{G.reputation+=25; addLog('📣 SNS 화제! +25 명성');},
+    ()=>{G.inventory.sugar=(G.inventory.sugar||0)+3; addLog('🍬 설탕 공급업체 사은품! +3');},
+    ()=>{G.inventory.milk=(G.inventory.milk||0)+2; addLog('🥛 유제품 협찬! +2');},
+    ()=>{const bonus=Math.floor(Math.random()*100)+50; G.money+=bonus; addLog(`🍀 행운의 날! +${bonus}원`);},
+  ];
+  evts[Math.floor(Math.random()*evts.length)]();
+  renderInventory();
+}
+
+// ══════════════════════════════════════════
+//  SAVE / LOAD
+// ══════════════════════════════════════════
+function saveToStorage() {
+  const data={...G, triggeredEvents:[...G.triggeredEvents], savedAt:new Date().toLocaleString()};
+  localStorage.setItem('farmcafe_v3',JSON.stringify(data));
+}
+function saveGame() { saveToStorage(); showNotif('💾 저장 완료!'); closeModal('saveModal'); }
+
+function loadGame() {
+  const raw=localStorage.getItem('farmcafe_v3'); if (!raw) return;
+  const d=JSON.parse(raw); Object.assign(G,d);
+  G.triggeredEvents=new Set(d.triggeredEvents||[]);
+  if (!G.staff) G.staff={};
+  closeModal('saveModal'); boot();
+  addLog(`💾 불러오기 완료! (${d.savedAt})`);
+}
+function exportSave() {
+  const d={...G,triggeredEvents:[...G.triggeredEvents],savedAt:new Date().toLocaleString()};
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));
+  a.download=`farmcafe_${G.brandName}.json`; a.click(); showNotif('📥 내보내기 완료!');
+}
+function importSave() {
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
+  inp.onchange=e=>{
+    const r=new FileReader(); r.onload=ev=>{
+      try { const d=JSON.parse(ev.target.result); Object.assign(G,d); G.triggeredEvents=new Set(d.triggeredEvents||[]); if(!G.staff)G.staff={}; boot(); showNotif('✅ 완료!'); closeModal('saveModal'); }
+      catch { showNotif('❌ 파일 오류'); }
+    }; r.readAsText(e.target.files[0]);
+  }; inp.click();
+}
+function openSaveModal() {
+  const has=!!localStorage.getItem('farmcafe_v3');
+  document.getElementById('saveModalBody').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="btn btn-primary" onclick="saveGame()" style="width:100%">💾 지금 저장 (브라우저)</button>
+      ${has?`<button class="btn btn-green" onclick="loadGame()" style="width:100%">📂 저장 불러오기</button>`:''}
+      <hr style="border:none;border-top:1px dashed rgba(200,149,108,0.3);margin:2px 0">
+      <button class="btn btn-secondary" onclick="exportSave()" style="width:100%">📥 파일로 내보내기</button>
+      <button class="btn btn-secondary" onclick="importSave()" style="width:100%">📤 파일에서 불러오기</button>
+      ${has?`<button class="btn btn-danger btn-sm" style="width:100%;margin-top:2px" onclick="if(confirm('정말?')){localStorage.removeItem('farmcafe_v3');openSaveModal()}">🗑️ 저장 삭제</button>`:''}
+    </div>`; showModal('saveModal');
+}
+
+// ══════════════════════════════════════════
+//  UI HELPERS
+// ══════════════════════════════════════════
+function togglePause() {
+  G.paused=!G.paused;
+  document.getElementById('pauseLabel').textContent=G.paused?'재개':'일시정지';
+  showNotif(G.paused?'⏸ 일시정지':'▶ 재개');
+}
+
+const LOGS=[];
+function addLog(msg) {
+  LOGS.unshift(msg); if (LOGS.length>4) LOGS.pop();
+  const el=document.getElementById('logEntries');
+  if (el) el.innerHTML=LOGS.map(l=>`<div class="log-entry">${l}</div>`).join('');
+}
+
+function showNotif(msg) {
+  const el=document.createElement('div'); el.className='notif'; el.textContent=msg;
+  document.body.appendChild(el); setTimeout(()=>el.remove(),2600);
+}
+function showModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function updateTimeDisplay() {
+  const m=Math.floor(G.secondsPlayed/60).toString().padStart(2,'0');
+  const s=(G.secondsPlayed%60).toString().padStart(2,'0');
+  document.getElementById('game-time').textContent=`${m}:${s}`;
+}
+
+// TABS
+let currentTab='recipes';
+function switchTab(tab) {
+  currentTab=tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    const tabs=['recipes','staff','upgrades'];
+    b.classList.toggle('active',tabs[i]===tab);
+  });
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+tab)?.classList.add('active');
+  renderTab(tab);
+}
+function renderTab(tab) {
+  if (tab==='recipes') renderRecipes();
+  else if (tab==='staff') renderStaff();
+  else if (tab==='upgrades') renderUpgrades();
+}
+
+// ══════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════
+function renderAll() {
+  updateHeader(); renderSeasonStrip(); renderFarm(); renderInventory();
+  if (G.cafeOpen) { renderCafeInfo(); renderMenu(); renderCustomers(); }
+  else checkCafeEligibility();
+  renderTab(currentTab); renderReviews();
+  applySeasonBg();
+}
+
+function updateHeader() {
+  document.getElementById('moneyDisplay').textContent=G.money.toLocaleString();
+  document.getElementById('repDisplay').textContent=G.reputation.toLocaleString();
+  document.getElementById('dayDisplay').textContent=G.day;
+  document.getElementById('stageBadge').textContent=STAGE_DATA[G.stage].name;
+  document.getElementById('brandIcon').textContent=STAGE_DATA[G.stage].building;
+}
+
+function renderFarm() {
+  const sm=G.upgrades.includes('fertilizer')?0.7:1;
+  document.getElementById('farm-grid').innerHTML=G.plots.map((p,i)=>{
+    if (p.stage==='empty') return `<div class="plot empty" onclick="plotClick(${i})"><span style="font-size:13px;color:rgba(255,255,255,0.5)">+</span><div class="plot-label">빈 밭</div></div>`;
+    const crop=CROPS[p.crop];
+    if (p.stage==='ready') return `<div class="plot ready" onclick="plotClick(${i})" title="클릭 → 즉시 수확!">${crop.emoji}<div class="plot-label">수확!</div></div>`;
+    const elapsed=(Date.now()-p.plantedAt)/1000;
+    const pct=Math.min(100,elapsed/(p.growTime*sm)*100);
+    return `<div class="plot growing" onclick="plotClick(${i})">${crop.emoji}<div class="plot-label">${Math.floor(pct)}%</div><div class="plot-bar"><div class="plot-bar-fill" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+}
+
+function renderInventory() {
+  document.getElementById('inventoryGrid').innerHTML=Object.entries(ITEMS).map(([k,item])=>{
+    const qty=G.inventory[k]||0;
+    return `<div class="inv-item"><span class="inv-icon">${item.emoji}</span><span class="inv-name">${item.name}</span><span class="inv-qty ${qty===0?'low':''}">${qty}</span></div>`;
+  }).join('');
+}
+
+function renderCafeInfo() {
+  const sd=STAGE_DATA[G.stage];
+  document.getElementById('cafeStageLabel').textContent=sd.name;
+  updateSatisfaction(); updateProgressBar();
+}
+function updateProgressBar() {
+  const cur=G.reputation, prev=STAGE_DATA[G.stage].repReq;
+  const next=STAGE_DATA[G.stage+1]?.repReq||prev;
+  const pct=G.stage>=4?100:Math.min(100,((cur-prev)/(next-prev))*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressText').textContent=G.stage>=4?'🏆 최고 단계!':cur+' / '+next+' 명성';
+}
+function updateSatisfaction() {
+  const sat=G.satisfaction,full=Math.floor(sat),half=sat%1>=0.5;
+  document.getElementById('satStars').textContent='⭐'.repeat(full)+(half?'✨':'')+'☆'.repeat(Math.max(0,5-full-(half?1:0)));
+  document.getElementById('satVal').textContent=sat.toFixed(1);
+}
+
+function renderMenu() {
+  const seasonId=SEASONS[G.seasonIndex].id;
+  document.getElementById('menuGrid').innerHTML=Object.entries(RECIPES).map(([k,r])=>{
+    const isSeasonal=r.season!==null;
+    const wrongSeason=isSeasonal && r.season!==seasonId;
+    const unlocked=G.learnedRecipes.includes(k)&&r.stageReq<=G.stage&&!wrongSeason;
+    const locked=r.stageReq>G.stage||wrongSeason;
+    const seasonTag=isSeasonal?`<div class="menu-lock" style="color:#2471a3;font-size:9px;">${SEASONS.find(s=>s.id===r.season)?.emoji} 한정</div>`:'';
+    return `<div class="menu-card ${unlocked?'unlocked':locked?'locked':''} ${isSeasonal&&!wrongSeason?'seasonal':''}">
+      <div class="menu-icon">${r.emoji}</div>
+      <div class="menu-name">${r.name}</div>
+      <div class="menu-price">${unlocked?'💰'+r.price+'원':''}</div>
+      <div class="menu-lock">${locked?(wrongSeason?'비수기':'🔒 잠금'):(!G.learnedRecipes.includes(k)?'미습득':'')}</div>
+      ${seasonTag}
+    </div>`;
+  }).join('');
+}
+
+function renderCustomers() {
+  const list=document.getElementById('customerList');
+  list.innerHTML='';
+  if (G.customers.length===0) showCustEmpty();
+  else G.customers.forEach(c=>appendCustCard(c));
+  document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
+}
+
+function renderRecipes() {
+  const seasonId=SEASONS[G.seasonIndex].id;
+  document.getElementById('tab-recipes').innerHTML=Object.entries(RECIPES).map(([k,r])=>{
+    const learned=G.learnedRecipes.includes(k);
+    const isSeasonal=r.season!==null;
+    const wrongSeason=isSeasonal&&r.season!==seasonId;
+    const stageLocked=r.stageReq>G.stage||(!G.cafeOpen&&r.stageReq>=1)||wrongSeason;
+    const ingr=Object.entries(r.ingredients).map(([i,q])=>`${ITEMS[i]?.emoji||'?'}×${q}`).join(' ');
+    const tag=learned?`<span class="rr-tag t-learned">✓ 보유</span>`:
+      wrongSeason?`<span class="rr-tag t-seasonal">${SEASONS.find(s=>s.id===r.season)?.emoji} 비수기</span>`:
+      stageLocked?`<span class="rr-tag t-lock">🔒 Lv.${r.stageReq}</span>`:
+      `<span class="rr-tag t-buy">💰${r.learnCost}</span>`;
+    return `<div class="recipe-row ${stageLocked?'r-locked':learned?'r-learned':''} ${isSeasonal&&!wrongSeason?'r-seasonal':''}"
+      onclick="${!learned&&!stageLocked?`learnRecipe('${k}')`:''}" >
+      <div class="rr-head"><span class="rr-icon">${r.emoji}</span><span class="rr-name">${r.name}</span>${tag}</div>
+      <div class="rr-ingr">${ingr} · 판매 ${r.price}원${isSeasonal?' · '+SEASONS.find(s=>s.id===r.season)?.emoji+'한정':''}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderStaff() {
+  document.getElementById('tab-staff').innerHTML=Object.entries(STAFF_DEFS).map(([k,s])=>{
+    const hired=!!G.staff[k];
+    const stageLocked=s.stageReq>G.stage||!G.cafeOpen;
+    return `<div class="staff-row ${hired?'hired':''}">
+      <div class="staff-head">
+        <span class="staff-icon">${s.emoji}</span>
+        <span class="staff-name">${s.name}</span>
+        ${hired?`<span style="color:var(--grass);font-size:11px;">✓ 재직중</span>`:
+          stageLocked?`<span style="color:var(--latte);font-size:11px;">🔒</span>`:
+          `<button class="btn btn-green btn-sm" onclick="hireStaff('${k}')">💰${s.hireCost}</button>`}
+      </div>
+      <div class="staff-desc">${s.desc}</div>
+      ${hired?`<div class="staff-status">일급: ${s.dailyCost}원/day</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderUpgrades() {
+  document.getElementById('tab-upgrades').innerHTML=Object.entries(UPGRADES).map(([k,u])=>{
+    const owned=G.upgrades.includes(k), stageLocked=u.stageReq>G.stage||!G.cafeOpen;
+    return `<div class="upg-row">
+      <span style="font-size:18px;">${u.emoji}</span>
+      <div class="upg-info"><div class="upg-name">${u.name}${owned?' ✓':''}</div><div class="upg-desc">${u.desc}</div></div>
+      ${owned?`<span style="color:var(--grass);font-size:11px;">완료</span>`:
+        stageLocked?`<span style="color:var(--latte);font-size:11px;">🔒</span>`:
+        `<button class="btn btn-gold btn-sm" onclick="buyUpgrade('${k}')">💰${u.cost}</button>`}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+//  모바일 탭 전환
+// ══════════════════════════════════════════
+function switchMobTab(tab) {
+  // 모든 패널 숨기기
+  ['farm','cafe','manage'].forEach(t => {
+    const col = document.getElementById('mob-'+t);
+    const btn = document.getElementById('mobtab-'+t);
+    if (col) col.classList.remove('mob-active');
+    if (btn) btn.classList.remove('mob-active');
+  });
+  // 선택한 패널 보이기
+  const col = document.getElementById('mob-'+tab);
+  const btn = document.getElementById('mobtab-'+tab);
+  if (col) col.classList.add('mob-active');
+  if (btn) btn.classList.add('mob-active');
+  // 맨 위로 스크롤
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+</body>
+</html>
