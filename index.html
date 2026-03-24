@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>씨앗에서 카페까지 🌱</title>
+<title>나도 사장 🌱</title>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nanum+Myeongjo:wght@400;700;800&family=Jua&display=swap" rel="stylesheet">
 <link rel="icon" href="YH-SOFT.ico" type="image/x-icon">
 <style>
@@ -95,13 +95,27 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 .prog-bg{height:9px;background:rgba(107,66,38,0.13);border-radius:5px;overflow:hidden;}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--grass),var(--sun));border-radius:5px;transition:width 0.6s ease;}
 
-/* MENU */
-.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
-.menu-card{background:rgba(200,149,108,0.1);border:1.5px solid rgba(200,149,108,0.22);border-radius:9px;padding:8px 6px;text-align:center;}
+/* INVENTORY — 인라인 칩 형태 */
+.inv-chip{display:flex;align-items:center;gap:3px;background:rgba(107,66,38,0.09);border-radius:20px;padding:3px 8px;font-size:12px;}
+.inv-chip-icon{font-size:14px;}
+.inv-chip-qty{font-weight:700;color:var(--espresso);}
+.inv-chip-qty.low{color:#c0392b;}
+
+/* MENU CARD — 레시피 통합형 */
+.menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.menu-card{background:rgba(200,149,108,0.1);border:1.5px solid rgba(200,149,108,0.22);border-radius:10px;padding:9px 8px;text-align:center;cursor:default;transition:all 0.15s;}
 .menu-card.unlocked{border-color:rgba(212,160,23,0.4);}
+.menu-card.can-learn{border-color:var(--grass);cursor:pointer;background:rgba(90,138,60,0.07);}
+.menu-card.can-learn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(90,138,60,0.2);}
 .menu-card.locked{opacity:0.4;filter:grayscale(0.4);}
 .menu-card.seasonal{border-color:#5dade2;background:rgba(93,173,226,0.1);}
-.menu-icon{font-size:22px;}.menu-name{font-size:10px;font-weight:700;margin-top:2px;line-height:1.3;}.menu-price{font-size:10px;color:var(--grass);}.menu-lock{font-size:9px;color:var(--latte);margin-top:1px;}
+.menu-icon{font-size:22px;}
+.menu-name{font-size:11px;font-weight:700;margin-top:2px;line-height:1.3;}
+.menu-price{font-size:10px;color:var(--grass);}
+.menu-ingr{font-size:9px;color:var(--latte);margin-top:2px;line-height:1.4;}
+.menu-action{font-size:10px;margin-top:4px;}
+.menu-learn-btn{background:var(--grass);color:white;border:none;border-radius:6px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-weight:600;}
+.menu-learn-btn:hover{filter:brightness(1.1);}
 
 /* CUSTOMERS */
 .cust-card{display:flex;align-items:center;gap:7px;border-radius:8px;padding:7px 9px;font-size:12px;margin-bottom:5px;background:rgba(107,66,38,0.07);}
@@ -170,7 +184,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(59,31,15,0.65);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity 0.25s;}
 .modal-overlay.show{opacity:1;pointer-events:all;}
-.modal{background:var(--cream);border-radius:18px;padding:24px;width:90%;max-width:440px;box-shadow:0 16px 50px rgba(59,31,15,0.28);border:2px solid rgba(200,149,108,0.25);transform:scale(0.92) translateY(14px);transition:transform 0.25s;}
+.modal{background:var(--cream);border-radius:18px;padding:24px;width:90%;max-width:560px;box-shadow:0 16px 50px rgba(59,31,15,0.28);border:2px solid rgba(200,149,108,0.25);transform:scale(0.92) translateY(14px);transition:transform 0.25s;}
 .modal-overlay.show .modal{transform:scale(1) translateY(0);}
 .modal-title{font-family:'Nanum Myeongjo',serif;font-size:18px;font-weight:800;color:var(--espresso);text-align:center;margin-bottom:14px;}
 .modal-body{margin-bottom:16px;}.modal-btns{display:flex;gap:8px;justify-content:center;}
@@ -178,7 +192,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 .input-field:focus{border-color:var(--latte);}
 
 /* SEED PICKER */
-.seed-picker{display:flex;flex-direction:column;gap:5px;}
+.seed-picker{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;}
 .seed-row{display:flex;align-items:center;gap:8px;background:rgba(107,66,38,0.07);border-radius:7px;padding:7px 10px;font-size:12px;}
 .seed-row-info{flex:1;}.seed-row-name{font-weight:600;}.seed-row-detail{font-size:10px;color:var(--latte);}
 
@@ -200,29 +214,34 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 ─────────────────────────────── */
 @media (max-width: 768px) {
 
-  /* 하단 탭바 공간 확보 */
-  #app { padding: 8px 8px 72px; gap: 6px; }
+  /* grid → block 으로 변경해야 sticky 헤더가 작동 */
+  #app { display: block; padding: 0 8px 72px; }
 
-  /* 헤더 압축 */
-  header { padding: 8px 12px; gap: 8px; border-radius: 12px; }
+  /* 헤더 상단 고정 */
+  header {
+    position: sticky; top: 0; z-index: 90;
+    padding: 8px 12px; gap: 8px;
+    border-radius: 0 0 12px 12px;
+    margin-bottom: 6px;
+  }
+
   .brand-name { font-size: 15px; }
   .brand-sub, #season-badge { display: none; }
   .stage-badge { font-size: 11px; padding: 3px 8px; }
   .stats-bar { gap: 8px; }
   .stat { font-size: 12px; }
   #game-time { font-size: 11px; padding: 2px 7px; }
-  .header-btns { display: none; } /* 저장은 탭바에서 */
+  .header-btns { display: none; }
 
   /* 3열 그리드 해제 */
   #game-main { display: block; }
 
-  /* 각 열: 기본 숨김 */
+  /* 각 열 기본 스타일 + 숨김 */
   #col-farm, #col-cafe, #col-manage {
     display: none;
     flex-direction: column;
     gap: 8px;
   }
-
   /* 활성 열만 표시 */
   #col-farm.tab-show   { display: flex; }
   #col-cafe.tab-show   { display: flex; }
@@ -235,10 +254,17 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
   /* 인벤토리 3열 */
   .inv-grid { grid-template-columns: repeat(3, 1fr); }
 
-  /* 메뉴 4열 */
-  .menu-grid { grid-template-columns: repeat(4, 1fr); gap: 5px; }
-  .menu-icon { font-size: 20px; }
-  .menu-name { font-size: 9px; }
+  /* 메뉴 4열 + 카드 압축 */
+  .menu-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+  .menu-card { padding: 5px 3px; }
+  .menu-ingr { display: none; }
+  .menu-action { margin-top: 2px; }
+  .menu-learn-btn { font-size: 8px; padding: 2px 3px; }
+  .menu-name { font-size: 8px; }
+
+  /* 카페탭: 방문손님 상단으로 */
+  .cafe-body { display: flex; flex-direction: column; }
+  #section-customers { order: -1; }
 
   /* 하단 탭바 */
   #mob-bar {
@@ -316,12 +342,12 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
   <header>
     <div class="brand">
       <div class="brand-icon" id="brandIcon">🌱</div>
-      <div><div class="brand-name" id="brandNameDisplay">내 농장</div><div class="brand-sub">씨앗에서 카페까지</div></div>
+      <div><div class="brand-name" id="brandNameDisplay">내 농장</div><div class="brand-sub">나도 사장</div></div>
     </div>
     <div id="season-badge">🌸 봄</div>
     <div class="stage-badge" id="stageBadge">🌱 농장 단계</div>
     <div class="stats-bar">
-      <div class="stat">💰 <span id="moneyDisplay">500000</span>원</div>
+      <div class="stat">💰 <span id="moneyDisplay">100000</span>원</div>
       <div class="stat">⭐ <span id="repDisplay">0</span></div>
       <div class="stat">📅 Day <span id="dayDisplay">1</span></div>
       <div id="game-time">00:00</div>
@@ -334,30 +360,40 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 
   <div id="game-main">
     <!-- LEFT -->
-    <div id="col-farm" class="tab-show" style="display:flex;flex-direction:column;gap:8px;">
+    <div id="col-farm" class="tab-show">
+
+      <!-- 모바일 전용: 카페 오픈 후 방문손님 미니패널 -->
+      <div id="mob-cust-panel" style="display:none;">
+        <div style="background:linear-gradient(135deg,var(--espresso),#5C3A1E);border-radius:12px;padding:10px 12px;">
+          <div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;margin-bottom:6px;">👥 방문 손님 <span id="mob-cust-count"></span></div>
+          <div id="mob-cust-list"><div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div></div>
+        </div>
+      </div>
       <div class="panel">
         <div class="panel-title">🌾 농장</div>
         <div class="season-strip">
           <span id="seasonEmoji">🌸</span>
           <span id="seasonName">봄</span>
           <div class="season-bar-bg"><div class="season-bar-fill" id="seasonBar" style="width:0%"></div></div>
-          <span id="seasonDay" style="font-size:10px;white-space:nowrap;">Day 1/30</span>
+          <span id="seasonDay" style="font-size:10px;white-space:nowrap;">Day 1/10</span>
         </div>
         <div id="farm-grid"></div>
-        <div style="font-size:11px;color:var(--latte);text-align:center;">빈 밭 클릭 → 씨앗 선택 <br> 🌟반짝이는 밭 클릭 → 즉시 수확!</div>
-      </div>
-      <div class="panel">
-        <div class="panel-title">🎒 창고</div>
-        <div class="inv-grid" id="inventoryGrid"></div>
+        <!-- 인라인 창고 -->
+        <div id="inventoryInline" style="display:flex;flex-wrap:wrap;gap:6px;padding-top:4px;"></div>
+        <div style="font-size:11px;color:var(--latte);text-align:center;">빈 밭 클릭 → 씨앗 선택 &nbsp;|&nbsp; 🌟반짝이는 밭 → 즉시 수확!</div>
       </div>
       <div class="panel">
         <div class="panel-title">📢 알림</div>
         <div id="logEntries" style="display:flex;flex-direction:column;gap:3px;"></div>
       </div>
+      <div class="panel">
+  <div class="panel-title">🗺️ 성장 로드맵</div>
+  <div id="stageRoadmap" style="display:flex;flex-direction:column;gap:4px;"></div>
+</div>
     </div>
 
     <!-- CENTER -->
-    <div id="col-cafe" style="display:flex;flex-direction:column;gap:8px;">
+    <div id="col-cafe">
       <div id="cafe-center">
         <div id="cafe-locked">
           <div class="lock-icon">🔐</div>
@@ -380,29 +416,29 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
               <div class="prog-label"><span>다음 단계까지</span><span id="progressText">0 / 100 명성</span></div>
               <div class="prog-bg"><div class="prog-fill" id="progressFill" style="width:0%"></div></div>
             </div>
-            <div>
-              <div class="panel-title" style="margin-bottom:7px;">📋 메뉴판</div>
-              <div class="menu-grid" id="menuGrid"></div>
-            </div>
-            <div>
+            <!-- 방문 손님 -->
+            <div id="section-customers">
               <div class="panel-title" style="margin-bottom:6px;">👥 방문 손님 <span id="custCount" style="font-size:11px;color:var(--latte);font-weight:400;"></span></div>
               <div id="customerList"></div>
+            </div>
+            <!-- 메뉴판 (레시피 통합) -->
+            <div id="section-menu">
+              <div class="panel-title" style="margin-bottom:7px;">📋 메뉴판</div>
+              <div class="menu-grid" id="menuGrid"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT -->
-    <div id="col-manage" style="display:flex;flex-direction:column;gap:8px;">
+    <!-- RIGHT: 직원/업그레이드 탭 + 리뷰 -->
+    <div id="col-manage">
       <div class="panel">
         <div class="tab-bar">
-          <button class="tab-btn active" onclick="switchTab('recipes')">📖 레시피</button>
-          <button class="tab-btn" onclick="switchTab('staff')">👥 직원</button>
+          <button class="tab-btn active" onclick="switchTab('staff')">👥 직원</button>
           <button class="tab-btn" onclick="switchTab('upgrades')">🔧 업그레이드</button>
         </div>
-        <div class="tab-pane active" id="tab-recipes"></div>
-        <div class="tab-pane" id="tab-staff"></div>
+        <div class="tab-pane active" id="tab-staff"></div>
         <div class="tab-pane" id="tab-upgrades"></div>
       </div>
       <div class="panel">
@@ -425,6 +461,9 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
     <button class="mbt" id="mbt-manage" onclick="mobTab('manage')">
       <span class="mbt-i">📋</span><span class="mbt-l">관리</span>
     </button>
+    <button class="mbt" id="mbt-pause" onclick="togglePause()">
+      <span class="mbt-i" id="mob-pause-icon">⏸</span><span class="mbt-l" id="mob-pause-label">일시정지</span>
+    </button>
     <button class="mbt" id="mbt-save" onclick="openSaveModal()">
       <span class="mbt-i">💾</span><span class="mbt-l">저장</span>
     </button>
@@ -440,68 +479,126 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 // ══════════════════════════════════════════
 
 const SEASONS = [
-  { id:'spring', name:'봄',   emoji:'🌸', bg:'linear-gradient(160deg,#fce4ec 0%,#e8f5e9 60%,#c8e6c9 100%)', barColor:'#f48fb1', dayCrops:['wheat','strawb','milk_c','sugar_c'] },
-  { id:'summer', name:'여름', emoji:'🌞', bg:'linear-gradient(160deg,#fffde7 0%,#e0f7fa 60%,#b2ebf2 100%)', barColor:'#ffb300', dayCrops:['peach','bean','milk_c','sugar_c'] },
-  { id:'autumn', name:'가을', emoji:'🍂', bg:'linear-gradient(160deg,#fff3e0 0%,#ffe0b2 60%,#ffcc80 100%)', barColor:'#e65100', dayCrops:['wheat','strawb','peach','sugar_c'] },
-  { id:'winter', name:'겨울', emoji:'❄️', bg:'linear-gradient(160deg,#e3f2fd 0%,#e8eaf6 60%,#c5cae9 100%)', barColor:'#5c6bc0', dayCrops:['bean','milk_c','wheat'] },
+  { id:'spring', name:'봄',   emoji:'🌸', bg:'linear-gradient(160deg,#fce4ec 0%,#e8f5e9 60%,#c8e6c9 100%)', barColor:'#f48fb1', dayCrops:['wheat','strawb','milk_c','sugar_c','egg_c'] },
+  { id:'summer', name:'여름', emoji:'🌞', bg:'linear-gradient(160deg,#fffde7 0%,#e0f7fa 60%,#b2ebf2 100%)', barColor:'#ffb300', dayCrops:['peach','bean','milk_c','sugar_c','tomato_c','basil_c'] },
+  { id:'autumn', name:'가을', emoji:'🍂', bg:'linear-gradient(160deg,#fff3e0 0%,#ffe0b2 60%,#ffcc80 100%)', barColor:'#e65100', dayCrops:['wheat','strawb','peach','sugar_c','potato_c','mushroom_c'] },
+  { id:'winter', name:'겨울', emoji:'❄️', bg:'linear-gradient(160deg,#e3f2fd 0%,#e8eaf6 60%,#c5cae9 100%)', barColor:'#5c6bc0', dayCrops:['bean','milk_c','wheat','meat_c'] },
 ];
 
 const CROPS = {
-  wheat:   {emoji:'🌾',name:'밀',      growTime:20,cost:500,yield:10,gives:'wheat'},
-  strawb:  {emoji:'🍓',name:'딸기',    growTime:30,cost:1000,yield:8,gives:'strawb'},
-  peach:   {emoji:'🍑',name:'복숭아',  growTime:45,cost:1000,yield:8,gives:'peach'},
-  bean:    {emoji:'🫘',name:'커피콩',  growTime:50,cost:2500,yield:15,gives:'bean'},
-  milk_c:  {emoji:'🥛',name:'유제품',  growTime:25,cost:3000,yield:7,gives:'milk'},
-  sugar_c: {emoji:'🍬',name:'설탕수수',growTime:15,cost:1500,yield:15,gives:'sugar'},
+  // 기존
+  wheat:    {emoji:'🌾',name:'밀',      growTime:20, cost:500,  yield:10, gives:'wheat'},
+  strawb:   {emoji:'🍓',name:'딸기',    growTime:30, cost:1000, yield:8,  gives:'strawb'},
+  peach:    {emoji:'🍑',name:'복숭아',  growTime:45, cost:1000, yield:8,  gives:'peach'},
+  bean:     {emoji:'🫘',name:'커피콩',  growTime:40, cost:2500, yield:15, gives:'bean'},
+  milk_c:   {emoji:'🥛',name:'유제품',  growTime:25, cost:3000, yield:10,  gives:'milk'},
+  sugar_c:  {emoji:'🍬',name:'설탕수수',growTime:15, cost:1500, yield:25, gives:'sugar'},
+  // 2단계 이후
+  egg_c:    {emoji:'🥚',name:'달걀',    growTime:20, cost:800,  yield:12, gives:'egg'},
+   // 4단계 이후
+  potato_c: {emoji:'🥔',name:'감자',    growTime:35, cost:1200, yield:10, gives:'potato'},
+  tomato_c: {emoji:'🍅',name:'토마토',  growTime:30, cost:1500, yield:8,  gives:'tomato'},
+  mushroom_c:{emoji:'🍄',name:'버섯',   growTime:30, cost:2000, yield:6,  gives:'mushroom'},
+  // 6단계 이후
+  meat_c:   {emoji:'🥩',name:'고기',    growTime:40, cost:5000, yield:5,  gives:'meat'},
+  basil_c:  {emoji:'🌿',name:'허브',    growTime:30, cost:2000, yield:10, gives:'basil'},
+  // 8단계 이후
+  truffle_c:{emoji:'⚫',name:'트러플',  growTime:50, cost:6000,yield:8,  gives:'truffle'},
+  cream_c:  {emoji:'🍶',name:'생크림',  growTime:35, cost:4000, yield:10,  gives:'cream'},
 };
 
 const ITEMS = {
-  wheat: {name:'밀',emoji:'🌾'}, strawb:{name:'딸기',emoji:'🍓'},
-  peach: {name:'복숭아',emoji:'🍑'}, bean:{name:'커피콩',emoji:'🫘'},
-  milk:  {name:'우유',emoji:'🥛'}, sugar:{name:'설탕',emoji:'🍬'},
+  wheat:   {name:'밀',    emoji:'🌾'}, strawb:  {name:'딸기',   emoji:'🍓'},
+  peach:   {name:'복숭아',emoji:'🍑'}, bean:    {name:'커피콩', emoji:'🫘'},
+  milk:    {name:'우유',  emoji:'🥛'}, sugar:   {name:'설탕',   emoji:'🍬'},
+  egg:     {name:'달걀',  emoji:'🥚'}, potato:  {name:'감자',  emoji:'🥔'}, 
+tomato:  {name:'토마토', emoji:'🍅'}, mushroom:{name:'버섯',  emoji:'🍄'}, 
+meat:    {name:'고기',   emoji:'🥩'}, basil:   {name:'허브',  emoji:'🌿'}, 
+truffle: {name:'트러플', emoji:'⚫'}, cream:   {name:'생크림',emoji:'🍶'},
 };
 
-// stageReq: 0=농장개방, 1=노점, 2=소형카페, 3=카페, 4=프랜차이즈
-// season: null = 항상, 'spring','summer','autumn','winter' = 계절한정
+// stageReq: 0=농장, 1=노점, 2=토스트점, 3=분식점, 4=카페, 5=디저트카페, 6=비스트로, 7=레스토랑, 8=파인다이닝, 9=프랜차이즈
 const RECIPES = {
-  plain_cookie:   {emoji:'🍪',name:'플레인 쿠키',   price:1500,  stageReq:1, ingredients:{wheat:1,sugar:1},              learnCost:0,   season:null,     reviews:['바삭하고 고소해요!','쿠키가 완벽해요!','고소한 냄새~']},
-  strawb_cake:    {emoji:'🍰',name:'딸기 케이크',   price:5500, stageReq:1, ingredients:{wheat:1,strawb:1,sugar:1},     learnCost:1000, season:null,     reviews:['새콤달콤 최고!','딸기향이 좋아요~','친구한테 추천!']},
-  peach_tea:      {emoji:'🫖',name:'복숭아 티',     price:5000, stageReq:1, ingredients:{peach:1,sugar:1},              learnCost:1500,  season:null,     reviews:['복숭아향 진해요!','여름에 딱이에요~','향기 너무 좋아요']},
-  latte:          {emoji:'☕',name:'라떼',           price:4500, stageReq:2, ingredients:{bean:1,milk:1},               learnCost:1500, season:null,     reviews:['부드러운 라떼!','커피 향이 진해요!','진짜 카페 느낌~']},
-  strawb_latte:   {emoji:'🍓',name:'딸기 라떼',     price:6000, stageReq:3, ingredients:{bean:1,strawb:1,milk:1},      learnCost:1500, season:null,     reviews:['이 메뉴 진짜 맛있어요!','인스타에 올렸어요!','완전 특별해요!']},
-  peach_smoothie: {emoji:'🥤',name:'복숭아 스무디', price:6500, stageReq:3, ingredients:{peach:2,milk:1,sugar:1},      learnCost:1500, season:null,     reviews:['복숭아가 달콤해요!','시원하고 맛있어요!','매일 마시고 싶어요!']},
-  premium_set:    {emoji:'🎂',name:'프리미엄 세트', price:9500, stageReq:4, ingredients:{wheat:2,strawb:1,peach:1,milk:1,sugar:1}, learnCost:3000, season:null, reviews:['이런 건 처음이에요!','특별한 날에 딱!','최고급 맛!']},
-  spring_blossom: {emoji:'🌸',name:'봄꽃 라떼',     price:6500, stageReq:2, ingredients:{bean:1,milk:1,sugar:1},       learnCost:3000, season:'spring', reviews:['봄 느낌 물씬~','계절 한정이라 아쉬워요!','또 먹고 싶어요!']},
-  summer_ice:     {emoji:'🧊',name:'썸머 아이스티', price:7000, stageReq:2, ingredients:{peach:1,sugar:2},             learnCost:3000, season:'summer', reviews:['시원해서 너무 좋아요!','여름엔 이게 최고!','매일 마실 것 같아요!']},
-  autumn_latte:   {emoji:'🍂',name:'가을 호박 라떼',price:7000, stageReq:2, ingredients:{bean:1,milk:1,sugar:2},       learnCost:3000, season:'autumn', reviews:['가을 감성이에요!','호박향이 은은해요~','따뜻하고 좋아요!']},
-  winter_choco:   {emoji:'☃️',name:'겨울 핫초코',  price:6000, stageReq:2, ingredients:{milk:2,sugar:2},              learnCost:3000, season:'winter', reviews:['따뜻하고 달콤해요!','겨울에 딱!','몸이 녹는 것 같아요~']},
+  // ── 1단계: 노점 ──
+  egg_toast:    {emoji:'🍳',name:'계란 토스트',   price:4000, stageReq:1, ingredients:{wheat:1,egg:1},              learnCost:0,    season:null,     reviews:['든든해요!','아침에 딱!','따뜻하고 맛있어요~']},
+  hotteok:      {emoji:'🥞',name:'호떡',          price:2500, stageReq:1, ingredients:{wheat:1,sugar:1},            learnCost:500,  season:null,     reviews:['달콤해요!','길거리 감성~','바삭하고 맛있어요!']},
+  // ── 2단계: 토스트점 ──
+  ham_toast:    {emoji:'🥪',name:'햄치즈 토스트', price:4500, stageReq:2, ingredients:{wheat:1,egg:1,milk:1},       learnCost:1000, season:null,     reviews:['치즈가 쭉쭉~','든든해요!','점심으로 딱!']},
+  strawb_toast: {emoji:'🍓',name:'딸기잼 토스트', price:5000, stageReq:2, ingredients:{wheat:1,strawb:1,sugar:1},   learnCost:800,  season:null,     reviews:['달콤해요!','향기가 좋아요~','아이들이 좋아해요!']},
+  plain_cookie: {emoji:'🍪',name:'플레인 쿠키',   price:2500, stageReq:2, ingredients:{wheat:1,sugar:1,egg:1},      learnCost:500,  season:null,     reviews:['바삭해요!','고소한 냄새~','커피랑 잘 어울려요!']},
+  // ── 3단계: 분식점 ──
+  tteokbokki:   {emoji:'🌶️',name:'떡볶이',       price:5000, stageReq:3, ingredients:{wheat:2,tomato:1,sugar:1},   learnCost:2000, season:null,     reviews:['매콤달콤!','중독적이에요~','또 먹고 싶어요!']},
+  kimbap:       {emoji:'🍙',name:'김밥',          price:4500, stageReq:3, ingredients:{wheat:1,egg:1,mushroom:1},   learnCost:2000, season:null,     reviews:['꽉 찬 속재료!','소풍 필수템~','집밥 느낌!']},
+  sundae:       {emoji:'🌭',name:'순대',           price:3500, stageReq:3, ingredients:{meat:1,wheat:1},             learnCost:1500, season:null,     reviews:['쫄깃해요!','분식집 느낌~','고소해요!']},
+  // ── 4단계: 카페 ──
+  latte:        {emoji:'☕',name:'라떼',           price:5500, stageReq:4, ingredients:{bean:1,milk:1},              learnCost:3000, season:null,     reviews:['부드러운 라떼!','커피 향이 진해요!','진짜 카페 느낌~']},
+  americano:    {emoji:'🖤',name:'아메리카노',     price:4500, stageReq:4, ingredients:{bean:2},                     learnCost:2000, season:null,     reviews:['진한 커피!','쌉싸름해요~','깔끔해요!']},
+  strawb_latte: {emoji:'🍓',name:'딸기 라떼',     price:6500, stageReq:4, ingredients:{bean:1,strawb:1,milk:1},     learnCost:3000, season:null,     reviews:['이 메뉴 최고!','인스타에 올렸어요!','또 주문했어요!']},
+  peach_tea:    {emoji:'🫖',name:'복숭아 티',      price:5000, stageReq:4, ingredients:{peach:1,sugar:1},            learnCost:2500, season:null,     reviews:['복숭아향 진해요!','향기 너무 좋아요~','힐링돼요!']},
+  // ── 5단계: 디저트 카페 ──
+  strawb_cake:  {emoji:'🍰',name:'딸기 케이크',   price:8000, stageReq:5, ingredients:{wheat:1,strawb:2,cream:1},   learnCost:5000, season:null,     reviews:['예쁘고 맛있어요!','선물용으로 딱!','달콤해요~']},
+  macaron:      {emoji:'🧁',name:'마카롱',         price:6000, stageReq:5, ingredients:{wheat:1,egg:1,sugar:2,cream:1},learnCost:4000,season:null,   reviews:['너무 예뻐요!','달달해요~','선물하기 좋아요!']},
+  waffle:       {emoji:'🧇',name:'와플',           price:7000, stageReq:5, ingredients:{wheat:2,egg:1,milk:1},       learnCost:4000, season:null,     reviews:['바삭바삭!','시럽이랑 최고~','브런치 느낌!']},
+  peach_smoothie:{emoji:'🥤',name:'복숭아 스무디',price:6500, stageReq:5, ingredients:{peach:2,milk:1,sugar:1},     learnCost:3500, season:null,     reviews:['시원해요!','복숭아가 진해요~','여름에 딱!']},
+  // ── 6단계: 비스트로 ──
+  potato_soup:  {emoji:'🥣',name:'감자 수프',      price:9000, stageReq:6, ingredients:{potato:2,milk:1,basil:1},   learnCost:6000, season:null,     reviews:['따뜻하고 맛있어요!','크리미해요~','속이 편해요!']},
+  tomato_pasta: {emoji:'🍝',name:'토마토 파스타',  price:12000,stageReq:6, ingredients:{wheat:2,tomato:2,basil:1},  learnCost:8000, season:null,     reviews:['정통 이탈리안!','소스가 진해요~','또 먹고 싶어요!']},
+  mushroom_risotto:{emoji:'🍚',name:'버섯 리조또',price:13000,stageReq:6, ingredients:{wheat:1,mushroom:2,milk:1,basil:1},learnCost:8000,season:null,reviews:['고급스러워요!','버섯향이 진해요~','레스토랑 느낌!']},
+  // ── 7단계: 레스토랑 ──
+  steak:        {emoji:'🥩',name:'스테이크',       price:25000,stageReq:7, ingredients:{meat:2,basil:1,mushroom:1},  learnCost:15000,season:null,    reviews:['육즙이 살아있어요!','완벽한 굽기!','최고의 스테이크!']},
+  burger:       {emoji:'🍔',name:'프리미엄 버거',  price:15000,stageReq:7, ingredients:{wheat:1,meat:1,tomato:1,egg:1},learnCost:10000,season:null,  reviews:['패티가 두툼해요!','소스가 맛있어요~','최고의 버거!']},
+  // ── 8단계: 파인다이닝 ──
+  truffle_pasta:{emoji:'🖤',name:'트러플 파스타',  price:45000,stageReq:8, ingredients:{wheat:2,truffle:1,cream:1,basil:1},learnCost:30000,season:null,reviews:['환상적이에요!','이런 맛은 처음!','럭셔리해요~']},
+  prime_steak:  {emoji:'🥇',name:'프라임 스테이크',price:60000,stageReq:8, ingredients:{meat:3,truffle:1,basil:1},   learnCost:40000,season:null,    reviews:['인생 스테이크!','완벽 그 자체!','별 다섯개!']},
+  // ── 9단계: 프랜차이즈 ──
+  premium_course:{emoji:'🎂',name:'프리미엄 코스', price:90000,stageReq:9, ingredients:{meat:2,truffle:1,cream:2,mushroom:1,basil:1},learnCost:60000,season:null,reviews:['인생 최고의 식사!','모든 게 완벽해요!','또 오고 싶어요!']},
+
+  // ── 계절 한정 ──
+  // 봄
+  spring_blossom:{emoji:'🌸',name:'봄꽃 라떼',    price:7000, stageReq:4, ingredients:{bean:1,milk:1,sugar:1},      learnCost:3000, season:'spring', reviews:['봄 느낌 물씬~','또 먹고 싶어요!','사진 찍었어요!']},
+  spring_strawb_crepe:{emoji:'🥞',name:'딸기 크레페',price:8000,stageReq:5,ingredients:{wheat:1,strawb:2,cream:1},  learnCost:5000, season:'spring', reviews:['봄 딸기 최고!','크레페가 부드러워요~','예쁘게 나왔어요!']},
+  // 여름
+  summer_ice:   {emoji:'🧊',name:'썸머 아이스티',  price:7000, stageReq:4, ingredients:{peach:1,sugar:2},           learnCost:3000, season:'summer', reviews:['시원해요!','여름엔 이게 최고!','또 주문했어요!']},
+  summer_pasta: {emoji:'🍝',name:'냉파스타',        price:13000,stageReq:6, ingredients:{wheat:2,tomato:2,basil:1},  learnCost:8000, season:'summer', reviews:['여름에 딱!','시원하고 맛있어요~','상큼해요!']},
+  // 가을
+  autumn_latte: {emoji:'🍂',name:'가을 호박 라떼',  price:7000, stageReq:4, ingredients:{bean:1,milk:1,sugar:2},    learnCost:3000, season:'autumn', reviews:['가을 감성!','호박향이 은은해요~','따뜻해요!']},
+  autumn_mushroom:{emoji:'🍄',name:'버섯 크림 수프',price:10000,stageReq:6, ingredients:{mushroom:2,cream:1,basil:1},learnCost:6000, season:'autumn', reviews:['가을 별미!','버섯향 진해요~','크리미해요!']},
+  // 겨울
+  winter_choco: {emoji:'☃️',name:'겨울 핫초코',    price:6500, stageReq:4, ingredients:{milk:2,sugar:2},            learnCost:3000, season:'winter', reviews:['따뜻해요!','겨울에 딱!','몸이 녹아요~']},
+  winter_stew:  {emoji:'🫕',name:'겨울 비프 스튜', price:20000,stageReq:7, ingredients:{meat:2,potato:1,tomato:1,basil:1},learnCost:12000,season:'winter',reviews:['겨울 최고의 음식!','따뜻하고 든든해요!','집밥보다 맛있어요!']},
 };
 
 const UPGRADES = {
-  fertilizer: {name:'비료 시스템',     emoji:'🌿',desc:'작물 성장 30% 단축',         cost:10000, stageReq:0},
-  display:     {name:'예쁜 진열대',    emoji:'🖼', desc:'손님 만족도 +10%',          cost:25000, stageReq:1},
-  espresso_m:  {name:'에스프레소 머신',emoji:'⚙️',desc:'커피류 재료 필요량 1개 절감', cost:15000, stageReq:2},
-  loyalty:     {name:'단골 카드',      emoji:'🃏',desc:'단골 손님 방문 빈도 +20%',   cost:40000, stageReq:2},
-  premium_mat: {name:'프리미엄 식재료',emoji:'✨',desc:'메뉴 판매가 +15%',           cost:20000, stageReq:3},
-  auto_harvest:{name:'자동 수확기',    emoji:'🚜',desc:'익은 작물 자동 수확',         cost:10000, stageReq:2},
+  fertilizer:  {name:'비료 시스템',     emoji:'🌿',desc:'작물 성장 30% 단축',          cost:10000,  stageReq:0},
+  display:      {name:'예쁜 진열대',    emoji:'🖼', desc:'손님 만족도 +10%',           cost:25000,  stageReq:1},
+  espresso_m:   {name:'에스프레소 머신',emoji:'⚙️',desc:'커피류 재료 필요량 1개 절감',  cost:15000,  stageReq:4},
+  loyalty:      {name:'단골 카드',      emoji:'🃏',desc:'단골 손님 방문 빈도 +20%',    cost:40000,  stageReq:3},
+  premium_mat:  {name:'프리미엄 식재료',emoji:'✨',desc:'메뉴 판매가 +15%',            cost:50000,  stageReq:5},
+  auto_harvest: {name:'자동 수확기',    emoji:'🚜',desc:'익은 작물 자동 수확',          cost:10000,  stageReq:2},
+  pro_kitchen:  {name:'전문 주방',      emoji:'🍳',desc:'조리 메뉴 판매가 +10%',       cost:80000,  stageReq:6},
+  wine_cellar:  {name:'와인 셀러',      emoji:'🍷',desc:'파인다이닝 메뉴 가격 +20%',   cost:150000, stageReq:8},
 };
 
-// STAFF definitions
-// role: 'farmer'=자동 씨앗 심기+수확, 'barista'=자동 서빙, 'manager'=재료 부족시 자동 보충
 const STAFF_DEFS = {
-  parttime: {name:'아르바이트생', emoji:'👧',role:'barista',  desc:'손님 1명 자동 서빙 (10초마다)',   hireCost:30000, dailyCost:5000,  stageReq:1},
-  farmer_w: {name:'농장 일꾼',   emoji:'👨‍🌾',role:'farmer',   desc:'빈 밭에 자동으로 씨앗 심고 수확', hireCost:40000, dailyCost:6000,  stageReq:0},
-  barista:  {name:'바리스타',    emoji:'👨‍🍳',role:'barista',  desc:'손님 자동 서빙 (10초마다)',       hireCost:60000, dailyCost:10000, stageReq:2},
-  manager:  {name:'재료 관리자', emoji:'🧑‍💼',role:'manager',  desc:'부족한 재료 자동 파악 & 씨앗 심기',hireCost:70000, dailyCost:12000, stageReq:2},
-  head_chef:{name:'수석 셰프',   emoji:'👨‍🍳',role:'barista',  desc:'메뉴 판매가 +10% & 자동 서빙',   hireCost:120000,dailyCost:20000, stageReq:3},
+  parttime: {name:'아르바이트생', emoji:'👧',role:'barista',  desc:'손님 1명 자동 서빙',             hireCost:15000,  dailyCost:5000,  stageReq:1},
+  farmer_w: {name:'농장 일꾼',   emoji:'👨‍🌾',role:'farmer',   desc:'빈 밭에 자동으로 씨앗 심고 수확', hireCost:20000,  dailyCost:6000,  stageReq:0},
+  barista:  {name:'바리스타',    emoji:'☕',role:'barista',   desc:'손님 자동 서빙 (빠름)',           hireCost:30000,  dailyCost:10000, stageReq:4},
+  manager:  {name:'재료 관리자', emoji:'🧑‍💼',role:'manager',  desc:'부족한 재료 자동 파악 & 심기',    hireCost:50000,  dailyCost:12000, stageReq:3},
+  head_chef:{name:'수석 셰프',   emoji:'👨‍🍳',role:'barista',  desc:'메뉴 판매가 +10% & 자동 서빙',   hireCost:100000, dailyCost:25000, stageReq:6},
+  sommelier:{name:'소믈리에',    emoji:'🍷',role:'barista',   desc:'파인다이닝 손님 만족도 +30%',     hireCost:200000, dailyCost:50000, stageReq:8},
 };
 
 const STAGE_DATA = [
-  {name:'🌱 농장',       building:'🏕️',desc:'작물을 재배하고 재료를 모아보세요',     repReq:0},
-  {name:'🛖 노점',       building:'🛖', desc:'노점에서 첫 메뉴를 팔아보세요!',       repReq:100},
-  {name:'☕ 소형카페',   building:'🏠', desc:'다양한 메뉴로 손님을 맞이하세요',      repReq:400},
-  {name:'🏪 카페',       building:'🏪', desc:'본격 카페 운영으로 명성을 높이세요',   repReq:1000},
-  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드가 됐어요!',    repReq:2500},
+  {name:'🌱 농장',       building:'🏕️',desc:'작물을 재배하고 재료를 모아보세요',           repReq:0},
+  {name:'🛖 노점',       building:'🛖', desc:'길거리 노점으로 첫 장사를 시작해보세요!',    repReq:200},
+  {name:'🥪 토스트점',   building:'🏠', desc:'작은 토스트 가게를 운영해보세요',            repReq:600},
+  {name:'🍱 분식점',     building:'🏪', desc:'떡볶이, 김밥으로 손님을 모아보세요',         repReq:1500},
+  {name:'☕ 카페',       building:'☕', desc:'본격 카페! 커피와 디저트를 선보이세요',       repReq:3000},
+  {name:'🍰 디저트카페', building:'🎂', desc:'달콤한 디저트로 감성 카페를 꾸려보세요',     repReq:6000},
+  {name:'🍝 비스트로',   building:'🍝', desc:'파스타와 수프로 유럽식 감성을 더하세요',     repReq:11000},
+  {name:'🍽️ 레스토랑',  building:'🍽️',desc:'스테이크와 코스 요리로 격조를 높이세요',     repReq:20000},
+  {name:'🥂 파인다이닝', building:'🥂', desc:'트러플과 프라임 스테이크, 최고급 요리',      repReq:35000},
+  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드로 성장했어요!',      repReq:60000},
 ];
 
 // SPECIAL GUEST types
@@ -514,13 +611,17 @@ const SPECIAL_TYPES = {
 
 // STORY EVENTS (triggered at rep milestones or random)
 const STORY_EVENTS = [
-  {id:'rival_cafe',    triggerRep:200,  title:'🏪 경쟁 카페 등장!', text:'골목 맞은편에 새로운 카페가 오픈했어요. "리베라 카페" — 메뉴도 비슷하고 손님들이 비교하기 시작했어요.', choices:[{label:'품질로 승부하기',reward:{rep:30},msg:'품질 향상에 집중! 명성 +30'},{label:'프로모션 행사하기',reward:{money:20000,rep:10},msg:'할인 행사 진행! +200원 +명성10'}]},
-  {id:'regular_chan',  triggerRep:150,  title:'👴 단골손님 찬호 씨', text:'"저 여기 매일 오거든요. 오늘도 항상 먹던 거 주세요." 찬호 씨는 이제 카페의 숨은 홍보대사가 됐어요.', choices:[{label:'감사 선물 드리기',reward:{rep:50,money:-10000},msg:'찬호 씨 감동! 명성 +50'},{label:'메뉴 이름 붙여주기',reward:{rep:80},msg:'"찬호 특선" 탄생! 명성 +80'}]},
-  {id:'food_magazine', triggerRep:500,  title:'📰 잡지 취재 요청!', text:'지역 음식 잡지에서 취재 요청이 왔어요. 기사가 실리면 대박날 수도 있어요!', choices:[{label:'취재 수락하기',reward:{rep:150},msg:'잡지 기사 게재! 명성 +150'},{label:'정중히 거절하기',reward:{money:0},msg:'다음 기회로...'}]},
-  {id:'staff_story',   triggerRep:300,  title:'👧 아르바이트생 소연', text:'"사장님, 저 카페 창업이 꿈이에요. 많이 배우고 싶어요!" 소연이의 열정이 카페 분위기를 밝게 만들어요.', choices:[{label:'열심히 가르쳐주기',reward:{rep:40},msg:'소연이 성장! 명성 +40'},{label:'카페 운영 노하우 전수',reward:{rep:80,money:-5000},msg:'소연이 감동! 명성 +80'}]},
-  {id:'rainy_day',     triggerRep:0,    title:'🌧 비 오는 날', text:'갑자기 비가 내리기 시작했어요. 빗소리와 함께 카페 안이 더 아늑해진 것 같아요. 손님들이 더 오래 머물러요.', choices:[{label:'무료 음료 한 잔 제공',reward:{rep:60,money:-8000},msg:'따뜻한 서비스! 명성 +60'},{label:'분위기 음악 틀기',reward:{rep:30},msg:'카페 분위기 UP! 명성 +30'}]},
-  {id:'celeb_visit',   triggerRep:800,  title:'🌟 연예인 방문!', text:'SNS에서 화제인 인플루언서가 카페에 왔어요! 이미 팔로워들에게 위치를 공유했다고 해요.', choices:[{label:'특별 서비스 제공',reward:{rep:200,money:-15000},msg:'SNS 대박! 명성 +200'},{label:'자연스럽게 응대하기',reward:{rep:100},msg:'쿨한 대응! 명성 +100'}]},
-  {id:'health_dept',   triggerRep:600,  title:'🏥 위생 점검 방문', text:'보건소에서 위생 점검 나왔어요. 평소 청결 관리를 잘 했다면 문제없겠죠?', choices:[{label:'자신 있게 보여주기',reward:{rep:50},msg:'우수 판정! 명성 +50'},{label:'긴장해서 실수하기',reward:{rep:-30,money:-10000},msg:'지적 사항 몇 가지... 명성 -30'}]},
+  {id:'rival_cafe',     triggerRep:300,   title:'🏪 경쟁 가게 등장!',     text:'골목 맞은편에 새로운 가게가 오픈했어요. 메뉴도 비슷하고 손님들이 비교하기 시작했어요.', choices:[{label:'품질로 승부하기',reward:{rep:50},msg:'품질 향상에 집중! 명성 +50'},{label:'프로모션 행사하기',reward:{money:20000,rep:20},msg:'할인 행사 진행! 명성 +20'}]},
+  {id:'regular_chan',   triggerRep:250,   title:'👴 단골손님 찬호 씨',     text:'"저 여기 매일 오거든요. 오늘도 항상 먹던 거 주세요." 찬호 씨는 이제 가게의 숨은 홍보대사가 됐어요.', choices:[{label:'감사 선물 드리기',reward:{rep:80,money:-10000},msg:'찬호 씨 감동! 명성 +80'},{label:'메뉴 이름 붙여주기',reward:{rep:120},msg:'"찬호 특선" 탄생! 명성 +120'}]},
+  {id:'food_magazine',  triggerRep:800,   title:'📰 잡지 취재 요청!',     text:'지역 음식 잡지에서 취재 요청이 왔어요. 기사가 실리면 대박날 수도 있어요!', choices:[{label:'취재 수락하기',reward:{rep:300},msg:'잡지 기사 게재! 명성 +300'},{label:'정중히 거절하기',reward:{money:0},msg:'다음 기회로...'}]},
+  {id:'staff_story',    triggerRep:500,   title:'👧 아르바이트생 소연',   text:'"사장님, 저 창업이 꿈이에요. 많이 배우고 싶어요!" 소연이의 열정이 가게 분위기를 밝게 만들어요.', choices:[{label:'열심히 가르쳐주기',reward:{rep:80},msg:'소연이 성장! 명성 +80'},{label:'운영 노하우 전수',reward:{rep:150,money:-5000},msg:'소연이 감동! 명성 +150'}]},
+  {id:'rainy_day',      triggerRep:0,     title:'🌧 비 오는 날',           text:'갑자기 비가 내리기 시작했어요. 빗소리와 함께 가게 안이 더 아늑해진 것 같아요.', choices:[{label:'무료 음료 한 잔 제공',reward:{rep:100,money:-8000},msg:'따뜻한 서비스! 명성 +100'},{label:'분위기 음악 틀기',reward:{rep:50},msg:'분위기 UP! 명성 +50'}]},
+  {id:'celeb_visit',    triggerRep:2000,  title:'🌟 연예인 방문!',         text:'SNS에서 화제인 인플루언서가 왔어요! 팔로워들에게 위치를 공유했다고 해요.', choices:[{label:'특별 서비스 제공',reward:{rep:500,money:-15000},msg:'SNS 대박! 명성 +500'},{label:'자연스럽게 응대하기',reward:{rep:250},msg:'쿨한 대응! 명성 +250'}]},
+  {id:'health_dept',    triggerRep:1200,  title:'🏥 위생 점검 방문',       text:'보건소에서 위생 점검 나왔어요. 평소 청결 관리를 잘 했다면 문제없겠죠?', choices:[{label:'자신 있게 보여주기',reward:{rep:100},msg:'우수 판정! 명성 +100'},{label:'긴장해서 실수하기',reward:{rep:-50,money:-10000},msg:'지적 사항 몇 가지... 명성 -50'}]},
+  {id:'new_recipe',     triggerRep:4000,  title:'👨‍🍳 셰프의 새 레시피',   text:'수석 셰프가 특별한 레시피를 개발했어요. 시그니처 메뉴가 생길 것 같아요!', choices:[{label:'메뉴에 바로 추가',reward:{rep:300},msg:'시그니처 메뉴 탄생! 명성 +300'},{label:'더 연구하기',reward:{rep:150,money:-20000},msg:'완벽한 레시피 완성! 명성 +150'}]},
+  {id:'michelin',       triggerRep:8000,  title:'⭐ 미식 평론가 방문!',    text:'유명 미식 평론가가 몰래 방문했어요. 리뷰가 어떻게 나올지 두근두근해요.', choices:[{label:'최선을 다해 서빙',reward:{rep:800},msg:'별점 만점! 명성 +800'},{label:'평소대로 운영',reward:{rep:400},msg:'좋은 평가! 명성 +400'}]},
+  {id:'franchise_offer',triggerRep:15000, title:'🏢 프랜차이즈 제안!',    text:'대형 외식 기업에서 프랜차이즈 계약을 제안해왔어요. 전국구 브랜드가 될 기회예요!', choices:[{label:'계약 수락하기',reward:{rep:2000},msg:'전국 진출 시작! 명성 +2000'},{label:'독립 브랜드 유지',reward:{rep:1000,money:500000},msg:'나만의 브랜드 고수! 명성 +1000'}]},
+  {id:'award',          triggerRep:30000, title:'🏆 올해의 레스토랑 수상!', text:'권위 있는 외식 어워드에서 올해의 레스토랑으로 선정됐어요! 수많은 축하 인사가 쏟아지고 있어요.', choices:[{label:'수상 소감 발표',reward:{rep:3000},msg:'감동의 수상! 명성 +3000'},{label:'직원들과 파티',reward:{rep:2000,money:-100000},msg:'함께여서 가능했어요! 명성 +2000'}]},
 ];
 
 const CUST_NAMES  = ['민준','서연','지호','예은','준서','하은','도현','소율','재원','나연','시우','지아','건우','다은','현준','태양','하린','유진','찬호','보미','서연','다솜','국화','에스더','영현','소호','정훈','정우','석주','일향','혜진','규연','민현'];
@@ -535,8 +636,8 @@ let G = {
   paused:false, secondsPlayed:0, dayTimer:0,
   seasonIndex:0, seasonDay:1,
   plots:Array(8).fill(null).map(()=>({crop:null,plantedAt:null,growTime:null,stage:'empty'})),
-  inventory:{wheat:0,strawb:0,peach:0,bean:0,milk:0,sugar:0},
-  learnedRecipes:['plain_cookie'],
+  inventory:{wheat:0,strawb:0,peach:0,bean:0,milk:0,sugar:0,egg:0,potato:0,tomato:0,mushroom:0,meat:0,basil:0,truffle:0,cream:0},
+  learnedRecipes:['egg_toast'],
   upgrades:[],
   staff:{},      // {staffId: true}
   customers:[],
@@ -627,8 +728,8 @@ function tick() {
       G.money=Math.max(0,G.money-wages);
       addLog(`💸 직원 일급 -${wages}원`);
     }
-    // Season change (every 30 game-days)
-    if (G.seasonDay>30) { G.seasonDay=1; advanceSeason(); }
+    // Season change (every 10 game-days)
+    if (G.seasonDay>10) { G.seasonDay=1; advanceSeason(); }
     addLog(`📅 Day ${G.day} 시작! (${SEASONS[G.seasonIndex].name})`);
     saveToStorage();
     renderSeasonStrip();
@@ -716,9 +817,9 @@ function renderSeasonStrip() {
   const s=SEASONS[G.seasonIndex];
   document.getElementById('seasonEmoji').textContent=s.emoji;
   document.getElementById('seasonName').textContent=s.name;
-  document.getElementById('seasonDay').textContent=`Day ${G.seasonDay}/30`;
+  document.getElementById('seasonDay').textContent=`Day ${G.seasonDay}/10`;
   const fill=document.getElementById('seasonBar');
-  if (fill) { fill.style.width=(G.seasonDay/30*100)+'%'; fill.style.background=s.barColor; }
+  if (fill) { fill.style.width=(G.seasonDay/10*100)+'%'; fill.style.background=s.barColor; }
 }
 
 // ══════════════════════════════════════════
@@ -752,7 +853,7 @@ function openCafe() {
 //  STAGE UP
 // ══════════════════════════════════════════
 function checkStageUp() {
-  if (!G.cafeOpen||G.stage>=4) return;
+  if (!G.cafeOpen||G.stage>=9) return;
   const next=STAGE_DATA[G.stage+1];
   if (next&&G.reputation>=next.repReq) {
     G.stage++;
@@ -852,23 +953,48 @@ function harvestPlot(idx) {
 }
 
 function openPlantModal(idx) {
-  const season=SEASONS[G.seasonIndex];
-  document.getElementById('plantModalTitle').textContent=`🌱 밭 ${idx+1}번 — 씨앗 고르기`;
-  document.getElementById('plantModalBody').innerHTML=`
-    <p style="font-size:11px;color:var(--latte);margin-bottom:8px;">${season.emoji} ${season.name} 추천 작물: ${season.dayCrops.map(k=>CROPS[k]?.emoji+CROPS[k]?.name).join(', ')}</p>
-    <div class="seed-picker">${Object.entries(CROPS).map(([k,c])=>{
-      const isSeasonal=season.dayCrops.includes(k);
-      return `<div class="seed-row" style="${isSeasonal?'border:1.5px solid rgba(93,173,226,0.5);background:rgba(93,173,226,0.07)':''}">
-        <span style="font-size:22px;">${c.emoji}</span>
-        <div class="seed-row-info">
-          <div class="seed-row-name">${c.name}${isSeasonal?' 🌟':''}</div>
-          <div class="seed-row-detail">⏱ ${c.growTime}초 · 수확 ${c.yield}개</div>
-        </div>
-        <span style="font-size:12px;color:var(--gold);font-weight:700;margin-right:6px;">💰${c.cost}</span>
-        <button class="btn btn-green btn-sm" ${G.money<c.cost?'disabled':''} onclick="plantCrop(${idx},'${k}')">심기</button>
+  const season = SEASONS[G.seasonIndex];
+  document.getElementById('plantModalTitle').textContent = `🌱 밭 ${idx+1}번 — 씨앗 고르기`;
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    document.getElementById('plantModalBody').innerHTML = `
+      <p style="font-size:11px;color:var(--latte);margin-bottom:10px;">
+        ${season.emoji} 추천: ${season.dayCrops.filter(k=>CROPS[k]).map(k=>CROPS[k].emoji).join(' ')}
+      </p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;">
+        ${Object.entries(CROPS).map(([k,c]) => {
+          const isSeasonal = season.dayCrops.includes(k);
+          const noMoney = G.money < c.cost;
+          return `<button onclick="${noMoney?'':` plantCrop(${idx},'${k}')`}"
+            style="padding:8px 4px;border-radius:10px;
+              border:1.5px solid ${isSeasonal?'#5dade2':'rgba(107,66,38,0.2)'};
+              background:${isSeasonal?'rgba(93,173,226,0.1)':'rgba(107,66,38,0.05)'};
+              opacity:${noMoney?0.4:1};cursor:${noMoney?'not-allowed':'pointer'};
+              display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <span style="font-size:24px;">${c.emoji}</span>
+            <span style="font-size:9px;font-weight:700;color:var(--espresso);">${c.name}</span>
+            <span style="font-size:9px;color:var(--gold);">💰${c.cost}</span>
+            <span style="font-size:8px;color:var(--latte);">⏱${c.growTime}초</span>
+          </button>`;
+        }).join('')}
       </div>`;
-    }).join('')}
-    </div>`;
+  } else {
+    document.getElementById('plantModalBody').innerHTML = `
+      <p style="font-size:11px;color:var(--latte);margin-bottom:8px;">${season.emoji} ${season.name} 추천 작물: ${season.dayCrops.filter(k=>CROPS[k]).map(k=>CROPS[k].emoji+CROPS[k].name).join(', ')}</p>
+      <div class="seed-picker" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;">${Object.entries(CROPS).map(([k,c])=>{
+        const isSeasonal=season.dayCrops.includes(k);
+        return `<div class="seed-row" style="${isSeasonal?'border:1.5px solid rgba(93,173,226,0.5);background:rgba(93,173,226,0.07)':''}">
+          <span style="font-size:22px;">${c.emoji}</span>
+          <div class="seed-row-info">
+            <div class="seed-row-name">${c.name}${isSeasonal?' 🌟':''}</div>
+            <div class="seed-row-detail">⏱ ${c.growTime}초 · 수확 ${c.yield}개</div>
+          </div>
+          <span style="font-size:12px;color:var(--gold);font-weight:700;margin-right:6px;">💰${c.cost}</span>
+          <button class="btn btn-green btn-sm" ${G.money<c.cost?'disabled':''} onclick="plantCrop(${idx},'${k}')">심기</button>
+        </div>`;
+      }).join('')}
+      </div>`;
+  }
   showModal('plantModal');
 }
 
@@ -1086,7 +1212,7 @@ function learnRecipe(key) {
   if (G.money<r.learnCost) { showNotif('💰 돈이 부족해요!'); return; }
   G.money-=r.learnCost; G.learnedRecipes.push(key);
   addLog(`📖 ${r.emoji} ${r.name} 레시피 습득!`);
-  renderTab('recipes'); renderMenu(); updateHeader();
+  renderMenu(); updateHeader();
 }
 
 function buyUpgrade(key) {
@@ -1175,8 +1301,22 @@ function openSaveModal() {
 function togglePause() {
   G.paused=!G.paused;
   document.getElementById('pauseLabel').textContent=G.paused?'재개':'일시정지';
+  // 모바일 버튼 동기화
+  var mi=document.getElementById('mob-pause-icon');
+  var ml=document.getElementById('mob-pause-label');
+  if (mi) mi.textContent=G.paused?'▶':'⏸';
+  if (ml) ml.textContent=G.paused?'재개':'일시정지';
   showNotif(G.paused?'⏸ 일시정지':'▶ 재개');
 }
+
+// 브라우저 백그라운드 → 자동 일시정지
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) {
+    if (!G.paused) { G.paused=true; G._autoPaused=true; }
+  } else {
+    if (G.paused && G._autoPaused) { G.paused=false; G._autoPaused=false; }
+  }
+});
 
 const LOGS=[];
 function addLog(msg) {
@@ -1197,12 +1337,12 @@ function updateTimeDisplay() {
   document.getElementById('game-time').textContent=`${m}:${s}`;
 }
 
-// TABS
-let currentTab='recipes';
+// TABS — 직원/업그레이드만
+let currentTab='staff';
 function switchTab(tab) {
   currentTab=tab;
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    const tabs=['recipes','staff','upgrades'];
+    const tabs=['staff','upgrades'];
     b.classList.toggle('active',tabs[i]===tab);
   });
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
@@ -1210,8 +1350,7 @@ function switchTab(tab) {
   renderTab(tab);
 }
 function renderTab(tab) {
-  if (tab==='recipes') renderRecipes();
-  else if (tab==='staff') renderStaff();
+  if (tab==='staff') renderStaff();
   else if (tab==='upgrades') renderUpgrades();
 }
 
@@ -1232,6 +1371,22 @@ function updateHeader() {
   document.getElementById('dayDisplay').textContent=G.day;
   document.getElementById('stageBadge').textContent=STAGE_DATA[G.stage].name;
   document.getElementById('brandIcon').textContent=STAGE_DATA[G.stage].building;
+  const roadmap = document.getElementById('stageRoadmap');
+  if (roadmap) {
+    roadmap.innerHTML = STAGE_DATA.map((s, i) => {
+      const done    = G.cafeOpen && i < G.stage;
+      const current = (G.cafeOpen && i === G.stage) || (!G.cafeOpen && i === 0);
+      const locked  = (!G.cafeOpen && i > 0) || (G.cafeOpen && i > G.stage);
+      return `<div style="display:flex;align-items:center;gap:6px;font-size:11px;
+        opacity:${locked?0.3:1};font-weight:${current?700:400};
+        color:${current?'var(--espresso)':'var(--soil)'};">
+        <span>${done?'✅':current?'▶️':'⬜'}</span>
+        <span>${s.name}</span>
+        ${current?'<span style="font-size:9px;background:var(--gold);color:white;padding:1px 6px;border-radius:8px;margin-left:auto;">현재</span>':
+          !done&&!locked?`<span style="font-size:9px;color:var(--latte);margin-left:auto;">${s.repReq.toLocaleString()}</span>`:''}
+      </div>`;
+    }).join('');
+  }
 }
 
 function renderFarm() {
@@ -1247,9 +1402,12 @@ function renderFarm() {
 }
 
 function renderInventory() {
-  document.getElementById('inventoryGrid').innerHTML=Object.entries(ITEMS).map(([k,item])=>{
-    const qty=G.inventory[k]||0;
-    return `<div class="inv-item"><span class="inv-icon">${item.emoji}</span><span class="inv-name">${item.name}</span><span class="inv-qty ${qty===0?'low':''}">${qty}</span></div>`;
+  // 인라인 칩 형태로 농장 패널 안에 표시
+  const el = document.getElementById('inventoryInline');
+  if (!el) return;
+  el.innerHTML = Object.entries(ITEMS).map(([k,item]) => {
+    const qty = G.inventory[k]||0;
+    return `<div class="inv-chip"><span class="inv-chip-icon">${item.emoji}</span><span class="inv-chip-qty ${qty===0?'low':''}">${qty}</span></div>`;
   }).join('');
 }
 
@@ -1263,7 +1421,7 @@ function updateProgressBar() {
   const next=STAGE_DATA[G.stage+1]?.repReq||prev;
   const pct=G.stage>=4?100:Math.min(100,((cur-prev)/(next-prev))*100);
   document.getElementById('progressFill').style.width=pct+'%';
-  document.getElementById('progressText').textContent=G.stage>=4?'🏆 최고 단계!':cur+' / '+next+' 명성';
+  document.getElementById('progressText').textContent=G.stage>=9?'🏆 최고 단계!':cur+' / '+next+' 명성';
 }
 function updateSatisfaction() {
   const sat=G.satisfaction,full=Math.floor(sat),half=sat%1>=0.5;
@@ -1275,17 +1433,32 @@ function renderMenu() {
   const seasonId=SEASONS[G.seasonIndex].id;
   document.getElementById('menuGrid').innerHTML=Object.entries(RECIPES).map(([k,r])=>{
     const isSeasonal=r.season!==null;
-    const wrongSeason=isSeasonal && r.season!==seasonId;
-    const unlocked=G.learnedRecipes.includes(k)&&r.stageReq<=G.stage&&!wrongSeason;
-    const locked=r.stageReq>G.stage||wrongSeason;
-    const seasonTag=isSeasonal?`<div class="menu-lock" style="color:#2471a3;font-size:9px;">${SEASONS.find(s=>s.id===r.season)?.emoji} 한정</div>`:'';
-    return `<div class="menu-card ${unlocked?'unlocked':locked?'locked':''} ${isSeasonal&&!wrongSeason?'seasonal':''}">
-      <div class="menu-icon">${r.emoji}</div>
-      <div class="menu-name">${r.name}</div>
-      <div class="menu-price">${unlocked?'💰'+r.price+'원':''}</div>
-      <div class="menu-lock">${locked?(wrongSeason?'비수기':'🔒 잠금'):(!G.learnedRecipes.includes(k)?'미습득':'')}</div>
-      ${seasonTag}
-    </div>`;
+    const wrongSeason=isSeasonal&&r.season!==seasonId;
+    const learned=G.learnedRecipes.includes(k);
+    const stageLocked=r.stageReq>G.stage||wrongSeason;
+    const canLearn=!learned&&!stageLocked&&G.money>=r.learnCost;
+    const ingr=Object.entries(r.ingredients).map(([i,q])=>`${ITEMS[i]?.emoji||'?'}×${q}`).join(' ');
+    let cardClass='menu-card';
+    if (learned&&!stageLocked) cardClass+=' unlocked';
+    else if (canLearn) cardClass+=' can-learn';
+    else if (stageLocked) cardClass+=' locked';
+    if (isSeasonal&&!wrongSeason) cardClass+=' seasonal';
+    const seasonTag=isSeasonal?`<div style="font-size:9px;color:#2471a3;">${SEASONS.find(s=>s.id===r.season)?.emoji} 한정</div>`:'';
+    let action='';
+    if (learned) action=`<div class="menu-action" style="color:var(--grass);font-size:10px;">✓ 보유</div>`;
+    else if (stageLocked) action=`<div class="menu-action" style="color:var(--latte);">${wrongSeason?'비수기':'🔒 Lv.'+r.stageReq}</div>`;
+    else action=`<div class="menu-action"><button class="menu-learn-btn" onclick="learnRecipe('${k}')">습득 💰${r.learnCost}</button></div>`;
+    return `<div class="${cardClass}" ${!learned&&!stageLocked?`onclick="learnRecipe('${k}')"`:''}>
+  <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">
+    <span style="font-size:15px;">${r.emoji}</span>
+    <span style="font-size:11px;font-weight:700;flex:1;text-align:left;">${r.name}</span>
+    ${learned&&!stageLocked?'<span style="font-size:10px;color:var(--grass);">✓</span>':stageLocked?`<span style="font-size:9px;color:var(--latte);">${wrongSeason?'비수기':'🔒'+r.stageReq}</span>`:''}
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:9px;">
+    <span style="color:var(--grass);">${learned&&!stageLocked?'💰'+r.price:!stageLocked?'습득 💰'+r.learnCost:''}</span>
+    <span style="color:var(--latte);">${ingr}</span>
+  </div>
+</div>`;
   }).join('');
 }
 
@@ -1361,20 +1534,60 @@ function renderReviews() {
     </div>`).join('');
 }
 
-// ── 모바일 탭 전환 (CSS class 토글만, 기존 JS 무관) ──
+// ── 모바일 탭 전환 ──
 function mobTab(t) {
   ['farm','cafe','manage'].forEach(function(n) {
     var col = document.getElementById('col-'+n);
     var btn = document.getElementById('mbt-'+n);
-    if (col) { col.classList.remove('tab-show'); }
-    if (btn) { btn.classList.remove('on'); }
+    if (col) col.classList.remove('tab-show');
+    if (btn) btn.classList.remove('on');
   });
   var c = document.getElementById('col-'+t);
   var b = document.getElementById('mbt-'+t);
-  if (c) { c.classList.add('tab-show'); }
-  if (b) { b.classList.add('on'); }
+  if (c) c.classList.add('tab-show');
+  if (b) b.classList.add('on');
   window.scrollTo(0, 0);
 }
+
+// ── 모바일 방문손님 미니패널 업데이트 (1초마다) ──
+setInterval(function() {
+  if (window.innerWidth > 768) return;
+  var panel = document.getElementById('mob-cust-panel');
+  if (!panel) return;
+
+  // 카페 오픈 전엔 숨김
+  if (!G.cafeOpen) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+
+  var countEl = document.getElementById('mob-cust-count');
+  if (countEl) countEl.textContent = '(' + G.customers.length + '명)';
+
+  var list = document.getElementById('mob-cust-list');
+  if (!list) return;
+
+  if (!G.customers || G.customers.length === 0) {
+    list.innerHTML = '<div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div>';
+    return;
+  }
+
+  list.innerHTML = G.customers.map(function(c) {
+    var recipe = RECIPES[c.order] || {};
+    var pc = c.patience > 60 ? '#5A8A3C' : c.patience > 30 ? '#F4C430' : '#e74c3c';
+    var td = SPECIAL_TYPES[c.type];
+    var tag = td ? '<span style="font-size:9px;background:rgba(255,255,255,0.15);color:white;padding:1px 5px;border-radius:5px;margin-left:3px;">' + td.label + '</span>' : '';
+    return '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:8px;padding:6px 9px;margin-bottom:4px;">' +
+      '<span style="font-size:20px;">' + c.emoji + '</span>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:11px;font-weight:600;color:white;">' + c.name + tag + '</div>' +
+        '<div style="font-size:10px;color:rgba(255,248,240,0.6);">' + (recipe.emoji||'') + ' ' + (recipe.name||'') + '</div>' +
+        '<div style="height:3px;background:rgba(255,255,255,0.15);border-radius:2px;margin-top:3px;">' +
+          '<div style="height:100%;width:' + c.patience + '%;background:' + pc + ';border-radius:2px;"></div>' +
+        '</div>' +
+      '</div>' +
+      '<button onclick="serveCustomer(' + c.id + ',false,\'\')" style="background:#5A8A3C;color:white;border:none;border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;font-family:\'Gowun Dodum\',sans-serif;font-weight:600;">서빙</button>' +
+    '</div>';
+  }).join('');
+}, 1000);
 </script>
 </body>
 </html>
