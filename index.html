@@ -728,8 +728,8 @@ function tick() {
       G.money=Math.max(0,G.money-wages);
       addLog(`💸 직원 일급 -${wages}원`);
     }
-    // Season change (every 10 game-days)
-    if (G.seasonDay>10) { G.seasonDay=1; advanceSeason(); }
+    // Season change (every 7 game-days)
+    if (G.seasonDay>7) { G.seasonDay=1; advanceSeason(); }
     addLog(`📅 Day ${G.day} 시작! (${SEASONS[G.seasonIndex].name})`);
     saveToStorage();
     renderSeasonStrip();
@@ -817,9 +817,9 @@ function renderSeasonStrip() {
   const s=SEASONS[G.seasonIndex];
   document.getElementById('seasonEmoji').textContent=s.emoji;
   document.getElementById('seasonName').textContent=s.name;
-  document.getElementById('seasonDay').textContent=`Day ${G.seasonDay}/10`;
+  document.getElementById('seasonDay').textContent=`Day ${G.seasonDay}/7`;
   const fill=document.getElementById('seasonBar');
-  if (fill) { fill.style.width=(G.seasonDay/10*100)+'%'; fill.style.background=s.barColor; }
+  if (fill) { fill.style.width=(G.seasonDay/7*100)+'%'; fill.style.background=s.barColor; }
 }
 
 // ══════════════════════════════════════════
