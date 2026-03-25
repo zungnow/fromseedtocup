@@ -433,6 +433,13 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 
     <!-- RIGHT: 직원/업그레이드 탭 + 리뷰 -->
     <div id="col-manage">
+      <!-- 모바일: 방문손님 미니패널 (관리탭에도 표시) -->
+      <div id="mob-cust-panel-manage" style="display:none;">
+        <div style="background:linear-gradient(135deg,var(--espresso),#5C3A1E);border-radius:12px;padding:10px 12px;">
+          <div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;margin-bottom:6px;">👥 방문 손님 <span id="mob-cust-count-manage"></span></div>
+          <div id="mob-cust-list-manage"><div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div></div>
+        </div>
+      </div>
       <div class="panel">
         <div class="tab-bar">
           <button class="tab-btn active" onclick="switchTab('staff')">👥 직원</button>
@@ -638,6 +645,7 @@ let G = {
   plots:Array(8).fill(null).map(()=>({crop:null,plantedAt:null,growTime:null,stage:'empty'})),
   inventory:{wheat:0,strawb:0,peach:0,bean:0,milk:0,sugar:0,egg:0,potato:0,tomato:0,mushroom:0,meat:0,basil:0,truffle:0,cream:0},
   learnedRecipes:['egg_toast'],
+  disabledMenus:[],
   upgrades:[],
   staff:{},      // {staffId: true}
   customers:[],
@@ -865,8 +873,31 @@ function checkStageUp() {
     G.stage++;
     showStageAnnounce(G.stage);
     addLog(`🎊 ${STAGE_DATA[G.stage].name} 달성!`);
+    if (G.stage===9) {
+      setTimeout(()=>{
+        showStageAnnounce(null,
+          '🏆 전설의 사장님!',
+          `🎉 축하합니다, ${G.brandName}!\n작은 농장에서 시작해 전국 프랜차이즈까지!\n당신은 진정한 외식업 레전드예요! 🌟`
+        );
+        addLog('🏆 축하합니다! 최종 단계 프랜차이즈 달성!!');
+        showNotif('🏆 전설의 사장님 탄생! 🎉');
+      }, 2500);
+    }
     resetSpawnTimer(); renderAll();
   }
+}
+
+function toggleMenu(key) {
+  if (!G.disabledMenus) G.disabledMenus = [];
+  const idx = G.disabledMenus.indexOf(key);
+  if (idx === -1) {
+    G.disabledMenus.push(key);
+    showNotif(`⏸ ${RECIPES[key].name} 판매 중지`);
+  } else {
+    G.disabledMenus.splice(idx, 1);
+    showNotif(`▶ ${RECIPES[key].name} 판매 재개`);
+  }
+  renderMenu();
 }
 
 function showStageAnnounce(stageIdx, customTitle, customSub) {
@@ -1097,14 +1128,16 @@ function runStaffActions() {
 // ══════════════════════════════════════════
 function spawnCustomer() {
   if (G.paused||!G.cafeOpen||G.customers.length>=6) return;
+  const disabled = G.disabledMenus || [];
   const avail=Object.keys(RECIPES).filter(k=>{
     const r=RECIPES[k];
     if (r.stageReq>G.stage||!G.learnedRecipes.includes(k)) return false;
     if (r.season && r.season!==SEASONS[G.seasonIndex].id) return false;
+    if (disabled.includes(k)) return false;
     return true;
   });
   // Fallback to non-seasonal if no seasonal available
-  const fallback=Object.keys(RECIPES).filter(k=>RECIPES[k].stageReq<=G.stage&&G.learnedRecipes.includes(k)&&!RECIPES[k].season);
+  const fallback=Object.keys(RECIPES).filter(k=>RECIPES[k].stageReq<=G.stage&&G.learnedRecipes.includes(k)&&!RECIPES[k].season&&!disabled.includes(k));
   const pool=avail.length>0?avail:fallback;
   if (!pool.length) return;
 
@@ -1443,27 +1476,37 @@ function renderMenu() {
     const learned=G.learnedRecipes.includes(k);
     const stageLocked=r.stageReq>G.stage||wrongSeason;
     const canLearn=!learned&&!stageLocked&&G.money>=r.learnCost;
+    const disabled=G.disabledMenus.includes(k);
     const ingr=Object.entries(r.ingredients).map(([i,q])=>`${ITEMS[i]?.emoji||'?'}×${q}`).join(' ');
     let cardClass='menu-card';
-    if (learned&&!stageLocked) cardClass+=' unlocked';
+    if (learned&&!stageLocked&&!disabled) cardClass+=' unlocked';
+    else if (learned&&!stageLocked&&disabled) cardClass+=' locked';
     else if (canLearn) cardClass+=' can-learn';
     else if (stageLocked) cardClass+=' locked';
-    if (isSeasonal&&!wrongSeason) cardClass+=' seasonal';
-    const seasonTag=isSeasonal?`<div style="font-size:9px;color:#2471a3;">${SEASONS.find(s=>s.id===r.season)?.emoji} 한정</div>`:'';
+    if (isSeasonal&&!wrongSeason&&!disabled) cardClass+=' seasonal';
+    const seasonTag=isSeasonal&&!disabled?`<div style="font-size:9px;color:#2471a3;">${SEASONS.find(s=>s.id===r.season)?.emoji} 한정</div>`:'';
     let action='';
-    if (learned) action=`<div class="menu-action" style="color:var(--grass);font-size:10px;">✓ 보유</div>`;
-    else if (stageLocked) action=`<div class="menu-action" style="color:var(--latte);">${wrongSeason?'비수기':'🔒 Lv.'+r.stageReq}</div>`;
-    else action=`<div class="menu-action"><button class="menu-learn-btn" onclick="learnRecipe('${k}')">습득 💰${r.learnCost}</button></div>`;
+    if (learned&&!stageLocked) {
+      action=`<div class="menu-action" style="display:flex;align-items:center;justify-content:space-between;margin-top:3px;">
+        <span style="color:${disabled?'var(--latte)':'var(--grass)'};font-size:9px;">${disabled?'⏸ 판매중지':'✓ 판매중'}</span>
+        <button onclick="event.stopPropagation();toggleMenu('${k}')" style="font-size:8px;padding:1px 5px;border-radius:5px;border:1px solid ${disabled?'var(--grass)':'#e74c3c'};background:transparent;color:${disabled?'var(--grass)':'#e74c3c'};cursor:pointer;">${disabled?'재개':'중지'}</button>
+      </div>`;
+    } else if (stageLocked) {
+      action=`<div class="menu-action" style="color:var(--latte);">${wrongSeason?'비수기':'🔒 Lv.'+r.stageReq}</div>`;
+    } else {
+      action=`<div class="menu-action"><button class="menu-learn-btn" onclick="learnRecipe('${k}')">습득 💰${r.learnCost}</button></div>`;
+    }
     return `<div class="${cardClass}" ${!learned&&!stageLocked?`onclick="learnRecipe('${k}')"`:''}>
   <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">
-    <span style="font-size:15px;">${r.emoji}</span>
-    <span style="font-size:11px;font-weight:700;flex:1;text-align:left;">${r.name}</span>
-    ${learned&&!stageLocked?'<span style="font-size:10px;color:var(--grass);">✓</span>':stageLocked?`<span style="font-size:9px;color:var(--latte);">${wrongSeason?'비수기':'🔒'+r.stageReq}</span>`:''}
+    <span style="font-size:15px;${disabled?'filter:grayscale(1);opacity:0.5':''}">${r.emoji}</span>
+    <span style="font-size:11px;font-weight:700;flex:1;text-align:left;${disabled?'opacity:0.5':''};">${r.name}</span>
+    ${learned&&!stageLocked&&!disabled?'':stageLocked?`<span style="font-size:9px;color:var(--latte);">${wrongSeason?'비수기':'🔒'+r.stageReq}</span>`:''}
   </div>
   <div style="display:flex;justify-content:space-between;font-size:9px;">
-    <span style="color:var(--grass);">${learned&&!stageLocked?'💰'+r.price:!stageLocked?'습득 💰'+r.learnCost:''}</span>
-    <span style="color:var(--latte);">${ingr}</span>
+    <span style="color:${disabled?'var(--latte)':'var(--grass)'};">${learned&&!stageLocked?(disabled?'판매중지':'💰'+r.price):!stageLocked?'습득 💰'+r.learnCost:''}</span>
+    <span style="color:var(--latte);${disabled?'opacity:0.5':''}">${ingr}</span>
   </div>
+  ${seasonTag}${action}
 </div>`;
   }).join('');
 }
@@ -1558,41 +1601,54 @@ function mobTab(t) {
 // ── 모바일 방문손님 미니패널 업데이트 (1초마다) ──
 setInterval(function() {
   if (window.innerWidth > 768) return;
-  var panel = document.getElementById('mob-cust-panel');
-  if (!panel) return;
-
-  // 카페 오픈 전엔 숨김
-  if (!G.cafeOpen) { panel.style.display = 'none'; return; }
-  panel.style.display = 'block';
-
-  var countEl = document.getElementById('mob-cust-count');
-  if (countEl) countEl.textContent = '(' + G.customers.length + '명)';
-
-  var list = document.getElementById('mob-cust-list');
-  if (!list) return;
-
-  if (!G.customers || G.customers.length === 0) {
-    list.innerHTML = '<div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div>';
+  if (!G.cafeOpen) {
+    var p1 = document.getElementById('mob-cust-panel');
+    var p2 = document.getElementById('mob-cust-panel-manage');
+    if (p1) p1.style.display = 'none';
+    if (p2) p2.style.display = 'none';
     return;
   }
 
-  list.innerHTML = G.customers.map(function(c) {
-    var recipe = RECIPES[c.order] || {};
-    var pc = c.patience > 60 ? '#5A8A3C' : c.patience > 30 ? '#F4C430' : '#e74c3c';
-    var td = SPECIAL_TYPES[c.type];
-    var tag = td ? '<span style="font-size:9px;background:rgba(255,255,255,0.15);color:white;padding:1px 5px;border-radius:5px;margin-left:3px;">' + td.label + '</span>' : '';
-    return '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:8px;padding:6px 9px;margin-bottom:4px;">' +
-      '<span style="font-size:20px;">' + c.emoji + '</span>' +
-      '<div style="flex:1;min-width:0;">' +
-        '<div style="font-size:11px;font-weight:600;color:white;">' + c.name + tag + '</div>' +
-        '<div style="font-size:10px;color:rgba(255,248,240,0.6);">' + (recipe.emoji||'') + ' ' + (recipe.name||'') + '</div>' +
-        '<div style="height:3px;background:rgba(255,255,255,0.15);border-radius:2px;margin-top:3px;">' +
-          '<div style="height:100%;width:' + c.patience + '%;background:' + pc + ';border-radius:2px;"></div>' +
+  // 손님 카드 HTML 생성 함수
+  function makeCustHTML(custId) {
+    return G.customers.map(function(c) {
+      var recipe = RECIPES[c.order] || {};
+      var pc = c.patience > 60 ? '#5A8A3C' : c.patience > 30 ? '#F4C430' : '#e74c3c';
+      var td = SPECIAL_TYPES[c.type];
+      var tag = td ? '<span style="font-size:9px;background:rgba(255,255,255,0.15);color:white;padding:1px 5px;border-radius:5px;margin-left:3px;">' + td.label + '</span>' : '';
+      return '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:8px;padding:6px 9px;margin-bottom:4px;">' +
+        '<span style="font-size:20px;">' + c.emoji + '</span>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:11px;font-weight:600;color:white;">' + c.name + tag + '</div>' +
+          '<div style="font-size:10px;color:rgba(255,248,240,0.6);">' + (recipe.emoji||'') + ' ' + (recipe.name||'') + '</div>' +
+          '<div style="height:3px;background:rgba(255,255,255,0.15);border-radius:2px;margin-top:3px;">' +
+            '<div style="height:100%;width:' + c.patience + '%;background:' + pc + ';border-radius:2px;"></div>' +
+          '</div>' +
         '</div>' +
-      '</div>' +
-      '<button onclick="serveCustomer(' + c.id + ',false,\'\')" style="background:#5A8A3C;color:white;border:none;border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;font-family:\'Gowun Dodum\',sans-serif;font-weight:600;">서빙</button>' +
-    '</div>';
-  }).join('');
+        '<button onclick="serveCustomer(' + c.id + ',false,\'\')" style="background:#5A8A3C;color:white;border:none;border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;font-family:\'Gowun Dodum\',sans-serif;font-weight:600;">서빙</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  var emptyHTML = '<div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div>';
+  var countText = '(' + G.customers.length + '명)';
+  var html = G.customers.length > 0 ? makeCustHTML() : emptyHTML;
+
+  // 농장탭 패널
+  var p1 = document.getElementById('mob-cust-panel');
+  if (p1) {
+    p1.style.display = 'block';
+    var c1 = document.getElementById('mob-cust-count'); if (c1) c1.textContent = countText;
+    var l1 = document.getElementById('mob-cust-list'); if (l1) l1.innerHTML = html;
+  }
+
+  // 관리탭 패널
+  var p2 = document.getElementById('mob-cust-panel-manage');
+  if (p2) {
+    p2.style.display = 'block';
+    var c2 = document.getElementById('mob-cust-count-manage'); if (c2) c2.textContent = countText;
+    var l2 = document.getElementById('mob-cust-list-manage'); if (l2) l2.innerHTML = html;
+  }
 }, 1000);
 </script>
 </body>
