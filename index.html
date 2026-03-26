@@ -587,12 +587,12 @@ const UPGRADES = {
 };
 
 const STAFF_DEFS = {
-  parttime: {name:'아르바이트생', emoji:'👧',role:'barista',  desc:'손님 1명 자동 서빙',             hireCost:15000,  dailyCost:5000,  stageReq:1},
-  farmer_w: {name:'농장 일꾼',   emoji:'👨‍🌾',role:'farmer',   desc:'빈 밭에 자동으로 씨앗 심고 수확', hireCost:20000,  dailyCost:6000,  stageReq:0},
-  barista:  {name:'바리스타',    emoji:'☕',role:'barista',   desc:'손님 자동 서빙 (빠름)',           hireCost:30000,  dailyCost:10000, stageReq:4},
-  manager:  {name:'재료 관리자', emoji:'🧑‍💼',role:'manager',  desc:'부족한 재료 자동 파악 & 심기',    hireCost:50000,  dailyCost:12000, stageReq:3},
-  head_chef:{name:'수석 셰프',   emoji:'👨‍🍳',role:'barista',  desc:'메뉴 판매가 +10% & 자동 서빙',   hireCost:100000, dailyCost:25000, stageReq:6},
-  sommelier:{name:'소믈리에',    emoji:'🍷',role:'barista',   desc:'파인다이닝 손님 만족도 +30%',     hireCost:200000, dailyCost:50000, stageReq:8},
+  parttime: {name:'아르바이트생', emoji:'👧',role:'barista',  desc:'손님 1명 자동 서빙',             hireCost:5000,  dailyCost:3000,  stageReq:1},
+  farmer_w: {name:'농장 일꾼',   emoji:'👨‍🌾',role:'farmer',   desc:'빈 밭에 자동으로 씨앗 심고 수확', hireCost:6000,  dailyCost:4000,  stageReq:0},
+  barista:  {name:'바리스타',    emoji:'☕',role:'barista',   desc:'손님 자동 서빙 (빠름)',           hireCost:7000,  dailyCost:4500, stageReq:4},
+  manager:  {name:'재료 관리자', emoji:'🧑‍💼',role:'manager',  desc:'부족한 재료 자동 파악 & 심기',    hireCost:7000,  dailyCost:5000, stageReq:3},
+  head_chef:{name:'수석 셰프',   emoji:'👨‍🍳',role:'barista',  desc:'메뉴 판매가 +10% & 자동 서빙',   hireCost:10000, dailyCost:4500, stageReq:6},
+  sommelier:{name:'소믈리에',    emoji:'🍷',role:'barista',   desc:'파인다이닝 손님 만족도 +30%',     hireCost:20000, dailyCost:5000, stageReq:8},
 };
 
 const STAGE_DATA = [
@@ -631,7 +631,7 @@ const STORY_EVENTS = [
   {id:'award',          triggerRep:30000, title:'🏆 올해의 레스토랑 수상!', text:'권위 있는 외식 어워드에서 올해의 레스토랑으로 선정됐어요! 수많은 축하 인사가 쏟아지고 있어요.', choices:[{label:'수상 소감 발표',reward:{rep:3000},msg:'감동의 수상! 명성 +3000'},{label:'직원들과 파티',reward:{rep:2000,money:-100000},msg:'함께여서 가능했어요! 명성 +2000'}]},
 ];
 
-const CUST_NAMES  = ['민준','서연','지호','예은','준서','하은','도현','소율','재원','나연','시우','지아','건우','다은','현준','태양','하린','유진','찬호','보미','서연','다솜','국화','에스더','영현','소호','정훈','정우','석주','일향','혜진','규연','민현'];
+const CUST_NAMES  = ['민준','서연','지호','예은','준서','하은','도현','소율','소연','재원','나연','시우','지아','건우','다은','우림','형호','두훈','민규','석진','태형','현준','태양','하린','유진','찬호','보미','서연','다솜','국화','에스더','영현','소호','정훈','정우','석주','일향','혜진','규연','민현'];
 const CUST_EMOJIS = ['👩','👨','🧑','👧','👦','🧒','👴','👵','🧔','🧕'];
 
 // ══════════════════════════════════════════
@@ -1060,7 +1060,10 @@ function runStaffActions() {
     G.plots.forEach((p,i)=>{
       if (p.stage==='empty' && planted<2) {
         // Pick cheapest season crop we can afford
-        const candidates=season.dayCrops.filter(k=>G.money>=CROPS[k].cost);
+        const candidates=season.dayCrops.filter(k=>
+  G.money>=CROPS[k].cost &&
+  (G.inventory[CROPS[k].gives]||0) < 50
+);
         if (candidates.length>0) {
           const cropKey=candidates[Math.floor(Math.random()*candidates.length)];
           const crop=CROPS[cropKey];
@@ -1098,6 +1101,7 @@ function runStaffActions() {
       const cropKey=sorted[0][0];
       const crop=CROPS[cropKey];
       const emptyIdx=G.plots.findIndex(p=>p.stage==='empty');
+      if ((G.inventory[CROPS[cropKey].gives]||0) >= 50) return;
       if (emptyIdx>=0 && G.money>=crop.cost) {
         G.money-=crop.cost;
         G.plots[emptyIdx]={crop:cropKey,plantedAt:Date.now(),growTime:crop.growTime,stage:'growing'};
@@ -1280,10 +1284,10 @@ function hireStaff(key) {
 // ══════════════════════════════════════════
 function randomEvent() {
   const evts=[
-    ()=>{G.money+=150; addLog('📰 지역 신문 소개! +150원');},
-    ()=>{G.reputation+=25; addLog('📣 SNS 화제! +25 명성');},
-    ()=>{G.inventory.sugar=(G.inventory.sugar||0)+3; addLog('🍬 설탕 공급업체 사은품! +3');},
-    ()=>{G.inventory.milk=(G.inventory.milk||0)+2; addLog('🥛 유제품 협찬! +2');},
+    ()=>{G.money+=150; addLog('📰 지역 신문 소개! +15000원');},
+    ()=>{G.reputation+=25; addLog('📣 SNS 화제! +300 명성');},
+    ()=>{G.inventory.sugar=(G.inventory.sugar||0)+3; addLog('🍬 설탕 공급업체 사은품! +30');},
+    ()=>{G.inventory.milk=(G.inventory.milk||0)+2; addLog('🥛 유제품 협찬! +20');},
     ()=>{const bonus=Math.floor(Math.random()*100)+50; G.money+=bonus; addLog(`🍀 행운의 날! +${bonus}원`);},
   ];
   evts[Math.floor(Math.random()*evts.length)]();
