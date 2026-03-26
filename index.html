@@ -630,8 +630,8 @@ const STAGE_DATA = [
   {name:'🍰 디저트카페', building:'🎂', desc:'달콤한 디저트로 감성 카페를 꾸려보세요',     repReq:6000},
   {name:'🍝 비스트로',   building:'🍝', desc:'파스타와 수프로 유럽식 감성을 더하세요',     repReq:11000},
   {name:'🍽️ 레스토랑',  building:'🍽️',desc:'스테이크와 코스 요리로 격조를 높이세요',     repReq:20000},
-  {name:'🥂 파인다이닝', building:'🥂', desc:'트러플과 프라임 스테이크, 최고급 요리',      repReq:35000},
-  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드로 성장했어요!',      repReq:60000},
+  {name:'🥂 파인다이닝', building:'🥂', desc:'트러플과 프라임 스테이크, 최고급 요리',      repReq:30000},
+  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드로 성장했어요!',      repReq:50000},
 ];
 
 // SPECIAL GUEST types
@@ -1269,9 +1269,8 @@ function serveCustomer(custId, isAuto, staffName) {
 
   G.totalServed++;
   const patPct=cust.patience/100;
-  let newSat=3+Math.round(patPct*2);
-  if (G.upgrades.includes('display')) newSat+=0.5;
-  newSat*=(td?.repMult||1)*0.4+0.6; // partial multiplier
+  let newSat=2+Math.round(patPct*3);
+  if (G.upgrades.includes('display')) newSat = Math.min(5, newSat + 0.3);
   newSat=Math.min(5,newSat);
   G.satisfaction=Math.min(5,(G.satisfaction*(G.totalServed-1)+newSat)/G.totalServed);
   G.reputation+=Math.round(newSat*(td?.repMult||1)*5);
