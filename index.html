@@ -573,6 +573,16 @@ const RECIPES = {
   // 겨울
   winter_choco: {emoji:'☃️',name:'겨울 핫초코',    price:6500, stageReq:4, ingredients:{milk:2,sugar:2},            learnCost:3000, season:'winter', reviews:['따뜻해요!','겨울에 딱!','몸이 녹아요~']},
   winter_stew:  {emoji:'🫕',name:'겨울 비프 스튜', price:20000,stageReq:7, ingredients:{meat:2,potato:1,tomato:1,basil:1},learnCost:12000,season:'winter',reviews:['겨울 최고의 음식!','따뜻하고 든든해요!','집밥보다 맛있어요!']},
+
+  // ── 콤보 메뉴 ──
+  combo_americano_cookie:{emoji:'🖤🍪',name:'아메리카노+쿠키 콤보', price:6000, stageReq:2, ingredients:{bean:2,wheat:1,sugar:1,egg:1}, learnCost:1000, season:null, isCombo:true, reviews:['가성비 최고!','커피랑 쿠키 찰떡~','자주 올게요!']},
+  combo_latte_waffle:    {emoji:'☕🧇',name:'라떼+와플 콤보',        price:10500,stageReq:5, ingredients:{bean:1,milk:1,wheat:2,egg:1}, learnCost:4000, season:null, isCombo:true, reviews:['완벽한 조합!','브런치 느낌~','두 개 따로보다 저렴해요!']},
+  combo_cake_latte:      {emoji:'🍰☕',name:'케이크+라떼 콤보',      price:12000,stageReq:5, ingredients:{wheat:1,strawb:2,cream:1,bean:1,milk:1}, learnCost:6000, season:null, isCombo:true, reviews:['세트로 시키길 잘했어요!','달콤해요~','인생 조합!']},
+  combo_steak_wine:      {emoji:'🥩🍷',name:'스테이크+와인 콤보',    price:32000,stageReq:7, ingredients:{meat:2,basil:1,mushroom:1,bean:1}, learnCost:15000,season:null, isCombo:true, reviews:['완벽한 디너!','고급스러워요~','특별한 날에 딱!']},
+
+  // ── 선물세트 ──
+  gift_cake_drink: {emoji:'🎁',name:'딸기케이크+음료 선물세트',    price:22000,stageReq:5, ingredients:{wheat:1,strawb:2,cream:1,bean:1,milk:1,sugar:1}, learnCost:8000, season:null, isGift:true, reviews:['선물용으로 딱!','포장이 예뻐요~','소중한 사람에게 선물했어요!']},
+  gift_premium:    {emoji:'🎀',name:'프리미엄 디저트 선물세트',    price:45000,stageReq:8, ingredients:{truffle:1,cream:2,strawb:1,bean:1,milk:1},         learnCost:20000,season:null, isGift:true, reviews:['최고급 선물!','럭셔리해요~','받는 사람이 감동받았대요!']},
 };
 
 const UPGRADES = {
@@ -1147,6 +1157,11 @@ function spawnCustomer() {
 
   const orderKey=pool[Math.floor(Math.random()*pool.length)];
 
+  // 25% 확률로 2개 주문 (콤보/선물세트 제외한 일반 메뉴에서)
+  const pool2=pool.filter(k=>k!==orderKey&&!RECIPES[k].isCombo&&!RECIPES[k].isGift);
+  const orderKey2=(Math.random()<0.25 && pool2.length>0 && !RECIPES[orderKey].isCombo && !RECIPES[orderKey].isGift)
+    ? pool2[Math.floor(Math.random()*pool2.length)] : null;
+
   // Determine customer type
   let custType='normal';
   const roll=Math.random();
@@ -1162,12 +1177,14 @@ function spawnCustomer() {
     name:CUST_NAMES[Math.floor(Math.random()*CUST_NAMES.length)],
     emoji:typeData?typeData.emoji:CUST_EMOJIS[Math.floor(Math.random()*CUST_EMOJIS.length)],
     order:orderKey,
+    order2:orderKey2,
     patience:Math.min(100,100+(typeData?.patBonus||0)),
     type:custType,
   };
   G.customers.push(cust);
   const recipe=RECIPES[orderKey];
-  addLog(`${cust.emoji} ${cust.name}님 방문 — ${recipe.emoji}${recipe.name} 주문`);
+  const r2=orderKey2?RECIPES[orderKey2]:null;
+  addLog(`${cust.emoji} ${cust.name}님 방문 — ${recipe.emoji}${recipe.name}${r2?` + ${r2.emoji}${r2.name}`:''} 주문`);
   appendCustCard(cust);
   document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
 }
@@ -1178,13 +1195,16 @@ function appendCustCard(c) {
   const td=SPECIAL_TYPES[c.type];
   const typeClass=td?c.type:'';
   const tag=td?`<span class="cust-tag ${td.tag}">${td.label}</span>`:'';
+  const r1=RECIPES[c.order];
+  const r2=c.order2?RECIPES[c.order2]:null;
+  const orderBadge1=r1.isCombo?'<span style="font-size:8px;background:#e67e22;color:white;padding:1px 4px;border-radius:4px;margin-left:2px;">콤보</span>':r1.isGift?'<span style="font-size:8px;background:#9b59b6;color:white;padding:1px 4px;border-radius:4px;margin-left:2px;">선물</span>':'';
   const div=document.createElement('div');
   div.className=`cust-card ${typeClass}`; div.setAttribute('data-cid',c.id);
   div.innerHTML=`
     <span class="cust-avatar">${c.emoji}</span>
     <div class="cust-info">
       <div class="cust-name">${c.name}${tag}</div>
-      <div class="cust-order">${RECIPES[c.order].emoji} ${RECIPES[c.order].name}</div>
+      <div class="cust-order">${r1.emoji} ${r1.name}${orderBadge1}${r2?`<br><span style="color:var(--gold);">+ ${r2.emoji} ${r2.name}</span>`:''}</div>
       <div class="cust-pat-bg"><div class="cust-pat-fill" style="width:${c.patience}%;background:var(--grass)"></div></div>
     </div>
     <button class="btn btn-green btn-sm" onclick="serveCustomer(${c.id},false,'')">서빙 ✓</button>`;
@@ -1208,14 +1228,24 @@ function serveCustomer(custId, isAuto, staffName) {
   const cust=G.customers[idx]; const recipe=RECIPES[cust.order];
   const missing=[];
   let ingr={...recipe.ingredients};
-  // espresso machine: reduce bean by 1 if bean required
   if (G.upgrades.includes('espresso_m') && ingr.bean) ingr.bean=Math.max(0,ingr.bean-1);
+  // order2 재료도 합산 체크
+  let ingr2={};
+  if (cust.order2) {
+    const r2=RECIPES[cust.order2];
+    ingr2={...r2.ingredients};
+    if (G.upgrades.includes('espresso_m') && ingr2.bean) ingr2.bean=Math.max(0,ingr2.bean-1);
+    // 두 주문 재료 합산
+    Object.entries(ingr2).forEach(([item,qty])=>{ ingr[item]=(ingr[item]||0)+qty; });
+  }
   for (const [item,qty] of Object.entries(ingr)) if ((G.inventory[item]||0)<qty) missing.push(ITEMS[item]?.name);
   if (missing.length) { if (!isAuto) showNotif(`⚠️ 재료 부족: ${missing.join(', ')}`); return; }
   for (const [item,qty] of Object.entries(ingr)) G.inventory[item]-=qty;
 
   const td=SPECIAL_TYPES[cust.type];
   let price=recipe.price*(td?.moneyMult||1);
+  // order2 가격 추가
+  if (cust.order2) price+=RECIPES[cust.order2].price*(td?.moneyMult||1);
   if (G.upgrades.includes('premium_mat')) price*=1.15;
   if (hasStaff('head_chef')) price*=1.1;
   price=Math.floor(price);
@@ -1503,7 +1533,7 @@ function renderMenu() {
     return `<div class="${cardClass}" ${!learned&&!stageLocked?`onclick="learnRecipe('${k}')"`:''}>
   <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">
     <span style="font-size:15px;${disabled?'filter:grayscale(1);opacity:0.5':''}">${r.emoji}</span>
-    <span style="font-size:11px;font-weight:700;flex:1;text-align:left;${disabled?'opacity:0.5':''};">${r.name}</span>
+    <span style="font-size:11px;font-weight:700;flex:1;text-align:left;${disabled?'opacity:0.5':''};">${r.name}${r.isCombo?'<span style="font-size:7px;background:#e67e22;color:white;padding:1px 3px;border-radius:3px;margin-left:2px;vertical-align:middle;">콤보</span>':''}${r.isGift?'<span style="font-size:7px;background:#9b59b6;color:white;padding:1px 3px;border-radius:3px;margin-left:2px;vertical-align:middle;">선물</span>':''}</span>
     ${learned&&!stageLocked&&!disabled?'':stageLocked?`<span style="font-size:9px;color:var(--latte);">${wrongSeason?'비수기':'🔒'+r.stageReq}</span>`:''}
   </div>
   <div style="display:flex;justify-content:space-between;font-size:9px;">
