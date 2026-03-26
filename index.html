@@ -365,6 +365,14 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
       <!-- 모바일 전용: 카페 오픈 후 방문손님 미니패널 -->
       <div id="mob-cust-panel" style="display:none;">
         <div style="background:linear-gradient(135deg,var(--espresso),#5C3A1E);border-radius:12px;padding:10px 12px;">
+          <!-- 단계 + 진행도 -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <span id="mob-stage-label" style="font-size:11px;color:rgba(255,248,240,0.9);font-weight:700;font-family:'Jua',sans-serif;"></span>
+            <span id="mob-progress-text" style="font-size:10px;color:rgba(255,248,240,0.6);"></span>
+          </div>
+          <div style="height:5px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden;margin-bottom:8px;">
+            <div id="mob-progress-fill" style="height:100%;background:linear-gradient(90deg,#5A8A3C,#F4C430);border-radius:3px;transition:width 0.6s;width:0%;"></div>
+          </div>
           <div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;margin-bottom:6px;">👥 방문 손님 <span id="mob-cust-count"></span></div>
           <div id="mob-cust-list"><div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div></div>
         </div>
@@ -436,6 +444,14 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
       <!-- 모바일: 방문손님 미니패널 (관리탭에도 표시) -->
       <div id="mob-cust-panel-manage" style="display:none;">
         <div style="background:linear-gradient(135deg,var(--espresso),#5C3A1E);border-radius:12px;padding:10px 12px;">
+          <!-- 단계 + 진행도 -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <span id="mob-stage-label-manage" style="font-size:11px;color:rgba(255,248,240,0.9);font-weight:700;font-family:'Jua',sans-serif;"></span>
+            <span id="mob-progress-text-manage" style="font-size:10px;color:rgba(255,248,240,0.6);"></span>
+          </div>
+          <div style="height:5px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden;margin-bottom:8px;">
+            <div id="mob-progress-fill-manage" style="height:100%;background:linear-gradient(90deg,#5A8A3C,#F4C430);border-radius:3px;transition:width 0.6s;width:0%;"></div>
+          </div>
           <div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;margin-bottom:6px;">👥 방문 손님 <span id="mob-cust-count-manage"></span></div>
           <div id="mob-cust-list-manage"><div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div></div>
         </div>
@@ -1631,19 +1647,26 @@ function mobTab(t) {
   window.scrollTo(0, 0);
 }
 
-// ── 모바일 방문손님 미니패널 업데이트 (1초마다) ──
+// ── 모바일 방문손님 + 단계 미니패널 업데이트 (1초마다) ──
 setInterval(function() {
   if (window.innerWidth > 768) return;
-  if (!G.cafeOpen) {
-    var p1 = document.getElementById('mob-cust-panel');
-    var p2 = document.getElementById('mob-cust-panel-manage');
-    if (p1) p1.style.display = 'none';
-    if (p2) p2.style.display = 'none';
-    return;
-  }
+
+  // 진행도 계산 (카페 오픈 전후 모두)
+  var cur = G.reputation;
+  var prev = STAGE_DATA[G.stage].repReq;
+  var nextData = STAGE_DATA[G.stage + 1];
+  var next = nextData ? nextData.repReq : prev;
+  var pct = G.stage >= 9 ? 100 : (next > prev ? Math.min(100, ((cur - prev) / (next - prev)) * 100) : 0);
+  var stageLabel = STAGE_DATA[G.stage].name;
+  var progressText = G.stage >= 9 ? '🏆 최고 단계!' : cur.toLocaleString() + ' / ' + next.toLocaleString() + ' 명성';
+
+  // 카페 미오픈 시 손님 없음
+  var emptyHTML = '<div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">' + (G.cafeOpen ? '손님을 기다리는 중...' : '카페 오픈 후 손님이 방문해요') + '</div>';
+  var countText = G.cafeOpen ? '(' + G.customers.length + '명)' : '';
+  var html = (G.cafeOpen && G.customers.length > 0) ? makeCustHTML() : emptyHTML;
 
   // 손님 카드 HTML 생성 함수
-  function makeCustHTML(custId) {
+  function makeCustHTML() {
     return G.customers.map(function(c) {
       var recipe = RECIPES[c.order] || {};
       var pc = c.patience > 60 ? '#5A8A3C' : c.patience > 30 ? '#F4C430' : '#e74c3c';
@@ -1667,10 +1690,22 @@ setInterval(function() {
   var countText = '(' + G.customers.length + '명)';
   var html = G.customers.length > 0 ? makeCustHTML() : emptyHTML;
 
+  // 진행도 계산
+  var cur = G.reputation;
+  var prev = STAGE_DATA[G.stage].repReq;
+  var nextData = STAGE_DATA[G.stage + 1];
+  var next = nextData ? nextData.repReq : prev;
+  var pct = G.stage >= 9 ? 100 : Math.min(100, ((cur - prev) / (next - prev)) * 100);
+  var stageLabel = STAGE_DATA[G.stage].name;
+  var progressText = G.stage >= 9 ? '🏆 최고 단계!' : cur.toLocaleString() + ' / ' + next.toLocaleString() + ' 명성';
+
   // 농장탭 패널
   var p1 = document.getElementById('mob-cust-panel');
   if (p1) {
     p1.style.display = 'block';
+    var sl1 = document.getElementById('mob-stage-label'); if (sl1) sl1.textContent = stageLabel;
+    var pt1 = document.getElementById('mob-progress-text'); if (pt1) pt1.textContent = progressText;
+    var pf1 = document.getElementById('mob-progress-fill'); if (pf1) pf1.style.width = pct + '%';
     var c1 = document.getElementById('mob-cust-count'); if (c1) c1.textContent = countText;
     var l1 = document.getElementById('mob-cust-list'); if (l1) l1.innerHTML = html;
   }
@@ -1679,6 +1714,9 @@ setInterval(function() {
   var p2 = document.getElementById('mob-cust-panel-manage');
   if (p2) {
     p2.style.display = 'block';
+    var sl2 = document.getElementById('mob-stage-label-manage'); if (sl2) sl2.textContent = stageLabel;
+    var pt2 = document.getElementById('mob-progress-text-manage'); if (pt2) pt2.textContent = progressText;
+    var pf2 = document.getElementById('mob-progress-fill-manage'); if (pf2) pf2.style.width = pct + '%';
     var c2 = document.getElementById('mob-cust-count-manage'); if (c2) c2.textContent = countText;
     var l2 = document.getElementById('mob-cust-list-manage'); if (l2) l2.innerHTML = html;
   }
