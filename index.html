@@ -552,10 +552,10 @@ const RECIPES = {
   tomato_pasta: {emoji:'🍝',name:'토마토 파스타',  price:12000,stageReq:6, ingredients:{wheat:2,tomato:2,basil:1},  learnCost:8000, season:null,     reviews:['정통 이탈리안!','소스가 진해요~','또 먹고 싶어요!']},
   mushroom_risotto:{emoji:'🍚',name:'버섯 리조또',price:13000,stageReq:6, ingredients:{wheat:1,mushroom:2,milk:1,basil:1},learnCost:8000,season:null,reviews:['고급스러워요!','버섯향이 진해요~','레스토랑 느낌!']},
   // ── 7단계: 레스토랑 ──
-  steak:        {emoji:'🥩',name:'스테이크',       price:25000,stageReq:7, ingredients:{meat:2,basil:1,mushroom:1},  learnCost:15000,season:null,    reviews:['육즙이 살아있어요!','완벽한 굽기!','최고의 스테이크!']},
+  steak:        {emoji:'🥩',name:'스테이크',       price:35000,stageReq:7, ingredients:{meat:2,basil:1,mushroom:1},  learnCost:15000,season:null,    reviews:['육즙이 살아있어요!','완벽한 굽기!','최고의 스테이크!']},
   burger:       {emoji:'🍔',name:'프리미엄 버거',  price:15000,stageReq:7, ingredients:{wheat:1,meat:1,tomato:1,egg:1},learnCost:10000,season:null,  reviews:['패티가 두툼해요!','소스가 맛있어요~','최고의 버거!']},
   // ── 8단계: 파인다이닝 ──
-  truffle_pasta:{emoji:'🖤',name:'트러플 파스타',  price:45000,stageReq:8, ingredients:{wheat:2,truffle:1,cream:1,basil:1},learnCost:30000,season:null,reviews:['환상적이에요!','이런 맛은 처음!','럭셔리해요~']},
+  truffle_pasta:{emoji:'🖤',name:'트러플 파스타',  price:37000,stageReq:8, ingredients:{wheat:2,truffle:1,cream:1,basil:1},learnCost:30000,season:null,reviews:['환상적이에요!','이런 맛은 처음!','럭셔리해요~']},
   prime_steak:  {emoji:'🥇',name:'프라임 스테이크',price:60000,stageReq:8, ingredients:{meat:3,truffle:1,basil:1},   learnCost:40000,season:null,    reviews:['인생 스테이크!','완벽 그 자체!','별 다섯개!']},
   // ── 9단계: 프랜차이즈 ──
   premium_course:{emoji:'🎂',name:'프리미엄 코스', price:90000,stageReq:9, ingredients:{meat:2,truffle:1,cream:2,mushroom:1,basil:1},learnCost:60000,season:null,reviews:['인생 최고의 식사!','모든 게 완벽해요!','또 오고 싶어요!']},
@@ -575,14 +575,14 @@ const RECIPES = {
   winter_stew:  {emoji:'🫕',name:'겨울 비프 스튜', price:20000,stageReq:7, ingredients:{meat:2,potato:1,tomato:1,basil:1},learnCost:12000,season:'winter',reviews:['겨울 최고의 음식!','따뜻하고 든든해요!','집밥보다 맛있어요!']},
 
   // ── 콤보 메뉴 ──
-  combo_americano_cookie:{emoji:'🖤🍪',name:'아메리카노+쿠키 콤보', price:6000, stageReq:2, ingredients:{bean:2,wheat:1,sugar:1,egg:1}, learnCost:1000, season:null, isCombo:true, reviews:['가성비 최고!','커피랑 쿠키 찰떡~','자주 올게요!']},
-  combo_latte_waffle:    {emoji:'☕🧇',name:'라떼+와플 콤보',        price:10500,stageReq:5, ingredients:{bean:1,milk:1,wheat:2,egg:1}, learnCost:4000, season:null, isCombo:true, reviews:['완벽한 조합!','브런치 느낌~','두 개 따로보다 저렴해요!']},
-  combo_cake_latte:      {emoji:'🍰☕',name:'케이크+라떼 콤보',      price:12000,stageReq:5, ingredients:{wheat:1,strawb:2,cream:1,bean:1,milk:1}, learnCost:6000, season:null, isCombo:true, reviews:['세트로 시키길 잘했어요!','달콤해요~','인생 조합!']},
-  combo_steak_wine:      {emoji:'🥩🍷',name:'스테이크+와인 콤보',    price:32000,stageReq:7, ingredients:{meat:2,basil:1,mushroom:1,bean:1}, learnCost:15000,season:null, isCombo:true, reviews:['완벽한 디너!','고급스러워요~','특별한 날에 딱!']},
+  combo_americano_cookie:{emoji:'🖤🍪',name:'아메리카노+쿠키', price:6000, stageReq:2, ingredients:{bean:2,wheat:1,sugar:1,egg:1}, learnCost:1000, season:null, isCombo:true, reviews:['가성비 최고!','커피랑 쿠키 찰떡~','자주 올게요!']},
+  combo_latte_waffle:    {emoji:'☕🧇',name:'라떼+와플',        price:10500,stageReq:5, ingredients:{bean:1,milk:1,wheat:2,egg:1}, learnCost:4000, season:null, isCombo:true, reviews:['완벽한 조합!','브런치 느낌~','두 개 따로보다 저렴해요!']},
+  combo_cake_latte:      {emoji:'🍰☕',name:'케이크+라떼',      price:12000,stageReq:5, ingredients:{wheat:1,strawb:2,cream:1,bean:1,milk:1}, learnCost:6000, season:null, isCombo:true, reviews:['세트로 시키길 잘했어요!','달콤해요~','인생 조합!']},
+  combo_steak_wine:      {emoji:'🥩🍷',name:'스테이크+와인',    price:40000,stageReq:7, ingredients:{meat:2,basil:1,mushroom:1,bean:1}, learnCost:15000,season:null, isCombo:true, reviews:['완벽한 디너!','고급스러워요~','특별한 날에 딱!']},
 
   // ── 선물세트 ──
-  gift_cake_drink: {emoji:'🎁',name:'딸기케이크+음료 선물세트',    price:22000,stageReq:5, ingredients:{wheat:1,strawb:2,cream:1,bean:1,milk:1,sugar:1}, learnCost:8000, season:null, isGift:true, reviews:['선물용으로 딱!','포장이 예뻐요~','소중한 사람에게 선물했어요!']},
-  gift_premium:    {emoji:'🎀',name:'프리미엄 디저트 선물세트',    price:45000,stageReq:8, ingredients:{truffle:1,cream:2,strawb:1,bean:1,milk:1},         learnCost:20000,season:null, isGift:true, reviews:['최고급 선물!','럭셔리해요~','받는 사람이 감동받았대요!']},
+  gift_cake_drink: {emoji:'🎁',name:'딸기케이크+음료',    price:14000,stageReq:5, ingredients:{wheat:1,strawb:2,cream:1,bean:1,milk:1,sugar:1}, learnCost:8000, season:null, isGift:true, reviews:['선물용으로 딱!','포장이 예뻐요~','소중한 사람에게 선물했어요!']},
+  gift_premium:    {emoji:'🎀',name:'프리미엄 디저트',    price:45000,stageReq:8, ingredients:{truffle:1,cream:2,strawb:1,bean:1,milk:1},         learnCost:20000,season:null, isGift:true, reviews:['최고급 선물!','럭셔리해요~','받는 사람이 감동받았대요!']},
 };
 
 const UPGRADES = {
@@ -1534,7 +1534,6 @@ function renderMenu() {
   <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">
     <span style="font-size:15px;${disabled?'filter:grayscale(1);opacity:0.5':''}">${r.emoji}</span>
     <span style="font-size:11px;font-weight:700;flex:1;text-align:left;${disabled?'opacity:0.5':''};">${r.name}${r.isCombo?'<span style="font-size:7px;background:#e67e22;color:white;padding:1px 3px;border-radius:3px;margin-left:2px;vertical-align:middle;">콤보</span>':''}${r.isGift?'<span style="font-size:7px;background:#9b59b6;color:white;padding:1px 3px;border-radius:3px;margin-left:2px;vertical-align:middle;">선물</span>':''}</span>
-    ${learned&&!stageLocked&&!disabled?'':stageLocked?`<span style="font-size:9px;color:var(--latte);">${wrongSeason?'비수기':'🔒'+r.stageReq}</span>`:''}
   </div>
   <div style="display:flex;justify-content:space-between;font-size:9px;">
     <span style="color:${disabled?'var(--latte)':'var(--grass)'};">${learned&&!stageLocked?(disabled?'판매중지':'💰'+r.price):!stageLocked?'습득 💰'+r.learnCost:''}</span>
