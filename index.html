@@ -742,6 +742,23 @@ function startGame() {
 function boot() {
   if (!(G.triggeredEvents instanceof Set)) G.triggeredEvents=new Set(G.triggeredEvents||[]);
   if (!G.staff) G.staff={};
+  if (!G.boosters) G.boosters={};
+  if (!G.staffLevels) G.staffLevels={};
+  // 날씨 계절 검증 — 현재 계절에 맞지 않으면 초기화
+  if (G.weather) {
+    const seasonId = SEASONS[G.seasonIndex].id;
+    const valid = SEASON_WEATHER[seasonId] || [];
+    if (!valid.includes(G.weather.id)) { G.weather = null; }
+  }
+  // 트렌드 메뉴 계절 검증 — 현재 계절 재료와 맞지 않으면 리셋
+  if (G.trendMenu && RECIPES[G.trendMenu]) {
+    const seasonHints = {spring:['strawb','peach','cream'],summer:['peach','bean','tomato'],autumn:['mushroom','potato','bean'],winter:['milk','meat','sugar']};
+    const seasonId = SEASONS[G.seasonIndex].id;
+    const hints = seasonHints[seasonId] || [];
+    const ingrs = Object.keys(RECIPES[G.trendMenu].ingredients||{});
+    const fits = ingrs.some(ing => hints.includes(ing));
+    if (!fits) { G.trendMenu = null; G.trendSeason = -1; }
+  }
   document.getElementById('brandNameDisplay').textContent=G.brandName;
   if (G.cafeOpen) {
     document.getElementById('cafe-locked').style.display='none';
