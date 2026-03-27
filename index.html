@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>나도 사장 🌱</title>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nanum+Myeongjo:wght@400;700;800&family=Jua&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="icon" href="YH-SOFT.ico" type="image/x-icon">
 <style>
 :root{
@@ -548,11 +549,8 @@ body.theme-luxury .mob-progress-bar{background:linear-gradient(90deg,#b8860b,#FF
       <button class="btn btn-sm" onclick="openShareCard()" style="background:linear-gradient(135deg,#e056fd,#8e44ad);color:white;font-size:11px;" title="내 가게 공유">📸 공유</button>
       <button class="btn btn-secondary btn-sm" id="muteBtn" onclick="toggleMute()">🔊</button>
       <button class="btn btn-secondary btn-sm" onclick="togglePause()">⏸ <span id="pauseLabel">일시정지</span></button>
-      <button class="btn btn-sm" onclick="showHotkeyHelp()" style="background:rgba(107,66,38,0.12);color:var(--soil);font-size:11px;" title="단축키 도움말">⌨️</button>
-    </div>
-    <!-- 수익 스파크라인 (데스크탑 전용) -->
-    <div id="income-sparkline" style="align-items:flex-end;gap:2px;height:32px;display:flex;margin-left:4px;" title="최근 수익 추이"></div>
-  </header>
+       </div>
+      </header>
 
   <div id="game-main">
     <!-- LEFT -->
@@ -978,6 +976,36 @@ function fallbackCopy(text) {
   document.execCommand('copy');
   document.body.removeChild(el);
   showNotif('📋 텍스트가 복사됐어요! SNS에 붙여넣기 하세요 😊');
+}
+
+function saveShareImage() {
+  const btn = document.getElementById('shareImgBtn');
+  const card = document.getElementById('shareCard');
+  if (!card) return;
+  btn.textContent = '⏳ 생성 중...';
+  btn.disabled = true;
+  html2canvas(card, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: null,
+    logging: false,
+    onclone: (doc) => {
+      // 복제된 DOM에서 폰트 렌더링 안정화
+      doc.getElementById('shareCard').style.fontFamily = "'Jua', 'Gowun Dodum', sans-serif";
+    }
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `${G.brandName}_나도사장.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showNotif('🖼️ 이미지 저장 완료! SNS에 공유해보세요 😊');
+    btn.textContent = '🖼️ 이미지 저장';
+    btn.disabled = false;
+  }).catch(() => {
+    showNotif('⚠️ 이미지 저장 실패. 텍스트 복사를 이용해주세요!');
+    btn.textContent = '🖼️ 이미지 저장';
+    btn.disabled = false;
+  });
 }
 // ══════════════════════════════════════════
 function launchConfetti(count, colors) {
@@ -2759,9 +2787,9 @@ function _getCrisisBannerHtml() {
 //  🏢 멀티 지점 시스템
 // ══════════════════════════════════════════
 const BRANCH_DEFS = [
-  { id:'branch1', name:'2호점', emoji:'🏠', unlockStage:7, cost:500000,  dailyIncome:15000, dailyRep:10,  desc:'동네에 2호점 오픈! 매일 수익+명성이 들어와요' },
-  { id:'branch2', name:'3호점', emoji:'🏪', unlockStage:8, cost:1000000, dailyIncome:30000, dailyRep:20,  desc:'상권에 3호점 오픈! 더 큰 수익을!' },
-  { id:'branch3', name:'4호점', emoji:'🏢', unlockStage:9, cost:2000000, dailyIncome:60000, dailyRep:40,  desc:'프랜차이즈 4호점! 전국 진출 완성!' },
+  { id:'branch1', name:'2호점', emoji:'🏠', unlockStage:7, cost:500000,  dailyIncome:10000, dailyRep:10,  desc:'동네에 2호점 오픈! 매일 수익+명성이 들어와요' },
+  { id:'branch2', name:'3호점', emoji:'🏪', unlockStage:8, cost:1000000, dailyIncome:300000, dailyRep:20,  desc:'상권에 3호점 오픈! 더 큰 수익을!' },
+  { id:'branch3', name:'4호점', emoji:'🏢', unlockStage:9, cost:2000000, dailyIncome:600000, dailyRep:40,  desc:'프랜차이즈 4호점! 전국 진출 완성!' },
 ];
 
 function openBranch(branchId) {
@@ -6015,8 +6043,9 @@ setInterval(function() {
     </div>
     <!-- 버튼 영역 -->
     <div style="padding:14px 20px;background:var(--cream);display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+      <button class="btn btn-gold" onclick="saveShareImage()" id="shareImgBtn" style="flex:1;">🖼️ 이미지 저장</button>
       <button class="btn btn-primary" onclick="copyShareText()" style="flex:1;">📋 텍스트 복사</button>
-      <button class="btn btn-secondary" onclick="closeModal('shareModal')" style="flex:1;">닫기</button>
+      <button class="btn btn-secondary" onclick="closeModal('shareModal')" style="width:100%;">닫기</button>
     </div>
   </div>
 </div>
