@@ -502,7 +502,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
   <!-- 모바일 하단 탭바 -->
   <div id="mob-bar">
     <button class="mbt on" id="mbt-farm" onclick="mobTab('farm')">
-      <span class="mbt-i">🌾</span><span class="mbt-l">농장</span>
+      <span class="mbt-i">🎪</span><span class="mbt-l">메인</span>
     </button>
     <button class="mbt" id="mbt-cafe" onclick="mobTab('cafe')">
       <span class="mbt-i">☕</span><span class="mbt-l">카페</span>
@@ -1615,11 +1615,16 @@ function checkTrend() {
 );
 // 계절 분위기에 맞는 메뉴 가중치 부여
 const seasonHints = {
-  spring: ['strawb','peach','cream'],   // 재료 키워드
+  spring: ['strawb','peach','cream'],
   summer: ['peach','bean','tomato'],
   autumn: ['mushroom','potato','bean'],
   winter: ['milk','meat','sugar'],
 };
+  const hints = seasonHints[seasonId] || [];
+  const weighted = cands.filter(k =>
+    Object.keys(RECIPES[k].ingredients).some(ing => hints.includes(ing))
+  );
+  if (weighted.length > 0) cands = weighted;
   if (!cands.length) return;
   G.trendSeason=G.seasonIndex;
   G.trendMenu=cands[Math.floor(Math.random()*cands.length)];
