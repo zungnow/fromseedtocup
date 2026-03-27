@@ -197,7 +197,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 .seed-row-info{flex:1;}.seed-row-name{font-weight:600;}.seed-row-detail{font-size:10px;color:var(--latte);}
 
 /* NOTIF */
-.notif{position:fixed;top:62px;right:16px;z-index:200;background:var(--espresso);color:var(--cream);padding:9px 14px;border-radius:10px;font-size:13px;font-family:'Gowun Dodum',sans-serif;box-shadow:0 4px 18px rgba(59,31,15,0.35);animation:nIn 0.25s ease,nOut 0.25s ease 2.3s forwards;max-width:280px;}
+.notif{position:fixed;right:16px;z-index:200;background:var(--espresso);color:var(--cream);padding:9px 14px;border-radius:10px;font-size:13px;font-family:'Gowun Dodum',sans-serif;box-shadow:0 4px 18px rgba(59,31,15,0.35);animation:nIn 0.25s ease,nOut 0.25s ease 2.3s forwards;max-width:280px;transition:top 0.2s ease;}
 @keyframes nIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
 @keyframes nOut{to{opacity:0;transform:translateX(20px)}}
 
@@ -1877,9 +1877,30 @@ function addLog(msg) {
   if (el) el.innerHTML=LOGS.map(l=>`<div class="log-entry">${l}</div>`).join('');
 }
 
+// 알림 스택 관리
+const _notifStack = [];
+const NOTIF_TOP_START = 62;
+const NOTIF_GAP = 48;
+
+function _updateNotifPositions() {
+  _notifStack.forEach((el, i) => {
+    el.style.top = (NOTIF_TOP_START + i * NOTIF_GAP) + 'px';
+  });
+}
+
 function showNotif(msg) {
-  const el=document.createElement('div'); el.className='notif'; el.textContent=msg;
-  document.body.appendChild(el); setTimeout(()=>el.remove(),2600);
+  const el = document.createElement('div');
+  el.className = 'notif';
+  el.textContent = msg;
+  el.style.top = (NOTIF_TOP_START + _notifStack.length * NOTIF_GAP) + 'px';
+  document.body.appendChild(el);
+  _notifStack.push(el);
+  setTimeout(() => {
+    el.remove();
+    const idx = _notifStack.indexOf(el);
+    if (idx > -1) _notifStack.splice(idx, 1);
+    _updateNotifPositions();
+  }, 2600);
 }
 function showModal(id){document.getElementById(id).classList.add('show');}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
