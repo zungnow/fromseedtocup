@@ -2027,6 +2027,13 @@ function renderFarm() {
     const pct=Math.min(100,elapsed/(p.growTime*sm)*100);
     return `<div class="plot growing" onclick="plotClick(${i})">${crop.emoji}<div class="plot-label">${Math.floor(pct)}%</div><div class="plot-bar"><div class="plot-bar-fill" style="width:${pct}%"></div></div></div>`;
   }).join('');
+
+const harvestBtn = document.getElementById('harvestAllBtn');
+  if (harvestBtn) {
+    const hasReady = G.plots.some(p => p.stage === 'ready');
+    harvestBtn.disabled = !hasReady;
+    harvestBtn.style.opacity = hasReady ? '1' : '0.4';
+  }
 }
 
 
@@ -2052,13 +2059,6 @@ const EMERGENCY_WINDOW_MS = 24 * 60 * 60 * 1000; // 24시간
 const EMERGENCY_PRICE_MULT = 3;
 const EMERGENCY_QTY = 5;
 
-  // 모두수확 버튼 상태
-  const harvestBtn = document.getElementById('harvestAllBtn');
-  if (harvestBtn) {
-    const hasReady = G.plots.some(p => p.stage === 'ready');
-    harvestBtn.disabled = !hasReady;
-    harvestBtn.style.opacity = hasReady ? '1' : '0.4';
-  }
 function getTodayKey() {
   const d = new Date();
   return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
