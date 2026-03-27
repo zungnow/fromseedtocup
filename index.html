@@ -342,6 +342,8 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
     </div>
   </div>
 </div>
+
+<div class="modal-overlay" id="storyModal">
   <div class="modal">
     <div class="modal-title" id="storyModalTitle">📖 이야기</div>
     <div class="modal-body" id="storyModalBody"></div>
@@ -353,8 +355,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 <div id="app">
   <header>
     <div class="brand">
-      <div class="brand-icon" id="brandIcon">🌱</div>
-      <div><div class="brand-name" id="brandNameDisplay">내 농장</div><div class="brand-sub">나도 사장</div></div>
+      <div><div class="brand-name" id="brandNameDisplay" onclick="openRenameModal()" style="cursor:pointer;title='클릭하여 이름 변경'">내 농장</div><div class="brand-sub">나도 사장 ✏️</div></div>
     </div>
     <div id="season-badge">🌸 봄</div>
     <div class="stage-badge" id="stageBadge">🌱 농장 단계</div>
@@ -1413,6 +1414,11 @@ function randomEvent() {
 // ══════════════════════════════════════════
 //  이름 변경
 // ══════════════════════════════════════════
+function openRenameModal() {
+  document.getElementById('renameInput').value = G.brandName;
+  showModal('renameModal');
+}
+
 function confirmRename() {
   const v = document.getElementById('renameInput').value.trim();
   if (!v) { showNotif('이름을 입력해주세요!'); return; }
@@ -1703,7 +1709,6 @@ function updateHeader() {
   document.getElementById('repDisplay').textContent=G.reputation.toLocaleString();
   document.getElementById('dayDisplay').textContent=G.day;
   document.getElementById('stageBadge').textContent=STAGE_DATA[G.stage].name;
-  document.getElementById('brandIcon').textContent=STAGE_DATA[G.stage].building;
   const roadmap = document.getElementById('stageRoadmap');
   if (roadmap) {
     roadmap.innerHTML = STAGE_DATA.map((s, i) => {
