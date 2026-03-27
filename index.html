@@ -1582,23 +1582,25 @@ function serveCustomer(custId, isAuto, staffName) {
 
   G.customers.splice(idx,1);
   // 플로팅 텍스트 + 사운드 — 카드 제거 전에 위치 저장
-  const custEl=document.querySelector(`[data-cid="${custId}"]`);
+  const custEl = document.querySelector(`[data-cid="${custId}"]`);
   const custRect = custEl ? custEl.getBoundingClientRect() : null;
-  const custVisible = custRect && custRect.width > 0 && custRect.top > 0 && custRect.top < window.innerHeight;
+  const custVisible = custRect && custRect.width > 0 && custRect.top >= 0 && custRect.bottom <= window.innerHeight;
 
-  // 표시 기준 좌표 결정 (카페탭: 카드 위치 / 메인·관리탭: mob-cust-list 패널)
+  // 표시 기준 좌표 결정
+  // custEl이 있고 화면 안에 보이면 (카페탭 카드 OR 모바일 패널 카드) 그 위치 사용
   let floatX, floatY;
   if (custVisible) {
-    floatX = custRect.left + custRect.width/2 - 20;
-    floatY = custRect.top  + custRect.height/2;
+    floatX = custRect.left + custRect.width / 2 - 20;
+    floatY = custRect.top  + custRect.height / 2;
   } else {
+    // 화면 밖이면 mob-cust-list 패널 위치로 폴백
     const listEl = document.getElementById('mob-cust-list') || document.getElementById('mob-cust-list-manage');
     const listRect = listEl ? listEl.getBoundingClientRect() : null;
-    if (listRect && listRect.width > 0 && listRect.top > 0 && listRect.top < window.innerHeight) {
-      floatX = listRect.left + listRect.width/2 - 20;
+    if (listRect && listRect.width > 0 && listRect.top >= 0 && listRect.bottom <= window.innerHeight) {
+      floatX = listRect.left + listRect.width / 2 - 20;
       floatY = listRect.top  + 20;
     } else {
-      floatX = window.innerWidth/2 - 40;
+      floatX = window.innerWidth  / 2 - 40;
       floatY = window.innerHeight * 0.4;
     }
   }
@@ -3686,7 +3688,7 @@ setInterval(function() {
       var pc = c.patience > 60 ? '#5A8A3C' : c.patience > 30 ? '#F4C430' : '#e74c3c';
       var td = SPECIAL_TYPES[c.type];
       var tag = td ? '<span style="font-size:9px;background:rgba(255,255,255,0.15);color:white;padding:1px 5px;border-radius:5px;margin-left:3px;">' + td.label + '</span>' : '';
-      return '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:8px;padding:6px 9px;margin-bottom:4px;">' +
+      return '<div data-cid="' + c.id + '" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:8px;padding:6px 9px;margin-bottom:4px;">' +
         '<span style="font-size:20px;">' + c.emoji + '</span>' +
         '<div style="flex:1;min-width:0;">' +
           '<div style="font-size:11px;font-weight:600;color:white;">' + c.name + tag + '</div>' +
