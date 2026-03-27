@@ -2099,7 +2099,7 @@ function openEmergencyModal() {
   const remaining = getEmergencyRemaining();
   const { h, m } = getEmergencyResetTime();
   let nextRefill = remaining < EMERGENCY_MAX
-    ? `<div style="font-size:10px;color:var(--latte);margin-top:3px;">🕐 자정까지 ${h}시간 ${m}분 남음</div>` : '';
+    ? `<div style="font-size:10px;color:var(--latte);margin-top:3px;">🕐 ${h}시간 ${m}분 후 초기화</div>` : '';
   let html = `<div style="font-size:12px;color:var(--latte);margin-bottom:10px;">
     오늘 남은 횟수: <b style="color:${remaining>0?'var(--grass)':'#c0392b'}">${remaining}회</b> / ${EMERGENCY_MAX}회
     ${nextRefill}
@@ -2159,7 +2159,7 @@ function renderInventory() {
     if (statusEl) {
       if (rem < EMERGENCY_MAX) {
         const { h, m } = getEmergencyResetTime();
-        statusEl.textContent = `🕐 자정까지 ${h}시간 ${m}분 후 초기화`;
+        statusEl.textContent = `🕐 ${h}시간 ${m}분 후 초기화`;
       } else {
         statusEl.textContent = '';
       }
