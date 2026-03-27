@@ -1539,7 +1539,7 @@ function serveCustomer(custId, isAuto, staffName) {
   custEl?.remove();
   if (G.customers.length===0) showCustEmpty();
   document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
-
+  updateServeAllBtn();  // ← 이 한 줄 추가
   // 트렌드 보너스
   if (G.trendMenu && (cust.order===G.trendMenu||cust.order2===G.trendMenu)) {
     const bonus=Math.round(newSat*3); G.reputation+=bonus;
