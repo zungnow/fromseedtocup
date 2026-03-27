@@ -1032,6 +1032,7 @@ function boot() {
   if (!G.interior) G.interior={theme:null,props:[]};
   if (!G.interiorOwned) G.interiorOwned=[];
   if (!G._interiorApplied) G._interiorApplied={};
+  if (!G._regDeepSeen) G._regDeepSeen={};
   // 날씨 계절 검증 — 현재 계절에 맞지 않으면 초기화
   if (G.weather) {
     const seasonId = SEASONS[G.seasonIndex].id;
@@ -1047,6 +1048,8 @@ function boot() {
     const fits = ingrs.some(ing => hints.includes(ing));
     if (!fits) { G.trendMenu = null; G.trendSeason = -1; }
   }
+  // 대회 계절 검증 — 계절 한정 대회가 맞지 않는 계절에 진행 중이면 취소
+  cancelContestIfWrongSeason();
   document.getElementById('brandNameDisplay').textContent=G.brandName;
   if (G.cafeOpen) {
     document.getElementById('cafe-locked').style.display='none';
@@ -1204,6 +1207,18 @@ function advanceSeason() {
   showStageAnnounce(null, s.emoji+' '+s.name+' 시작!', '계절이 바뀌었어요! 새로운 메뉴와 작물이 준비됐어요.');
   addLog(`${s.emoji} ${s.name} 시작! 계절 한정 메뉴를 확인하세요`);
   renderAll();
+  // 계절 전환 시: 맞지 않는 대회 취소 + 겨울 대회 체크
+  cancelContestIfWrongSeason();
+  if (G.cafeOpen && s.id === 'winter') {
+    setTimeout(() => {
+      const triggered = G.triggeredContests || [];
+      const xmas = CONTESTS.find(c => c.id === 'xmas_market');
+      if (xmas && !triggered.includes('xmas_market') && xmas.triggerStage <= G.stage && !G.contest) {
+        addLog('🎄 겨울이 왔어요! 크리스마스 마켓 개최 예정...');
+        setTimeout(() => launchContestAnnounce(xmas), 5000);
+      }
+    }, 3000);
+  }
 }
 
 function applySeasonBg() {
@@ -1971,10 +1986,10 @@ const WEATHER_MENU_PREF = {
 };
 
 const SEASON_WEATHER = {
-  spring: ['rain','festival'],
-  summer: ['heatwave','festival','rush'],
-  autumn: ['rain','festival'],
-  winter: ['blizzard','rush'],
+  spring: ['rain','festival'],          // 봄비, 봄 축제
+  summer: ['rain','heatwave','rush'],   // 장마, 폭염, 손님폭주
+  autumn: ['festival','rush'],          // 가을 축제, 손님폭주 (쾌청한 가을)
+  winter: ['blizzard','rush'],          // 폭설, 손님폭주
 };
 
 function checkWeatherEvent() {
@@ -2329,6 +2344,7 @@ function loadGame() {
   G.interior       = d.interior       && typeof d.interior       === 'object' ? d.interior       : {theme:null,props:[]};
   G.interiorOwned  = Array.isArray(d.interiorOwned) ? d.interiorOwned : [];
   G._interiorApplied = d._interiorApplied && typeof d._interiorApplied === 'object' ? d._interiorApplied : {};
+  G._regDeepSeen    = d._regDeepSeen    && typeof d._regDeepSeen    === 'object' ? d._regDeepSeen    : {};
 
   // Set / Array 복원
   G.learnedRecipes    = Array.isArray(d.learnedRecipes)    ? d.learnedRecipes    : ['egg_toast'];
@@ -3763,6 +3779,24 @@ const CONTESTS = [
 ];
 
 // ── 대회 트리거 체크 ──
+// 계절이 맞지 않는 대회 취소
+function cancelContestIfWrongSeason() {
+  if (!G.contest) return;
+  const def = CONTESTS.find(c => c.id === G.contest.defId);
+  if (!def || !def.requireSeason) return;
+  const currentSeason = SEASONS[G.seasonIndex].id;
+  if (def.requireSeason === currentSeason) return;
+  // 계절 불일치 → 대회 취소, triggeredContests에서도 제거해서 올바른 계절에 다시 발동 가능하게
+  addLog(`🗓️ 계절이 바뀌어 [${def.name}] 대회가 취소됐어요. 겨울에 다시 열려요!`);
+  showNotif(`❄️ 계절이 바뀌어 ${def.emoji} ${def.name} 취소됐어요`);
+  if (G.triggeredContests) {
+    const idx = G.triggeredContests.indexOf(def.id);
+    if (idx !== -1) G.triggeredContests.splice(idx, 1);
+  }
+  G.contest = null;
+  updateContestBanner();
+}
+
 function checkContestTrigger() {
   if (G.contest) return;                  // 이미 진행 중
   if (Math.random() > 0.004) return;      // 초당 0.4% 확률 체크
@@ -3770,14 +3804,25 @@ function checkContestTrigger() {
   const seasonId = SEASONS[G.seasonIndex].id;
   const triggered = G.triggeredContests || [];
 
+  // 계절 한정 대회를 먼저 별도 체크 — 지금 계절과 맞으면 우선 발동
   for (const c of CONTESTS) {
+    if (!c.requireSeason) continue;
+    if (triggered.includes(c.id)) continue;
+    if (c.triggerStage > G.stage) continue;
+    if (c.requireSeason !== seasonId) continue;          // 계절 불일치 → 스킵
+    if (c.requireRecipes && !c.requireRecipes.every(r => G.learnedRecipes.includes(r))) continue;
+    if (c.requireRep && G.reputation < c.requireRep) continue;
+    launchContestAnnounce(c);
+    return;
+  }
+
+  // 계절 무관 대회 체크
+  for (const c of CONTESTS) {
+    if (c.requireSeason) continue;                       // 계절 한정은 위에서 처리
     if (triggered.includes(c.id)) continue;
     if (c.triggerStage > G.stage) continue;
     if (c.requireRecipes && !c.requireRecipes.every(r => G.learnedRecipes.includes(r))) continue;
     if (c.requireRep && G.reputation < c.requireRep) continue;
-    if (c.requireSeason && seasonId !== c.requireSeason) continue;
-
-    // forceTrigger는 단계 달성 직후 한 번만
     launchContestAnnounce(c);
     return;
   }
@@ -4415,24 +4460,71 @@ const REGULAR_STORIES = [
 
 // 단골 심층 스토리 이벤트 (10·20·30회 방문 시)
 const REGULAR_DEEP_EVENTS = [
-  { visits:10, title:'🥰 단골 {name}님의 비밀',
-    text:'"{name}님이 조심스럽게 말을 꺼냈어요. \'사실... 여기 음식이 저한테 정말 큰 위로가 돼요. 힘든 시기에도 여기만 오면 기분이 나아지거든요.\' 따뜻한 말에 마음이 뭉클해져요.",',
-    choices:[
-      {label:'☕ 오늘 음료 무료로 드리기', effect(name){ G.money=Math.max(0,G.money-5000); G.reputation+=60; showNotif(`🥰 ${name}님 감동! 명성 +60`); addLog(`☕ ${name}님께 음료 무료 서비스`); }},
-      {label:'💌 단골 카드 만들어드리기', effect(name){ G.reputation+=100; if(G.regulars[name]) G.regulars[name].hasCard=true; showNotif(`💌 ${name}님 단골 카드 발급! 명성 +100`); addLog(`💌 ${name}님 단골 카드 발급`); }},
-    ]},
-  { visits:20, title:'🎂 {name}님의 생일!',
-    text:'"{name}님이 오늘 생일이에요! 몰래 케이크에 초를 꽂고 깜짝 파티를 준비할까요, 아니면 조용히 축하해드릴까요?"',
-    choices:[
-      {label:'🎉 깜짝 파티 열기 (-15,000원)', effect(name){ if(G.money>=15000){G.money-=15000; G.reputation+=200; floatText('🎂 생일 파티!', window.innerWidth/2-60, window.innerHeight/3, '#e91e8c'); showNotif(`🎉 ${name}님 생일 파티! 명성 +200`);}else showNotif('돈이 부족해요!'); addLog(`🎉 ${name}님 생일 파티 개최`); }},
-      {label:'🌸 꽃 한 송이 선물하기', effect(name){ G.reputation+=120; showNotif(`🌸 ${name}님 감동! 명성 +120`); addLog(`🌸 ${name}님께 꽃 선물`); }},
-    ]},
-  { visits:30, title:'🤝 {name}님의 제안',
-    text:'"{name}님이 진지하게 얘기했어요. \'저 친구들 단체로 데려올게요. 사장님 가게 소문 제대로 내드릴게요!\' 진짜 홍보대사가 될 것 같아요."',
-    choices:[
-      {label:'🙏 감사하게 받아들이기', effect(name){ G.reputation+=300; resetSpawnTimer(Math.max(1500, (parseInt(G._spawnRate)||8000)*0.7)); setTimeout(()=>resetSpawnTimer(),60000); showNotif(`🙏 ${name}님 홍보 시작! 명성 +300`); addLog(`📣 ${name}님 홍보대사 활동 시작!`); }},
-      {label:'💰 사례금 드리기 (-30,000원)', effect(name){ if(G.money>=30000){G.money-=30000; G.reputation+=500; showNotif(`💰 ${name}님께 사례! 명성 +500`);}else showNotif('돈이 부족해요!'); addLog(`💰 ${name}님께 사례금 지급`); }},
-    ]},
+  // ── 10회 방문 (3종 랜덤) ──
+  { visits:10, variants:[
+    { title:'🥰 단골 {name}님의 고백',
+      text:'{name}님이 조심스럽게 말을 꺼냈어요. "사실... 여기 음식이 저한테 정말 큰 위로가 돼요. 힘든 시기에도 여기만 오면 기분이 나아지거든요." 따뜻한 말에 마음이 뭉클해져요.',
+      choices:[
+        {label:'☕ 오늘 음료 무료로 드리기', effect(name){ G.money=Math.max(0,G.money-5000); G.reputation+=60; showNotif(`🥰 ${name}님 감동! 명성 +60`); addLog(`☕ ${name}님께 음료 무료 서비스`); }},
+        {label:'💌 단골 카드 만들어드리기', effect(name){ G.reputation+=100; if(G.regulars[name]) G.regulars[name].hasCard=true; showNotif(`💌 ${name}님 단골 카드 발급! 명성 +100`); addLog(`💌 ${name}님 단골 카드 발급`); }},
+      ]},
+    { title:'📖 {name}님의 이야기',
+      text:'{name}님이 자리에 앉으며 말했어요. "저 사실 이 동네 처음 이사 왔을 때 되게 외로웠어요. 근데 여기 오면서 좀 안정이 된 것 같아요." 단골이 된 데에는 이유가 있었군요.',
+      choices:[
+        {label:'🌸 "항상 환영해요" 전하기', effect(name){ G.reputation+=80; showNotif(`🌸 ${name}님과 더 가까워졌어요! 명성 +80`); addLog(`🌸 ${name}님과 마음이 통했어요`); }},
+        {label:'🎁 다음 방문 시 서비스 약속', effect(name){ if(G.regulars[name]) G.regulars[name].nextBonus=true; G.reputation+=120; showNotif(`🎁 ${name}님 다음 방문이 기대돼요! 명성 +120`); addLog(`🎁 ${name}님께 서비스 약속`); }},
+      ]},
+    { title:'😊 {name}님의 루틴',
+      text:'{name}님이 웃으며 말했어요. "저 사실 매주 여기 오는 게 제 소확행이에요. 여기 안 오면 일주일이 허전해요!" 이 가게가 누군가의 작은 행복이 됐네요.',
+      choices:[
+        {label:'☕ 시그니처 메뉴 서비스', effect(name){ G.money=Math.max(0,G.money-3000); G.reputation+=70; showNotif(`☕ ${name}님의 소확행 지켜드릴게요! 명성 +70`); addLog(`☕ ${name}님 소확행 응원 서비스`); }},
+        {label:'💌 단골 카드 발급', effect(name){ G.reputation+=110; if(G.regulars[name]) G.regulars[name].hasCard=true; showNotif(`💌 ${name}님 단골 카드! 명성 +110`); addLog(`💌 ${name}님 단골 카드 발급`); }},
+      ]},
+  ]},
+
+  // ── 20회 방문 (3종 랜덤) ──
+  { visits:20, variants:[
+    { title:'🎂 {name}님의 생일!',
+      text:'{name}님이 오늘 생일이에요! 몰래 케이크에 초를 꽂고 깜짝 파티를 준비할까요, 아니면 조용히 축하해드릴까요?',
+      choices:[
+        {label:'🎉 깜짝 파티 열기 (-15,000원)', effect(name){ if(G.money>=15000){G.money-=15000; G.reputation+=200; floatText('🎂 생일 파티!', window.innerWidth/2-60, window.innerHeight/3, '#e91e8c'); showNotif(`🎉 ${name}님 생일 파티! 명성 +200`);}else showNotif('돈이 부족해요!'); addLog(`🎉 ${name}님 생일 파티 개최`); }},
+        {label:'🌸 꽃 한 송이 선물하기', effect(name){ G.reputation+=120; showNotif(`🌸 ${name}님 감동! 명성 +120`); addLog(`🌸 ${name}님께 꽃 선물`); }},
+      ]},
+    { title:'💼 {name}님의 승진 소식!',
+      text:'{name}님이 활짝 웃으며 들어왔어요. "저 오늘 승진했어요! 기쁜 날 제일 먼저 여기 오고 싶었어요." 기쁜 날을 함께 나눌 수 있어서 뿌듯하네요.',
+      choices:[
+        {label:'🥂 축하 음료 서비스 (-10,000원)', effect(name){ if(G.money>=10000){G.money-=10000; G.reputation+=180; showNotif(`🥂 ${name}님 승진 축하! 명성 +180`);}else showNotif('돈이 부족해요!'); addLog(`🥂 ${name}님 승진 축하 서비스`); }},
+        {label:'👏 진심으로 축하 전하기', effect(name){ G.reputation+=130; showNotif(`👏 ${name}님과 기쁨을 나눴어요! 명성 +130`); addLog(`👏 ${name}님 승진 축하`); }},
+      ]},
+    { title:'💬 {name}님의 부탁',
+      text:'{name}님이 쑥스러워하며 말했어요. "저... 다음 주에 소개팅이 있는데 여기서 하면 될까요? 제가 제일 좋아하는 곳이라서요!" 이 가게가 특별한 날의 무대가 되겠네요.',
+      choices:[
+        {label:'🌹 특별석 준비해주기', effect(name){ G.reputation+=200; showNotif(`🌹 ${name}님 소개팅 성공을 빌어요! 명성 +200`); addLog(`🌹 ${name}님 소개팅 자리 준비`); }},
+        {label:'🎵 분위기 있는 플레이리스트 틀기', effect(name){ G.reputation+=150; showNotif(`🎵 분위기 UP! ${name}님 소개팅 응원! 명성 +150`); addLog(`🎵 ${name}님 소개팅 분위기 세팅`); }},
+      ]},
+  ]},
+
+  // ── 30회 방문 (3종 랜덤) ──
+  { visits:30, variants:[
+    { title:'🤝 {name}님의 제안',
+      text:'{name}님이 진지하게 얘기했어요. "저 친구들 단체로 데려올게요. 사장님 가게 소문 제대로 내드릴게요!" 진짜 홍보대사가 될 것 같아요.',
+      choices:[
+        {label:'🙏 감사하게 받아들이기', effect(name){ G.reputation+=300; resetSpawnTimer(Math.max(1500,(parseInt(G._spawnRate)||8000)*0.7)); setTimeout(()=>resetSpawnTimer(),60000); showNotif(`🙏 ${name}님 홍보 시작! 명성 +300`); addLog(`📣 ${name}님 홍보대사 활동 시작!`); }},
+        {label:'💰 사례금 드리기 (-30,000원)', effect(name){ if(G.money>=30000){G.money-=30000; G.reputation+=500; showNotif(`💰 ${name}님께 사례! 명성 +500`);}else showNotif('돈이 부족해요!'); addLog(`💰 ${name}님께 사례금 지급`); }},
+      ]},
+    { title:'📰 {name}님의 제보',
+      text:'{name}님이 흥분해서 달려왔어요. "저 지역 신문사 다니는데요, 여기 기사 한 번 써도 될까요? 진짜 맛있는 곳 소개하고 싶어요!" 뜻밖의 기회가 찾아왔어요.',
+      choices:[
+        {label:'📷 인터뷰 수락하기', effect(name){ G.reputation+=400; showNotif(`📰 ${name}님 기사 게재! 명성 +400`); addLog(`📰 ${name}님 신문 기사 인터뷰`); }},
+        {label:'🤫 조용히 운영하고 싶어요', effect(name){ G.reputation+=150; G.money+=30000; showNotif(`🤫 조용한 명성... 그래도 명성 +150, +30,000원`); addLog(`🤫 ${name}님 인터뷰 정중히 거절`); }},
+      ]},
+    { title:'🏆 {name}님의 선언',
+      text:'{name}님이 당당하게 말했어요. "저 주변 사람들한테 여기가 동네 최고 맛집이라고 공식 선언했어요! 절대 다른 데 안 가요." 이보다 큰 칭찬이 있을까요?',
+      choices:[
+        {label:'🎖️ 명예 단골 인증서 드리기', effect(name){ G.reputation+=350; if(G.regulars[name]) G.regulars[name].hasCard=true; showNotif(`🎖️ ${name}님 명예 단골 등극! 명성 +350`); addLog(`🎖️ ${name}님 명예 단골 인증`); }},
+        {label:'🍽️ 오늘 식사 전부 서비스', effect(name){ G.money=Math.max(0,G.money-20000); G.reputation+=450; showNotif(`🍽️ ${name}님 감동의 눈물! 명성 +450`); addLog(`🍽️ ${name}님 풀코스 서비스`); }},
+      ]},
+  ]},
 ];
 
 function updateRegular(custName, menuKey) {
@@ -4460,17 +4552,24 @@ function updateRegular(custName, menuKey) {
     floatText(`🥰 단골 +${repBonus}명성`, window.innerWidth/2-60, 200, '#e91e8c');
   }
 
-  // 10·20·30회 방문: 심층 스토리 이벤트
-  const deepEv = REGULAR_DEEP_EVENTS.find(e => e.visits === r.visits);
-  if (deepEv && !G.triggeredEvents.has(`reg_deep_${custName}_${r.visits}`)) {
+  // 10·20·30회 방문: 심층 스토리 이벤트 (버전 랜덤)
+  const deepEvDef = REGULAR_DEEP_EVENTS.find(e => e.visits === r.visits);
+  if (deepEvDef && !G.triggeredEvents.has(`reg_deep_${custName}_${r.visits}`)) {
     G.triggeredEvents.add(`reg_deep_${custName}_${r.visits}`);
+    // variants 중 이 손님이 아직 안 본 버전 우선 선택
+    const seenKey = `reg_deep_seen_${custName}`;
+    const seen = G._regDeepSeen?.[custName] || {};
+    const available = deepEvDef.variants.filter((_, i) => !seen[`${r.visits}_${i}`]);
+    const pool = available.length > 0 ? available : deepEvDef.variants;
+    const pickedIdx = deepEvDef.variants.indexOf(pool[Math.floor(Math.random() * pool.length)]);
+    if (!G._regDeepSeen) G._regDeepSeen = {};
+    if (!G._regDeepSeen[custName]) G._regDeepSeen[custName] = {};
+    G._regDeepSeen[custName][`${r.visits}_${pickedIdx}`] = true;
+    const variant = deepEvDef.variants[pickedIdx];
     const ev = {
-      title: deepEv.title.replace(/{name}/g, custName),
-      text:  deepEv.text.replace(/{name}/g, custName).replace(/^"|"$/g,'').replace(/,$/,''),
-      choices: deepEv.choices.map(c => ({
-        label: c.label,
-        effect: () => c.effect(custName),
-      })),
+      title:   variant.title.replace(/{name}/g, custName),
+      text:    variant.text.replace(/{name}/g, custName),
+      choices: variant.choices.map(c => ({ label: c.label, effect: () => c.effect(custName) })),
     };
     triggerRegularDeepEvent(ev, custName, r.visits);
   }
