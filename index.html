@@ -410,6 +410,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
       <div class="panel">
         <div class="panel-title">🌾 농장</div>
         <button class="btn btn-danger btn-sm" onclick="openEmergencyModal()" style="width:100%;font-size:12px;">🚚 긴급 주문 <span id="emergencyBadge" style="background:rgba(255,255,255,0.25);border-radius:6px;padding:1px 6px;font-size:10px;"></span></button>
+        <div id="emergencyStatus" style="font-size:10px;color:var(--latte);text-align:center;margin-top:2px;"></div>
         <div class="season-strip">
           <span id="seasonEmoji">🌸</span>
           <span id="seasonName">봄</span>
@@ -2042,39 +2043,49 @@ const EMERGENCY_WINDOW_MS = 24 * 60 * 60 * 1000; // 24시간
 const EMERGENCY_PRICE_MULT = 3;
 const EMERGENCY_QTY = 5;
 
+function getTodayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+}
+
 function getEmergencyLog() {
   try {
     const raw = localStorage.getItem('emergencyLog');
-    const log = raw ? JSON.parse(raw) : [];
-    const now = Date.now();
-    // 24시간 지난 항목 제거
-    return log.filter(t => now - t < EMERGENCY_WINDOW_MS);
-  } catch(e) { return []; }
+    const data = raw ? JSON.parse(raw) : {};
+    const today = getTodayKey();
+    return data[today] || 0;
+  } catch(e) { return 0; }
 }
 
-function saveEmergencyLog(log) {
-  try { localStorage.setItem('emergencyLog', JSON.stringify(log)); } catch(e) {}
+function saveEmergencyLog(count) {
+  try {
+    const today = getTodayKey();
+    localStorage.setItem('emergencyLog', JSON.stringify({[today]: count}));
+  } catch(e) {}
 }
 
 function getEmergencyRemaining() {
-  return Math.max(0, EMERGENCY_MAX - getEmergencyLog().length);
+  return Math.max(0, EMERGENCY_MAX - getEmergencyLog());
+}
+
+function getEmergencyResetTime() {
+  // 오늘 자정까지 남은 시간
+  const now = new Date();
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 0, 0, 0);
+  const ms = midnight - now;
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  return { h, m, ms };
 }
 
 function openEmergencyModal() {
   const available = EMERGENCY_ITEMS.filter(e => e.stageReq <= G.stage);
   const remaining = getEmergencyRemaining();
-  const log = getEmergencyLog();
-  // 다음 충전까지 남은 시간
-  let nextRefill = '';
-  if (log.length > 0 && remaining < EMERGENCY_MAX) {
-    const oldest = Math.min(...log);
-    const ms = EMERGENCY_WINDOW_MS - (Date.now() - oldest);
-    const h = Math.floor(ms / 3600000);
-    const m = Math.floor((ms % 3600000) / 60000);
-    nextRefill = `<div style="font-size:10px;color:var(--latte);margin-top:3px;">다음 충전: ${h}시간 ${m}분 후</div>`;
-  }
+  const { h, m } = getEmergencyResetTime();
+  let nextRefill = remaining < EMERGENCY_MAX
+    ? `<div style="font-size:10px;color:var(--latte);margin-top:3px;">🕐 자정까지 ${h}시간 ${m}분 남음</div>` : '';
   let html = `<div style="font-size:12px;color:var(--latte);margin-bottom:10px;">
-    남은 횟수: <b style="color:${remaining>0?'var(--grass)':'#c0392b'}">${remaining}회</b> / ${EMERGENCY_MAX}회 (24시간 기준)
+    오늘 남은 횟수: <b style="color:${remaining>0?'var(--grass)':'#c0392b'}">${remaining}회</b> / ${EMERGENCY_MAX}회
     ${nextRefill}
     <div style="font-size:11px;margin-top:3px;opacity:0.7;">재료 ${EMERGENCY_QTY}개 · 시장가 ${EMERGENCY_PRICE_MULT}배</div>
   </div>`;
@@ -2111,9 +2122,7 @@ function emergencyOrder(itemKey) {
   if (G.money < price) { showNotif('💰 돈이 부족해요!'); return; }
   G.money -= price;
   G.inventory[itemKey] = (G.inventory[itemKey] || 0) + EMERGENCY_QTY;
-  const log = getEmergencyLog();
-  log.push(Date.now());
-  saveEmergencyLog(log);
+  saveEmergencyLog(getEmergencyLog() + 1);
   addLog(`🚚 긴급주문: ${item.emoji} ${item.name} ×${EMERGENCY_QTY} (-${price.toLocaleString()}원)`);
   showNotif(`🚚 ${item.emoji} ${item.name} ×${EMERGENCY_QTY} 도착!`);
   closeModal('emergencyModal');
@@ -2126,10 +2135,19 @@ function renderInventory() {
   if (!el) return;
   // 긴급주문 뱃지 업데이트
   const badge = document.getElementById('emergencyBadge');
+  const statusEl = document.getElementById('emergencyStatus');
   if (badge) {
     const rem = getEmergencyRemaining();
     badge.textContent = rem + '회 남음';
     badge.style.opacity = rem > 0 ? '1' : '0.5';
+    if (statusEl) {
+      if (rem < EMERGENCY_MAX) {
+        const { h, m } = getEmergencyResetTime();
+        statusEl.textContent = `🕐 자정까지 ${h}시간 ${m}분 후 초기화`;
+      } else {
+        statusEl.textContent = '';
+      }
+    }
   }
   el.innerHTML = Object.entries(ITEMS).map(([k,item]) => {
     const qty = G.inventory[k]||0;
