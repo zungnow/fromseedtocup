@@ -403,7 +403,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
           <div style="height:5px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden;margin-bottom:8px;">
             <div id="mob-progress-fill" style="height:100%;background:linear-gradient(90deg,#5A8A3C,#F4C430);border-radius:3px;transition:width 0.6s;width:0%;"></div>
           </div>
-          <div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;margin-bottom:6px;">👥 방문 손님 <span id="mob-cust-count"></span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;">👥 방문 손님 <span id="mob-cust-count"></span></div><button onclick="serveAll()" style="background:var(--grass);color:white;border:none;border-radius:7px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-weight:600;">모두서빙</button></div>
           <div id="mob-cust-list"><div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div></div>
         </div>
       </div>
@@ -460,7 +460,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
             </div>
             <!-- 방문 손님 -->
             <div id="section-customers">
-              <div class="panel-title" style="margin-bottom:6px;">👥 방문 손님 <span id="custCount" style="font-size:11px;color:var(--latte);font-weight:400;"></span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div class="panel-title">👥 방문 손님 <span id="custCount" style="font-size:11px;color:var(--latte);font-weight:400;"></span></div><button class="btn btn-green btn-sm" onclick="serveAll()" id="serveAllBtn" style="font-size:11px;padding:3px 8px;">모두서빙</button></div>
               <div id="customerList"></div>
             </div>
             <!-- 메뉴판 (레시피 통합) -->
@@ -488,7 +488,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
           <div style="height:5px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden;margin-bottom:8px;">
             <div id="mob-progress-fill-manage" style="height:100%;background:linear-gradient(90deg,#5A8A3C,#F4C430);border-radius:3px;transition:width 0.6s;width:0%;"></div>
           </div>
-          <div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;margin-bottom:6px;">👥 방문 손님 <span id="mob-cust-count-manage"></span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;">👥 방문 손님 <span id="mob-cust-count-manage"></span></div><button onclick="serveAll()" style="background:var(--grass);color:white;border:none;border-radius:7px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-weight:600;">모두서빙</button></div>
           <div id="mob-cust-list-manage"><div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div></div>
         </div>
       </div>
@@ -816,6 +816,9 @@ window.onload = () => {
 function startGame() {
   const v=document.getElementById('brandInput').value.trim();
   if (v) G.brandName=v;
+  // 새 게임 시작 시 횟수 제한 초기화
+  localStorage.removeItem('emergencyLog');
+  localStorage.removeItem('boosterLog');
   closeModal('nameModal'); boot();
 }
 
@@ -1417,6 +1420,28 @@ function updatePatBars() {
   });
 }
 
+function serveAll() {
+  if (!G.cafeOpen || G.customers.length === 0) return;
+  let served = 0;
+  const ids = [...G.customers].map(c => c.id);
+  ids.forEach(id => {
+    const c = G.customers.find(x => x.id == id);
+    if (!c) return;
+    const recipe = RECIPES[c.order];
+    let ingr = {...recipe.ingredients};
+    if (G.upgrades.includes('espresso_m') && ingr.bean) ingr.bean = Math.max(0, ingr.bean-1);
+    if (c.order2) {
+      const r2 = RECIPES[c.order2];
+      let ingr2 = {...r2.ingredients};
+      if (G.upgrades.includes('espresso_m') && ingr2.bean) ingr2.bean = Math.max(0, ingr2.bean-1);
+      Object.entries(ingr2).forEach(([item,qty]) => { ingr[item] = (ingr[item]||0) + qty; });
+    }
+    const canServe = Object.entries(ingr).every(([item,qty]) => (G.inventory[item]||0) >= qty);
+    if (canServe) { serveCustomer(id, false, ''); served++; }
+  });
+  if (served === 0) showNotif('⚠️ 서빙 가능한 손님이 없어요! (재료 부족)');
+}
+
 function serveCustomer(custId, isAuto, staffName) {
   const idx=G.customers.findIndex(c=>c.id==custId); if (idx===-1) return;
   const cust=G.customers[idx]; const recipe=RECIPES[cust.order];
@@ -1743,7 +1768,16 @@ function checkDailyQuest() {
   if (!G.cafeOpen||G.stage<1) return;
   if (G.day-G.questDay<3) return;
   if (!G.quests) G.quests=[];
-  G.quests=G.quests.filter(q=>!q.done);
+  // 비수기 메뉴 퀘스트 제거
+  const curSeason=SEASONS[G.seasonIndex].id;
+  G.quests=G.quests.filter(q=>{
+    if (q.done) return false;
+    if (q.type==='serve_menu'&&q.target&&RECIPES[q.target]) {
+      const r=RECIPES[q.target];
+      if (r.season&&r.season!==curSeason) return false;
+    }
+    return true;
+  });
   if (G.quests.length>=2) return;
   G.questDay=G.day;
   const seasonId = SEASONS[G.seasonIndex].id;
@@ -2097,24 +2131,28 @@ function getEmergencyResetTime() {
 // ── 단기 부스터 사용 횟수 제한 (자정 기준, 1일 2회) ──
 const BOOSTER_MAX_PER_DAY = 2;
 
-function getBoosterLog() {
+function getBoosterLog(key) {
   try {
     const raw = localStorage.getItem('boosterLog');
     const data = raw ? JSON.parse(raw) : {};
     const today = getTodayKey();
-    return data[today] || 0;
+    return (data[today] || {})[key] || 0;
   } catch(e) { return 0; }
 }
 
-function saveBoosterLog(count) {
+function saveBoosterLog(key, count) {
   try {
     const today = getTodayKey();
-    localStorage.setItem('boosterLog', JSON.stringify({[today]: count}));
+    const raw = localStorage.getItem('boosterLog');
+    const data = raw ? JSON.parse(raw) : {};
+    if (!data[today]) data[today] = {};
+    data[today][key] = count;
+    localStorage.setItem('boosterLog', JSON.stringify(data));
   } catch(e) {}
 }
 
-function getBoosterRemaining() {
-  return Math.max(0, BOOSTER_MAX_PER_DAY - getBoosterLog());
+function getBoosterRemaining(key) {
+  return Math.max(0, BOOSTER_MAX_PER_DAY - getBoosterLog(key));
 }
 
 
@@ -2371,11 +2409,11 @@ function renderBooster() {
   document.getElementById('tab-booster').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding-bottom:3px;border-bottom:1px dashed rgba(200,149,108,0.3);">
       <div style="font-size:11px;font-weight:700;color:var(--espresso);">⚡ 단기 부스터</div>
-      <div style="font-size:10px;color:${getBoosterRemaining()>0?'var(--grass)':'#c0392b'};">${getBoosterRemaining()}회 남음 · 자정 초기화</div>
+      <div style="font-size:10px;color:var(--latte);">각 버프 ${BOOSTER_MAX_PER_DAY}회 · 자정 초기화</div>
     </div>
     ${boosters.map(b=>{
       const locked = b.stageReq > G.stage;
-      const boosterRem = getBoosterRemaining();
+      const boosterRem = getBoosterRemaining(b.key);
     const canBuy = !locked && G.money >= b.cost && !b.active && boosterRem > 0;
       return `<div style="display:flex;align-items:center;gap:7px;background:${b.active?'rgba(90,138,60,0.08)':'rgba(107,66,38,0.06)'};border:1.5px solid ${b.active?'rgba(90,138,60,0.3)':'transparent'};border-radius:9px;padding:7px 9px;font-size:12px;margin-bottom:3px;">
         <span style="font-size:18px;">${b.emoji}</span>
@@ -2387,7 +2425,7 @@ function renderBooster() {
           ? `<span style="font-size:10px;color:var(--grass);">활성중</span>`
           : locked
             ? `<span style="font-size:10px;color:var(--latte);">🔒 ${b.stageReq}단계</span>`
-            : `<button class="btn btn-gold btn-sm" onclick="activateBooster('${b.key}')" ${canBuy?'':'disabled'}>💰${b.cost.toLocaleString()}</button>`
+            : `<button class="btn btn-gold btn-sm" onclick="activateBooster('${b.key}')" ${canBuy?'':'disabled'}>💰${b.cost.toLocaleString()} <span style='font-size:9px;opacity:0.8;'>(${boosterRem}회)</span></button>`
         }
       </div>`;
     }).join('')}
@@ -2410,17 +2448,17 @@ function renderBooster() {
 
 function activateBooster(key) {
   if (!G.boosters) G.boosters={};
-  const remaining = getBoosterRemaining();
+  const remaining = getBoosterRemaining(key);
   if (remaining <= 0) {
     const { h, m } = getEmergencyResetTime();
-    showNotif(`⛔ 오늘 부스터 사용 횟수를 모두 썼어요! (${h}시간 ${m}분 후 초기화)`);
+    showNotif(`⛔ 오늘 이 부스터는 더 이상 사용할 수 없어요! (${h}시간 ${m}분 후 초기화)`);
     return;
   }
   const costs = {bean:30000, ads:20000, popup:15000, lucky:10000, staffB:25000};
   const cost = costs[key];
   if (G.money < cost) { showNotif('💰 돈이 부족해요!'); return; }
   G.money -= cost;
-  saveBoosterLog(getBoosterLog() + 1);
+  saveBoosterLog(key, getBoosterLog(key) + 1);
 
   if (key==='bean') {
     G.boosters.bean = {endDay: G.day+1};
