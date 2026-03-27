@@ -209,6 +209,41 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(200,149,108,0.4);border-radius:3px}
 
+/* ── 소득 미니 차트 ── */
+#income-sparkline{display:flex;align-items:flex-end;gap:2px;height:32px;padding:0 2px;}
+.spark-bar{width:8px;border-radius:2px 2px 0 0;background:linear-gradient(var(--grass),var(--sun));min-height:3px;transition:height 0.3s;}
+
+/* ── 핫키 툴팁 ── */
+.hotkey-badge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:rgba(59,31,15,0.12);border:1px solid rgba(59,31,15,0.2);border-radius:4px;font-size:9px;font-family:monospace;color:var(--soil);margin-left:3px;vertical-align:middle;}
+
+/* ── 재료 부족 경고 펄스 ── */
+@keyframes warn-pulse{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,0)}50%{box-shadow:0 0 0 4px rgba(231,76,60,0.4)}}
+.inv-chip.warn{animation:warn-pulse 1.5s infinite;}
+
+/* ── 손님 대기 시간 표시 개선 ── */
+.patience-text{font-size:9px;font-weight:700;text-align:right;margin-top:1px;}
+
+/* ── 달성 알림 배너 ── */
+.achieve-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--sun));color:var(--espresso);border-radius:12px;padding:10px 20px;font-size:13px;font-family:'Jua',sans-serif;box-shadow:0 4px 20px rgba(212,160,23,0.4);z-index:250;animation:achieveIn 0.4s cubic-bezier(.34,1.56,.64,1),achieveOut 0.3s ease 3.5s forwards;white-space:nowrap;}
+@keyframes achieveIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes achieveOut{to{opacity:0;transform:translateX(-50%) translateY(20px)}}
+
+/* ── 업그레이드 미리보기 ── */
+.upg-preview{font-size:10px;color:var(--grass);margin-top:3px;padding:3px 6px;background:rgba(90,138,60,0.1);border-radius:5px;border-left:2px solid var(--grass);}
+
+/* ── 날씨 이펙트 오버레이 ── */
+#weather-overlay{position:fixed;inset:0;pointer-events:none;z-index:10;overflow:hidden;}
+.snowflake,.raindrop{position:absolute;top:-20px;animation:fall linear infinite;pointer-events:none;font-size:12px;opacity:0.5;}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:0;}}
+
+/* ── 빠른 심기 버튼 강조 ── */
+.quick-plant-glow{animation:qpGlow 2s infinite;}
+@keyframes qpGlow{0%,100%{box-shadow:0 0 0 0 rgba(90,138,60,0)}50%{box-shadow:0 0 6px 2px rgba(90,138,60,0.4)}}
+
+/* ── 수익 플로팅 텍스트 ── */
+@keyframes floatUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-50px)}}
+.float-money{position:fixed;font-size:14px;font-weight:700;color:var(--gold);z-index:500;pointer-events:none;animation:floatUp 1.2s ease-out forwards;text-shadow:0 1px 3px rgba(0,0,0,0.2);}
+
 /* ── 튜토리얼 하이라이트 ── */
 .tut-overlay{position:fixed;inset:0;z-index:400;pointer-events:none;}
 .tut-highlight{position:fixed;border-radius:14px;box-shadow:0 0 0 4000px rgba(0,0,0,0.55);z-index:401;pointer-events:none;transition:all 0.4s cubic-bezier(.4,0,.2,1);}
@@ -411,7 +446,10 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
       <button class="btn btn-gold btn-sm" onclick="openSaveModal()">💾 저장</button>
       <button class="btn btn-secondary btn-sm" id="muteBtn" onclick="toggleMute()">🔊</button>
       <button class="btn btn-secondary btn-sm" onclick="togglePause()">⏸ <span id="pauseLabel">일시정지</span></button>
+      <button class="btn btn-sm" onclick="showHotkeyHelp()" style="background:rgba(107,66,38,0.12);color:var(--soil);font-size:11px;" title="단축키 도움말">⌨️</button>
     </div>
+    <!-- 수익 스파크라인 (데스크탑 전용) -->
+    <div id="income-sparkline" style="align-items:flex-end;gap:2px;height:32px;display:flex;margin-left:4px;" title="최근 수익 추이"></div>
   </header>
 
   <div id="game-main">
@@ -436,7 +474,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
         </div>
       </div>
       <div class="panel">
-        <div style="display:flex;align-items:center;justify-content:space-between;"><div class="panel-title">🌾 농장</div><div style="display:flex;gap:5px;"><button class="btn btn-sm autoHarvestToggleBtn" onclick="toggleAutoHarvest()" style="font-size:11px;padding:3px 8px;display:none;">🚜 자동수확 ON</button><button class="btn btn-green btn-sm" onclick="harvestAll()" id="harvestAllBtn" style="font-size:11px;padding:3px 8px;">모두수확</button></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;"><div class="panel-title">🌾 농장</div><div style="display:flex;gap:5px;"><button class="btn btn-sm autoHarvestToggleBtn" onclick="toggleAutoHarvest()" style="font-size:11px;padding:3px 8px;display:none;">🚜 자동수확 ON</button><button class="btn btn-sm" onclick="plantAllNeeded()" style="font-size:11px;padding:3px 8px;background:rgba(90,138,60,0.15);color:var(--grass);border:1px solid rgba(90,138,60,0.3);" title="부족한 재료 자동 심기">🌱전체재배</button><button class="btn btn-green btn-sm" onclick="harvestAll()" id="harvestAllBtn" style="font-size:11px;padding:3px 8px;">모두수확</button></div></div>
         <div style="display:flex;gap:6px;align-items:center;">
   <button class="btn btn-danger btn-sm" onclick="openEmergencyModal()" style="font-size:12px;white-space:nowrap;">🚚 긴급 주문 <span id="emergencyBadge" style="background:rgba(255,255,255,0.25);border-radius:6px;padding:1px 6px;font-size:10px;"></span></button>
   <div id="emergencyStatus" style="flex:1;font-size:10px;color:var(--latte);text-align:center;line-height:1.3;"></div>
@@ -493,7 +531,16 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
             </div>
             <!-- 메뉴판 (레시피 통합) -->
             <div id="section-menu">
-              <div class="panel-title" style="margin-bottom:7px;">📋 메뉴판</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+                <div class="panel-title" style="margin-bottom:0;">📋 메뉴판</div>
+                <div style="display:flex;gap:3px;flex-wrap:wrap;">
+                  <button onclick="setMenuFilter('all')" id="mf-all" style="font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid rgba(200,149,108,0.4);background:var(--espresso);color:var(--cream);cursor:pointer;font-family:'Gowun Dodum',sans-serif;">전체</button>
+                  <button onclick="setMenuFilter('season')" id="mf-season" style="font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid rgba(93,173,226,0.4);background:transparent;color:var(--soil);cursor:pointer;font-family:'Gowun Dodum',sans-serif;">🌸계절</button>
+                  <button onclick="setMenuFilter('combo')" id="mf-combo" style="font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid rgba(230,126,34,0.4);background:transparent;color:var(--soil);cursor:pointer;font-family:'Gowun Dodum',sans-serif;">🖤콤보</button>
+                  <button onclick="setMenuFilter('gift')" id="mf-gift" style="font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid rgba(155,89,182,0.4);background:transparent;color:var(--soil);cursor:pointer;font-family:'Gowun Dodum',sans-serif;">🎁선물</button>
+                  <button onclick="setMenuFilter('unlocked')" id="mf-unlocked" style="font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid rgba(90,138,60,0.4);background:transparent;color:var(--soil);cursor:pointer;font-family:'Gowun Dodum',sans-serif;">✓보유</button>
+                </div>
+              </div>
               <div class="menu-grid" id="menuGrid"></div>
             </div>
           </div>
@@ -1464,7 +1511,10 @@ function appendCustCard(c) {
     <div class="cust-info">
       <div class="cust-name">${c.name}${tag}${regBadge}</div>
       <div class="cust-order">${r1.emoji} ${r1.name}${orderBadge1}${r2?`<br><span style="color:var(--gold);">+ ${r2.emoji} ${r2.name}</span>`:''}</div>
-      <div class="cust-pat-bg"><div class="cust-pat-fill" style="width:${c.patience}%;background:var(--grass)"></div></div>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <div class="cust-pat-bg" style="flex:1;"><div class="cust-pat-fill" style="width:${c.patience}%;background:var(--grass)"></div></div>
+        <span class="patience-text" style="color:${c.patience>60?'var(--grass)':c.patience>30?'var(--gold)':'#e74c3c'}">${Math.round(c.patience)}%</span>
+      </div>
     </div>
     <button class="btn btn-green btn-sm" onclick="serveCustomer(${c.id},false,'')">서빙 ✓</button>`;
   list.appendChild(div);
@@ -1478,8 +1528,15 @@ function showCustEmpty() {
 
 function updatePatBars() {
   G.customers.forEach(c=>{
-    const bar=document.querySelector(`[data-cid="${c.id}"] .cust-pat-fill`);
+    const card=document.querySelector(`[data-cid="${c.id}"]`);
+    if (!card) return;
+    const bar=card.querySelector('.cust-pat-fill');
     if (bar) { bar.style.width=c.patience+'%'; bar.style.background=c.patience>60?'var(--grass)':c.patience>30?'var(--sun)':'#e74c3c'; }
+    const pctEl=card.querySelector('.patience-text');
+    if (pctEl) {
+      pctEl.textContent=Math.round(c.patience)+'%';
+      pctEl.style.color=c.patience>60?'var(--grass)':c.patience>30?'var(--gold)':'#e74c3c';
+    }
   });
 }
 
@@ -1647,6 +1704,7 @@ function serveCustomer(custId, isAuto, staffName) {
 
   const who=isAuto?`[${staffName}] `:'';
   addLog(`✅ ${who}${cust.name}님 서빙! +${price}원`);
+  recordDailyIncome(price);
   renderInventory(); renderReviews(); updateHeader(); updateSatisfaction(); updateProgressBar();
   checkAchievements();
   updateContestBanner();
@@ -2459,6 +2517,8 @@ function renderInventory() {
       ${canPlant?'<span style="font-size:8px;color:var(--grass);">+</span>':''}
     </div>`;
   }).join('');
+  // 재료 부족 경고 — DOM 조작만, 재렌더링 없음
+  requestAnimationFrame(checkIngredientWarnings);
 }
 
 function quickPlant(cropKey) {
@@ -2492,13 +2552,36 @@ function updateSatisfaction() {
   document.getElementById('satVal').textContent=sat.toFixed(1);
 }
 
+// ══════════════════════════════════════════
+//  메뉴 필터
+// ══════════════════════════════════════════
+let _menuFilter = 'all';
+function setMenuFilter(f) {
+  _menuFilter = f;
+  // 버튼 스타일 업데이트
+  ['all','season','combo','gift','unlocked'].forEach(k => {
+    const btn = document.getElementById('mf-'+k);
+    if (!btn) return;
+    const active = k === f;
+    btn.style.background = active ? 'var(--espresso)' : 'transparent';
+    btn.style.color = active ? 'var(--cream)' : 'var(--soil)';
+  });
+  renderMenu();
+}
+
 function renderMenu() {
   const seasonId=SEASONS[G.seasonIndex].id;
+  const f = _menuFilter || 'all';
   document.getElementById('menuGrid').innerHTML=Object.entries(RECIPES).map(([k,r])=>{
     const isSeasonal=r.season!==null;
     const wrongSeason=isSeasonal&&r.season!==seasonId;
     const learned=G.learnedRecipes.includes(k);
     const stageLocked=r.stageReq>G.stage||wrongSeason;
+    // 필터 적용
+    if (f==='season' && !isSeasonal) return '';
+    if (f==='combo' && !r.isCombo) return '';
+    if (f==='gift' && !r.isGift) return '';
+    if (f==='unlocked' && !learned) return '';
     const canLearn=!learned&&!stageLocked&&G.money>=r.learnCost;
     const disabled=G.disabledMenus.includes(k);
     const ingr=Object.entries(r.ingredients).map(([i,q])=>`${ITEMS[i]?.emoji||'?'}×${q}`).join(' ');
@@ -2582,14 +2665,29 @@ function renderStaff() {
 }
 
 function renderUpgrades() {
+  // 업그레이드 효과 미리보기 텍스트 생성
+  function getUpgPreview(k) {
+    if (!G.cafeOpen) return '';
+    const previews = {
+      fertilizer:  `현재 성장 시간 → 30% 단축 예시: 60초 → 42초`,
+      display:     `손님 만족도 현재 ${G.satisfaction.toFixed(1)} → 평균 +10% 향상`,
+      espresso_m:  `커피 레시피 원두 소비 1개 절감`,
+      loyalty:     `단골 손님 방문 더 자주! 손님 대기 -20%`,
+      premium_mat: `모든 메뉴 판매가 +15% 예시: ${Math.round(5000*1.15).toLocaleString()}원`,
+      auto_harvest:`익은 작물 자동 수확! 수동 클릭 불필요`,
+      pro_kitchen: `조리 메뉴 +10% 예시: 파스타 ${Math.round(13000*1.1).toLocaleString()}원`,
+      wine_cellar: `파인다이닝 +20% 예시: 스테이크 ${Math.round(28000*1.2).toLocaleString()}원`,
+    };
+    return previews[k] ? `<div class="upg-preview">📈 ${previews[k]}</div>` : '';
+  }
   document.getElementById('tab-upgrades').innerHTML=Object.entries(UPGRADES).map(([k,u])=>{
     const owned=G.upgrades.includes(k), stageLocked=u.stageReq>G.stage||!G.cafeOpen;
     return `<div class="upg-row">
       <span style="font-size:18px;">${u.emoji}</span>
-      <div class="upg-info"><div class="upg-name">${u.name}${owned?' ✓':''}</div><div class="upg-desc">${u.desc}</div></div>
+      <div class="upg-info"><div class="upg-name">${u.name}${owned?' ✓':''}</div><div class="upg-desc">${u.desc}</div>${!owned&&!stageLocked?getUpgPreview(k):''}</div>
       ${owned?`<span style="color:var(--grass);font-size:11px;">${k==='auto_harvest'?`<button class="btn btn-sm autoHarvestToggleBtn" onclick="toggleAutoHarvest()" style="font-size:11px;padding:3px 8px;">🚜 자동수확 ${G.autoHarvestEnabled!==false?'ON':'OFF'}</button>`:'완료'}</span>`:
         stageLocked?`<span style="color:var(--latte);font-size:11px;">🔒</span>`:
-        `<button class="btn btn-gold btn-sm" onclick="buyUpgrade('${k}')">💰${u.cost}</button>`}
+        `<button class="btn btn-gold btn-sm" onclick="buyUpgrade('${k}')">💰${u.cost.toLocaleString()}</button>`}
     </div>`;
   }).join('');
 }
@@ -2753,11 +2851,21 @@ function checkAchievements() {
   ACHIEVEMENTS.forEach(a=>{
     if (!G.achievements.includes(a.id) && a.check()) {
       G.achievements.push(a.id);
-      showNotif(`🏅 업적 달성! ${a.emoji} ${a.name}`);
+      showAchieveToast(a);
       addLog(`🏅 업적: ${a.name} — ${a.desc}`);
-      floatText(`🏅 ${a.name}!`, window.innerWidth/2-60, window.innerHeight/2, '#D4A017');
     }
   });
+}
+
+function showAchieveToast(a) {
+  // 기존 토스트 제거
+  document.querySelectorAll('.achieve-toast').forEach(el=>el.remove());
+  const el = document.createElement('div');
+  el.className = 'achieve-toast';
+  el.innerHTML = `${a.emoji} 업적 달성! <strong>${a.name}</strong><br><span style="font-size:11px;opacity:0.75;">${a.desc}</span>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 4000);
+  audio.init(); audio.playSfx('harvest');
 }
 
 function renderAchievements() {
@@ -3686,6 +3794,203 @@ function renderReviews() {
     </div>`).join('');
 }
 
+// ══════════════════════════════════════════
+//  🌱 전체 재배 (부족한 재료 자동 심기)
+// ══════════════════════════════════════════
+function plantAllNeeded() {
+  const emptyPlots = G.plots.map((p,i)=>({p,i})).filter(({p})=>p.stage==='empty');
+  if (emptyPlots.length === 0) { showNotif('🌱 빈 밭이 없어요!'); return; }
+
+  // 부족한 재료 계산
+  const needs = {};
+  const seasonCrops = SEASONS[G.seasonIndex].dayCrops;
+  G.learnedRecipes.forEach(rk => {
+    const r = RECIPES[rk];
+    if (!r || r.stageReq > G.stage) return;
+    Object.entries(r.ingredients).forEach(([item, qty]) => {
+      const have = G.inventory[item] || 0;
+      if (have < qty * 3) {
+        const cropKey = Object.keys(CROPS).find(ck => CROPS[ck].gives === item);
+        if (cropKey) needs[cropKey] = (needs[cropKey] || 0) + Math.max(0, qty * 3 - have);
+      }
+    });
+  });
+
+  // 계절 작물 우선 정렬
+  const sorted = Object.entries(needs).sort((a, b) => {
+    const aS = seasonCrops.includes(a[0]) ? 1 : 0;
+    const bS = seasonCrops.includes(b[0]) ? 1 : 0;
+    return bS - aS || b[1] - a[1];
+  });
+
+  if (sorted.length === 0) { showNotif('🌱 현재 재료는 충분해요!'); return; }
+
+  let planted = 0;
+  emptyPlots.forEach(({i}) => {
+    const [cropKey] = sorted[planted % sorted.length] || [];
+    if (!cropKey) return;
+    const crop = CROPS[cropKey];
+    if (!crop || G.money < crop.cost) return;
+    G.money -= crop.cost;
+    G.plots[i] = {crop: cropKey, plantedAt: Date.now(), growTime: crop.growTime, stage: 'growing'};
+    planted++;
+  });
+
+  if (planted > 0) {
+    audio.init(); audio.playSfx('plant');
+    showNotif(`🌱 빈 밭 ${planted}개에 자동 재배 시작!`);
+    addLog(`🌱 전체 재배: ${planted}개 밭 심기 완료`);
+    renderFarm(); renderInventory(); updateHeader();
+  } else {
+    showNotif('💰 돈이 부족해요!');
+  }
+}
+
+// ══════════════════════════════════════════
+//  🎹 키보드 단축키 시스템
+// ══════════════════════════════════════════
+document.addEventListener('keydown', function(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  // 스페이스바: 일시정지/재개
+  if (e.code === 'Space') { e.preventDefault(); togglePause(); return; }
+  // S: 저장
+  if (e.key === 's' || e.key === 'S') { if (!e.ctrlKey && !e.metaKey) { saveGame(); showNotif('💾 저장 완료!'); } return; }
+  // H: 전체 수확
+  if (e.key === 'h' || e.key === 'H') { harvestAll(); return; }
+  // A: 전체 서빙
+  if (e.key === 'a' || e.key === 'A') {
+    const btn = document.getElementById('serveAllBtn');
+    if (btn && !btn.disabled) btn.click();
+    return;
+  }
+  // 1/2/3: 모바일 탭 전환
+  if (e.key === '1') { if(document.getElementById('mbt-farm')) mobTab('farm'); }
+  if (e.key === '2') { if(document.getElementById('mbt-cafe')) mobTab('cafe'); }
+  if (e.key === '3') { if(document.getElementById('mbt-manage')) mobTab('manage'); }
+  // ?: 단축키 도움말
+  if (e.key === '?' || e.key === '/') { showHotkeyHelp(); return; }
+});
+
+function showHotkeyHelp() {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(59,31,15,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);';
+  el.innerHTML = `<div style="background:var(--cream);border-radius:18px;padding:24px 28px;max-width:320px;border:2px solid rgba(212,160,23,0.3);box-shadow:0 16px 50px rgba(59,31,15,0.3);">
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:17px;font-weight:800;color:var(--espresso);margin-bottom:14px;text-align:center;">⌨️ 키보드 단축키</div>
+    <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;">
+      ${[['Space','일시정지 / 재개'],['H','전체 수확'],['A','전체 서빙'],['S','게임 저장'],['1/2/3','탭 전환 (모바일)'],['?','이 도움말']].map(([k,v])=>`
+        <div style="display:flex;align-items:center;gap:10px;">
+          <kbd style="background:var(--espresso);color:var(--cream);padding:3px 9px;border-radius:6px;font-size:11px;font-family:monospace;min-width:28px;text-align:center;">${k}</kbd>
+          <span style="color:var(--soil);">${v}</span>
+        </div>`).join('')}
+    </div>
+    <div style="text-align:center;margin-top:16px;">
+      <button onclick="this.closest('div[style*=inset]').remove()" style="background:var(--espresso);color:var(--cream);border:none;border-radius:9px;padding:8px 20px;font-family:'Gowun Dodum',sans-serif;font-size:13px;cursor:pointer;">닫기</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+  el.addEventListener('click', function(ev){ if(ev.target===el) el.remove(); });
+}
+
+// ══════════════════════════════════════════
+//  💰 시간별 수익 스파크라인
+// ══════════════════════════════════════════
+const _incomeHistory = []; // 최근 10 게임일 수익
+let _incomeThisDay = 0;
+
+function recordDailyIncome(amount) {
+  _incomeThisDay += amount;
+}
+
+function pushDailyIncome() {
+  _incomeHistory.push(_incomeThisDay);
+  if (_incomeHistory.length > 10) _incomeHistory.shift();
+  _incomeThisDay = 0;
+  renderSparkline();
+}
+
+function renderSparkline() {
+  const el = document.getElementById('income-sparkline');
+  if (!el || _incomeHistory.length < 2) return;
+  const max = Math.max(..._incomeHistory, 1);
+  el.innerHTML = _incomeHistory.map((v,i) => {
+    const h = Math.max(4, Math.round((v / max) * 30));
+    const isToday = i === _incomeHistory.length - 1;
+    return `<div class="spark-bar" style="height:${h}px;${isToday?'background:linear-gradient(var(--gold),var(--sun));':''};" title="${v.toLocaleString()}원"></div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+//  ❄️ 날씨 시각 이펙트
+// ══════════════════════════════════════════
+let _weatherFx = null;
+
+function updateWeatherFx() {
+  const overlay = document.getElementById('weather-overlay');
+  if (!overlay) return;
+
+  const w = G.weather?.id;
+  // 현재 이펙트가 동일하면 스킵
+  if (_weatherFx === w) return;
+  _weatherFx = w;
+  overlay.innerHTML = '';
+
+  if (w === 'blizzard' || w === 'rain') {
+    const count = w === 'blizzard' ? 20 : 15;
+    const char = w === 'blizzard' ? '❄' : '💧';
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('div');
+      el.className = w === 'blizzard' ? 'snowflake' : 'raindrop';
+      el.textContent = char;
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.fontSize = (8 + Math.random() * 8) + 'px';
+      el.style.animationDuration = (2 + Math.random() * 4) + 's';
+      el.style.animationDelay = (-Math.random() * 4) + 's';
+      overlay.appendChild(el);
+    }
+  }
+}
+
+// ══════════════════════════════════════════
+//  📊 수익 기록 + 스파크라인 훅 연결
+// ══════════════════════════════════════════
+
+// 날씨 이펙트 — 3초마다 체크
+setInterval(() => { updateWeatherFx(); }, 3000);
+
+// 수익 스파크라인 — 매 게임일 변경 시 갱신 (2초마다 체크)
+let _lastDay = 0;
+setInterval(() => {
+  if (G.day !== _lastDay) {
+    if (_lastDay > 0) pushDailyIncome();
+    _lastDay = G.day;
+  }
+}, 2000);
+
+// ══════════════════════════════════════════
+//  🎯 재료 부족 경고 시스템
+// ══════════════════════════════════════════
+let _warnBusy = false;
+function checkIngredientWarnings() {
+  if (_warnBusy || !G.cafeOpen) return;
+  _warnBusy = true;
+  try {
+    const chips = document.querySelectorAll('#inventoryInline .inv-chip');
+    const items = Object.keys(ITEMS);
+    chips.forEach((chip, i) => {
+      const key = items[i];
+      if (!key) return;
+      const qty = G.inventory[key] || 0;
+      const needed = G.learnedRecipes.some(rk => {
+        const r = RECIPES[rk];
+        return r && r.stageReq <= G.stage && r.ingredients[key] && qty < 3;
+      });
+      chip.classList.toggle('warn', needed && qty < 3);
+    });
+  } finally {
+    _warnBusy = false;
+  }
+}
+
 // ── 모바일 탭 전환 ──
 function mobTab(t) {
   ['farm','cafe','manage'].forEach(function(n) {
@@ -3784,6 +4089,9 @@ setInterval(function() {
   updateServeAllBtn();
 }, 1000);
 </script>
+
+<!-- 날씨 이펙트 오버레이 -->
+<div id="weather-overlay"></div>
 
 <!-- 긴급 주문 모달 -->
 <div id="emergencyModal" class="modal-overlay">
