@@ -409,6 +409,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
       </div>
       <div class="panel">
         <div class="panel-title">🌾 농장</div>
+        <button class="btn btn-danger btn-sm" onclick="openEmergencyModal()" style="width:100%;font-size:12px;">🚚 긴급 주문 <span id="emergencyBadge" style="background:rgba(255,255,255,0.25);border-radius:6px;padding:1px 6px;font-size:10px;"></span></button>
         <div class="season-strip">
           <span id="seasonEmoji">🌸</span>
           <span id="seasonName">봄</span>
@@ -786,6 +787,7 @@ let G = {
   harvestedCrops:{},
   regulars:{},
   totalMoneyEarned:0,
+  emergencyOrdersToday:0,
 };
 
 // ══════════════════════════════════════════
@@ -884,6 +886,7 @@ function tick() {
   if (G.dayTimer>=90) {
     G.dayTimer=0; G.day++;
     G.seasonDay++;
+    G.emergencyOrdersToday = 0;
     // Pay daily staff wages
     let wages=0;
     Object.keys(G.staff).forEach(sid=>{
@@ -1478,7 +1481,22 @@ function serveCustomer(custId, isAuto, staffName) {
   G.customers.splice(idx,1);
   // 플로팅 텍스트 + 사운드 — 카드 제거 전에 위치 저장
   const custEl=document.querySelector(`[data-cid="${custId}"]`);
-  if (custEl) floatTextAtEl(`+💰${price.toLocaleString()}`, custEl, '#D4A017');
+  // 메인/관리탭 여부: 카페탭 손님카드가 보이는 상태인지 확인
+  const custRect = custEl ? custEl.getBoundingClientRect() : null;
+  const custVisible = custRect && custRect.width > 0 && custRect.top > 0 && custRect.top < window.innerHeight;
+  if (custVisible) {
+    // 카페탭: 카드 위치 기준
+    floatText(`+💰${price.toLocaleString()}`, custRect.left + custRect.width/2 - 20, custRect.top + custRect.height/2, '#D4A017');
+  } else {
+    // 메인/관리탭: mob-cust-list 패널 위치 기준
+    const listEl = document.getElementById('mob-cust-list') || document.getElementById('mob-cust-list-manage');
+    const listRect = listEl ? listEl.getBoundingClientRect() : null;
+    if (listRect && listRect.width > 0 && listRect.top > 0 && listRect.top < window.innerHeight) {
+      floatText(`+💰${price.toLocaleString()}`, listRect.left + listRect.width/2 - 20, listRect.top + 20, '#D4A017');
+    } else {
+      floatText(`+💰${price.toLocaleString()}`, window.innerWidth/2 - 40, window.innerHeight * 0.4, '#D4A017');
+    }
+  }
   audio.init(); audio.playSfx('serve'); audio.playSfx('money');
   custEl?.remove();
   if (G.customers.length===0) showCustEmpty();
@@ -2003,9 +2021,86 @@ function renderFarm() {
   }).join('');
 }
 
+
+// ── 긴급 주문 ──
+// 핵심 소모 재료 (단계별로 해금)
+const EMERGENCY_ITEMS = [
+  {key:'wheat',  stageReq:0},
+  {key:'sugar',  stageReq:0},
+  {key:'egg',    stageReq:1},
+  {key:'milk',   stageReq:1},
+  {key:'strawb', stageReq:1},
+  {key:'bean',   stageReq:3},
+  {key:'peach',  stageReq:3},
+  {key:'potato', stageReq:3},
+  {key:'tomato', stageReq:3},
+  {key:'mushroom',stageReq:5},
+  {key:'meat',   stageReq:5},
+  {key:'basil',  stageReq:5},
+  {key:'cream',  stageReq:7},
+  {key:'truffle',stageReq:7},
+];
+const EMERGENCY_MAX_PER_DAY = 3;
+const EMERGENCY_PRICE_MULT = 3;
+const EMERGENCY_QTY = 5;
+
+function openEmergencyModal() {
+  const available = EMERGENCY_ITEMS.filter(e => e.stageReq <= G.stage);
+  const remaining = EMERGENCY_MAX_PER_DAY - (G.emergencyOrdersToday || 0);
+  let html = `<div style="font-size:12px;color:var(--latte);margin-bottom:10px;">
+    오늘 남은 주문 횟수: <b style="color:${remaining>0?'var(--grass)':'#c0392b'}">${remaining}회</b> / ${EMERGENCY_MAX_PER_DAY}회
+    <div style="font-size:11px;margin-top:3px;opacity:0.7;">재료 ${EMERGENCY_QTY}개 · 시장가 ${EMERGENCY_PRICE_MULT}배</div>
+  </div>`;
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
+  available.forEach(e => {
+    const item = ITEMS[e.key];
+    const crop = Object.values(CROPS).find(c => c.gives === e.key);
+    const basePrice = crop ? Math.round(crop.cost / crop.yield) : 500;
+    const price = basePrice * EMERGENCY_PRICE_MULT * EMERGENCY_QTY;
+    const canAfford = G.money >= price;
+    html += `<button onclick="emergencyOrder('${e.key}')" 
+      style="background:${canAfford?'rgba(59,31,15,0.08)':'rgba(0,0,0,0.03)'};border:1.5px solid ${canAfford?'rgba(212,160,23,0.4)':'rgba(200,149,108,0.2)'};
+      border-radius:10px;padding:8px 6px;cursor:${canAfford&&remaining>0?'pointer':'not-allowed'};opacity:${canAfford&&remaining>0?1:0.45};
+      font-family:'Gowun Dodum',sans-serif;text-align:center;"
+      ${(!canAfford||remaining<=0)?'disabled':''}>
+      <div style="font-size:18px;">${item.emoji}</div>
+      <div style="font-size:11px;font-weight:700;color:var(--espresso);">${item.name} ×${EMERGENCY_QTY}</div>
+      <div style="font-size:10px;color:#c0392b;margin-top:2px;">💰 ${price.toLocaleString()}원</div>
+    </button>`;
+  });
+  html += '</div>';
+  document.getElementById('emergencyModalBody').innerHTML = html;
+  showModal('emergencyModal');
+}
+
+function emergencyOrder(itemKey) {
+  const remaining = EMERGENCY_MAX_PER_DAY - (G.emergencyOrdersToday || 0);
+  if (remaining <= 0) { showNotif('⛔ 오늘 긴급 주문 횟수를 모두 사용했어요!'); return; }
+  const item = ITEMS[itemKey];
+  const crop = Object.values(CROPS).find(c => c.gives === itemKey);
+  const basePrice = crop ? Math.round(crop.cost / crop.yield) : 500;
+  const price = basePrice * EMERGENCY_PRICE_MULT * EMERGENCY_QTY;
+  if (G.money < price) { showNotif('💰 돈이 부족해요!'); return; }
+  G.money -= price;
+  G.inventory[itemKey] = (G.inventory[itemKey] || 0) + EMERGENCY_QTY;
+  G.emergencyOrdersToday = (G.emergencyOrdersToday || 0) + 1;
+  addLog(`🚚 긴급주문: ${item.emoji} ${item.name} ×${EMERGENCY_QTY} (-${price.toLocaleString()}원)`);
+  showNotif(`🚚 ${item.emoji} ${item.name} ×${EMERGENCY_QTY} 도착!`);
+  closeModal('emergencyModal');
+  renderInventory();
+  renderUI();
+}
+
 function renderInventory() {
   const el = document.getElementById('inventoryInline');
   if (!el) return;
+  // 긴급주문 뱃지 업데이트
+  const badge = document.getElementById('emergencyBadge');
+  if (badge) {
+    const rem = EMERGENCY_MAX_PER_DAY - (G.emergencyOrdersToday||0);
+    badge.textContent = rem + '회 남음';
+    badge.style.opacity = rem > 0 ? '1' : '0.5';
+  }
   el.innerHTML = Object.entries(ITEMS).map(([k,item]) => {
     const qty = G.inventory[k]||0;
     // 이 재료를 주는 작물 찾기
@@ -2509,8 +2604,18 @@ setInterval(function() {
   updateMobEventBanners();
 }, 1000);
 </script>
-  <script>
-  document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
-</script>
+
+<!-- 긴급 주문 모달 -->
+<div id="emergencyModal" class="modal-overlay">
+  <div class="modal" style="max-width:340px;">
+    <div class="modal-title">🚚 긴급 주문</div>
+    <div class="modal-body">
+      <div id="emergencyModalBody"></div>
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <button class="btn btn-secondary" onclick="closeModal('emergencyModal')">닫기</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
