@@ -703,22 +703,22 @@ const RECIPES = {
 };
 
 const UPGRADES = {
-  fertilizer:  {name:'비료 시스템',     emoji:'🌿',desc:'작물 성장 30% 단축',          cost:10000,  stageReq:0},
-  display:      {name:'예쁜 진열대',    emoji:'🖼', desc:'손님 만족도 +10%',           cost:25000,  stageReq:1},
-  espresso_m:   {name:'에스프레소 머신',emoji:'⚙️',desc:'커피류 재료 필요량 1개 절감',  cost:15000,  stageReq:4},
-  loyalty:      {name:'단골 카드',      emoji:'🃏',desc:'단골 손님 방문 빈도 +20%',    cost:40000,  stageReq:3},
-  premium_mat:  {name:'프리미엄 식재료',emoji:'✨',desc:'메뉴 판매가 +15%',            cost:50000,  stageReq:5},
-  auto_harvest: {name:'자동 수확기',    emoji:'🚜',desc:'익은 작물 자동 수확',          cost:10000,  stageReq:2},
-  pro_kitchen:  {name:'전문 주방',      emoji:'🍳',desc:'조리 메뉴 판매가 +10%',       cost:80000,  stageReq:6},
-  wine_cellar:  {name:'와인 셀러',      emoji:'🍷',desc:'파인다이닝 메뉴 가격 +20%',   cost:150000, stageReq:8},
+  fertilizer:  {name:'비료 시스템',     emoji:'🌿',desc:'작물 성장 30% 단축',          cost:50000,  stageReq:0},
+  display:      {name:'예쁜 진열대',    emoji:'🖼', desc:'손님 만족도 +10%',           cost:150000,  stageReq:1},
+  espresso_m:   {name:'에스프레소 머신',emoji:'⚙️',desc:'커피류 재료 필요량 1개 절감',  cost:150000,  stageReq:4},
+  loyalty:      {name:'단골 카드',      emoji:'🃏',desc:'단골 손님 방문 빈도 +20%',    cost:100000,  stageReq:3},
+  premium_mat:  {name:'프리미엄 식재료',emoji:'✨',desc:'메뉴 판매가 +15%',            cost:70000,  stageReq:5},
+  auto_harvest: {name:'자동 수확기',    emoji:'🚜',desc:'익은 작물 자동 수확',          cost:100000,  stageReq:2},
+  pro_kitchen:  {name:'전문 주방',      emoji:'🍳',desc:'조리 메뉴 판매가 +10%',       cost:500000,  stageReq:6},
+  wine_cellar:  {name:'와인 셀러',      emoji:'🍷',desc:'파인다이닝 메뉴 가격 +20%',   cost:500000, stageReq:8},
 };
 
 const STAFF_DEFS = {
-  parttime: {name:'아르바이트생', emoji:'👧',role:'barista',  desc:'손님 1명 자동 서빙',             hireCost:5000,  dailyCost:3000,  stageReq:1},
-  barista:  {name:'바리스타',    emoji:'☕',role:'barista',   desc:'손님 자동 서빙 (빠름)',           hireCost:7000,  dailyCost:4500, stageReq:4},
-  manager:  {name:'재료 관리자', emoji:'🧑‍💼',role:'manager',  desc:'레시피 기반으로 부족한 재료 스마트 심기',    hireCost:7000,  dailyCost:5000, stageReq:3},
-  head_chef:{name:'수석 셰프',   emoji:'👨‍🍳',role:'barista',  desc:'메뉴 판매가 +10% & 자동 서빙',   hireCost:10000, dailyCost:4500, stageReq:6},
-  sommelier:{name:'소믈리에',    emoji:'🍷',role:'barista',   desc:'파인다이닝 손님 만족도 +30%',     hireCost:20000, dailyCost:5000, stageReq:8},
+  parttime: {name:'아르바이트생', emoji:'👧',role:'barista',  desc:'손님 1명 자동 서빙',             hireCost:50000,  dailyCost:20000,  stageReq:1},
+  barista:  {name:'바리스타',    emoji:'☕',role:'barista',   desc:'손님 자동 서빙 (빠름)',           hireCost:55000,  dailyCost:30000, stageReq:4},
+  manager:  {name:'재료 관리자', emoji:'🧑‍💼',role:'manager',  desc:'레시피 기반으로 부족한 재료 스마트 심기',    hireCost:70000,  dailyCost:45000, stageReq:3},
+  head_chef:{name:'수석 셰프',   emoji:'👨‍🍳',role:'barista',  desc:'메뉴 판매가 +10% & 자동 서빙',   hireCost:100000, dailyCost:70000, stageReq:6},
+  sommelier:{name:'소믈리에',    emoji:'🍷',role:'barista',   desc:'파인다이닝 손님 만족도 +30%',     hireCost:150000, dailyCost:100000, stageReq:8},
 };
 
 const STAGE_DATA = [
@@ -730,8 +730,8 @@ const STAGE_DATA = [
   {name:'🍰 디저트카페', building:'🎂', desc:'달콤한 디저트로 감성 카페를 꾸려보세요',     repReq:6000},
   {name:'🍝 비스트로',   building:'🍝', desc:'파스타와 수프로 유럽식 감성을 더하세요',     repReq:11000},
   {name:'🍽️ 레스토랑',  building:'🍽️',desc:'스테이크와 코스 요리로 격조를 높이세요',     repReq:20000},
-  {name:'🥂 파인다이닝', building:'🥂', desc:'트러플과 프라임 스테이크, 최고급 요리',      repReq:30000},
-  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드로 성장했어요!',      repReq:50000},
+  {name:'🥂 파인다이닝', building:'🥂', desc:'트러플과 프라임 스테이크, 최고급 요리',      repReq:35000},
+  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드로 성장했어요!',      repReq:60000},
 ];
 
 // SPECIAL GUEST types
@@ -2118,7 +2118,7 @@ function openEmergencyModal() {
   const remaining = getEmergencyRemaining();
   const { h, m } = getEmergencyResetTime();
   let nextRefill = remaining < EMERGENCY_MAX
-    ? `<div style="font-size:10px;color:var(--latte);margin-top:3px;">🕐 자정까지 ${h}시간 ${m}분 남음</div>` : '';
+    ? `<div style="font-size:10px;color:var(--latte);margin-top:3px;">🕐 ${h}시간 ${m}분 남음</div>` : '';
   let html = `<div style="font-size:12px;color:var(--latte);margin-bottom:10px;">
     오늘 남은 횟수: <b style="color:${remaining>0?'var(--grass)':'#c0392b'}">${remaining}회</b> / ${EMERGENCY_MAX}회
     ${nextRefill}
@@ -2178,7 +2178,7 @@ function renderInventory() {
     if (statusEl) {
       if (rem < EMERGENCY_MAX) {
         const { h, m } = getEmergencyResetTime();
-        statusEl.textContent = `🕐 자정까지 ${h}시간 ${m}분 후 초기화`;
+        statusEl.textContent = `🕐 ${h}시간 ${m}분 후 초기화`;
       } else {
         statusEl.textContent = '';
       }
