@@ -235,13 +235,6 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 /* 음식 팡 연출 */
 @keyframes foodPop{0%{opacity:1;transform:scale(0.5) translateY(0);}50%{opacity:1;transform:scale(1.4) translateY(-20px);}100%{opacity:0;transform:scale(1) translateY(-50px);}}
 
-/* 대회 배너 pulse */
-.contest-banner { animation: contestPulse 2s ease-in-out infinite; }
-@keyframes contestPulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(192,57,43,0.3); }
-  50%     { box-shadow: 0 0 0 6px rgba(192,57,43,0); }
-}
-
 /* ───────────────────────────────
    모바일 반응형 (768px 이하)
 ─────────────────────────────── */
@@ -820,9 +813,6 @@ let G = {
   regulars:{},
   totalMoneyEarned:0,
   autoHarvestEnabled:true,
-  contest: null,
-  contestHistory: [],
-  triggeredContests: [],
 };
 
 // ══════════════════════════════════════════
@@ -834,23 +824,15 @@ let tickTimer=null, spawnTimer=null, staffTimer=null;
 //  BOOT
 // ══════════════════════════════════════════
 window.onload = () => {
-  const raw = localStorage.getItem('farmcafe_v3');
-  if (raw) {
-    let valid = false;
-    try { const d = JSON.parse(raw); if (d && d.day) valid = true; } catch(e) {}
-    if (valid) {
-      const el=document.createElement('div'); el.className='modal-overlay show';
-      el.innerHTML=`<div class="modal"><div class="modal-title">🌱 저장된 게임 발견!</div>
-        <div class="modal-body" style="text-align:center;color:var(--latte);font-size:13px;">이전 게임을 이어할까요?</div>
-        <div class="modal-btns" style="flex-direction:column;gap:8px;">
-          <button class="btn btn-primary" onclick="loadGame();this.closest('.modal-overlay').remove()">💾 이어하기</button>
-          <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove();showModal('nameModal')">🆕 새 게임</button>
-        </div></div>`;
-      document.body.appendChild(el);
-    } else {
-      localStorage.removeItem('farmcafe_v3');
-      showModal('nameModal');
-    }
+  if (localStorage.getItem('farmcafe_v3')) {
+    const el=document.createElement('div'); el.className='modal-overlay show';
+    el.innerHTML=`<div class="modal"><div class="modal-title">🌱 저장된 게임 발견!</div>
+      <div class="modal-body" style="text-align:center;color:var(--latte);font-size:13px;">이전 게임을 이어할까요?</div>
+      <div class="modal-btns" style="flex-direction:column;gap:8px;">
+        <button class="btn btn-primary" onclick="loadGame();this.closest('.modal-overlay').remove()">💾 이어하기</button>
+        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove();showModal('nameModal')">🆕 새 게임</button>
+      </div></div>`;
+    document.body.appendChild(el);
   } else showModal('nameModal');
 };
 
@@ -881,8 +863,6 @@ function boot() {
   if (!G.regulars) G.regulars={};
   if (!G.totalMoneyEarned) G.totalMoneyEarned=0;
   if (!G.menuSoldCount) G.menuSoldCount={};
-  if (!G.contestHistory) G.contestHistory=[];
-  if (!G.triggeredContests) G.triggeredContests=[];
   // 날씨 계절 검증 — 현재 계절에 맞지 않으면 초기화
   if (G.weather) {
     const seasonId = SEASONS[G.seasonIndex].id;
@@ -908,34 +888,6 @@ function boot() {
   if (!tickTimer) startTimers();
   addLog(`🌱 ${G.brandName}의 이야기가 시작됩니다!`);
   renderAutoHarvestBtn();
-
-// 1. [핵심] 불러온 데이터가 Set 객체인지 검증하고, 아니면 다시 생성합니다.
-  if (!(G.triggeredEvents instanceof Set)) {
-    G.triggeredEvents = new Set(Array.isArray(G.triggeredEvents) ? G.triggeredEvents : []);
-  }
-
-  // 2. [안전장치] 기타 누락될 수 있는 필수 객체들을 초기화합니다.
-  if (!G.staff) G.staff = {};
-  if (!G.boosters) G.boosters = {};
-  if (!G.staffLevels) G.staffLevels = {};
-  if (!G.inventory) G.inventory = {};
-
-  // 3. UI 업데이트 (기존 로직 유지)
-  document.getElementById('brandNameDisplay').textContent = G.brandName;
-  
-  if (G.cafeOpen) {
-    document.getElementById('cafe-locked').style.display = 'none';
-    document.getElementById('cafe-open').style.cssText = 'display:flex;flex-direction:column';
-  }
-  
-  applySeasonBg();
-  renderAll(); // 전체 화면 다시 그리기
-  
-  // 4. 타이머 중복 실행 방지 및 시작
-  if (tickTimer) clearInterval(tickTimer); 
-  startTimers();
-  
-  addLog(`🌱 ${G.brandName} 카페 경영을 다시 시작합니다!`);
 }
 
 function startTimers() {
@@ -1049,8 +1001,6 @@ function tick() {
     checkQuests();
     checkTrend();
     checkDailyQuest();
-    checkContestTrigger();
-    tickContest();
   }
   updateHeader();
   updateTimeDisplay();
@@ -1138,7 +1088,6 @@ function checkStageUp() {
     showStageAnnounce(G.stage);
     addLog(`🎊 ${STAGE_DATA[G.stage].name} 달성!`);
     screenShake(); audio.init(); audio.playSfx('stageup');
-    checkForcedContest(G.stage);
     if (G.stage===9) {
       setTimeout(()=>{
         showStageAnnounce(null,
@@ -1444,12 +1393,7 @@ function spawnCustomer() {
 
   let custType='normal';
   const roll=Math.random(); let cum=0;
-  // SNS 홍보 대회 효과: 블로거 출현율 3배
-  const snsBoost = G._contestSNS ? 3 : 1;
-  for (const [tid,td] of Object.entries(SPECIAL_TYPES)) {
-    const chance = tid==='blogger' ? td.spawnChance*snsBoost : td.spawnChance;
-    cum+=chance; if (roll<cum){custType=tid;break;}
-  }
+  for (const [tid,td] of Object.entries(SPECIAL_TYPES)) { cum+=td.spawnChance; if (roll<cum){custType=tid;break;} }
 
   const typeData=SPECIAL_TYPES[custType];
   const weatherPatBonus=G.weather?.id==='rain'?20:0;
@@ -1610,40 +1554,32 @@ function serveCustomer(custId, isAuto, staffName) {
 
   G.customers.splice(idx,1);
   // 플로팅 텍스트 + 사운드 — 카드 제거 전에 위치 저장
-  const custEl = document.querySelector(`[data-cid="${custId}"]`);
+  const custEl=document.querySelector(`[data-cid="${custId}"]`);
+  // 메인/관리탭 여부: 카페탭 손님카드가 보이는 상태인지 확인
   const custRect = custEl ? custEl.getBoundingClientRect() : null;
-  const custVisible = custRect && custRect.width > 0 && custRect.top >= 0 && custRect.bottom <= window.innerHeight;
-
-  // 표시 기준 좌표 결정
-  // custEl이 있고 화면 안에 보이면 (카페탭 카드 OR 모바일 패널 카드) 그 위치 사용
-  let floatX, floatY;
+  const custVisible = custRect && custRect.width > 0 && custRect.top > 0 && custRect.top < window.innerHeight;
   if (custVisible) {
-    floatX = custRect.left + custRect.width / 2 - 20;
-    floatY = custRect.top  + custRect.height / 2;
+    // 카페탭: 카드 위치 기준
+    floatText(`+💰${price.toLocaleString()}`, custRect.left + custRect.width/2 - 20, custRect.top + custRect.height/2, '#D4A017');
   } else {
-    // 화면 밖이면 mob-cust-list 패널 위치로 폴백
+    // 메인/관리탭: mob-cust-list 패널 위치 기준
     const listEl = document.getElementById('mob-cust-list') || document.getElementById('mob-cust-list-manage');
     const listRect = listEl ? listEl.getBoundingClientRect() : null;
-    if (listRect && listRect.width > 0 && listRect.top >= 0 && listRect.bottom <= window.innerHeight) {
-      floatX = listRect.left + listRect.width / 2 - 20;
-      floatY = listRect.top  + 20;
+    if (listRect && listRect.width > 0 && listRect.top > 0 && listRect.top < window.innerHeight) {
+      floatText(`+💰${price.toLocaleString()}`, listRect.left + listRect.width/2 - 20, listRect.top + 20, '#D4A017');
     } else {
-      floatX = window.innerWidth  / 2 - 40;
-      floatY = window.innerHeight * 0.4;
+      floatText(`+💰${price.toLocaleString()}`, window.innerWidth/2 - 40, window.innerHeight * 0.4, '#D4A017');
     }
   }
-
-  // 가격 텍스트 (모든 탭 동일)
-  floatText(`+💰${price.toLocaleString()}`, floatX, floatY, '#D4A017');
-
   audio.init(); audio.playSfx('serve'); audio.playSfx('money');
-
-  // 음식 이모지 팡! 연출 (모든 탭 동일)
-  const foodEl = document.createElement('div');
-  foodEl.style.cssText = `position:fixed;left:${floatX}px;top:${floatY - 20}px;font-size:28px;z-index:500;pointer-events:none;animation:foodPop 0.7s cubic-bezier(.34,1.56,.64,1) forwards;`;
-  foodEl.textContent = recipe.emoji;
-  document.body.appendChild(foodEl);
-  setTimeout(()=>foodEl.remove(), 750);
+  // 서빙 성공 음식 이모지 팡! 연출
+  if (custRect && custRect.width > 0) {
+    const foodEl = document.createElement('div');
+    foodEl.style.cssText = `position:fixed;left:${custRect.left+custRect.width/2-20}px;top:${custRect.top+10}px;font-size:28px;z-index:500;pointer-events:none;animation:foodPop 0.7s cubic-bezier(.34,1.56,.64,1) forwards;`;
+    foodEl.textContent = recipe.emoji;
+    document.body.appendChild(foodEl);
+    setTimeout(()=>foodEl.remove(), 750);
+  }
   custEl?.remove();
   if (G.customers.length===0) showCustEmpty();
   document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
@@ -1668,16 +1604,10 @@ function serveCustomer(custId, isAuto, staffName) {
       addLog(`🎯 퀘스트 달성: ${q.desc}`);
     }
   });
-  // 대회 심사위원 서빙 처리
-  if (cust.isContestJudge) onContestJudgeServed(cust);
-  // 대회 수익 기반 누적
-  onContestRevenueServed(price, cust);
-
   const who=isAuto?`[${staffName}] `:'';
   addLog(`✅ ${who}${cust.name}님 서빙! +${price}원`);
   renderInventory(); renderReviews(); updateHeader(); updateSatisfaction(); updateProgressBar();
   checkAchievements();
-  updateContestBanner();
 }
 
 // ══════════════════════════════════════════
@@ -1819,7 +1749,7 @@ function checkWeatherEvent() {
 function updateAllBanners() {
   const area = document.getElementById('storyBannerArea');
   if (area) {
-    area.querySelectorAll('.weather-banner,.trend-banner,.rival-banner,.contest-banner').forEach(el=>el.remove());
+    area.querySelectorAll('.weather-banner,.trend-banner,.rival-banner').forEach(el=>el.remove());
     if (G.rival?.active) {
       const d=document.createElement('div'); d.className='rival-banner';
       d.style.cssText='background:linear-gradient(135deg,#2c3e50,#4a4a4a);color:white;border-radius:10px;padding:7px 12px;font-size:12px;margin-bottom:4px;';
@@ -1841,8 +1771,9 @@ function updateAllBanners() {
     }
   }
   updateMobEventBanners();
-  if (typeof updateContestBanner === 'function') updateContestBanner();
-} {
+}
+
+function updateMobEventBanners() {
   ['mob-event-banner-farm','mob-event-banner-manage'].forEach(id=>{
     const el=document.getElementById(id); if (!el) return;
     el.innerHTML='';
@@ -1978,77 +1909,24 @@ const seasonHints = {
 //  SAVE / LOAD
 // ══════════════════════════════════════════
 function saveToStorage() {
-  // contest 내부의 타이머 참조 등 직렬화 불가 필드 제거
-  let safeContest = null;
-  if (G.contest) {
-    const { _judgeSpawnTimer, _judgeQueue, ...rest } = G.contest;
-    safeContest = rest;
-  }
-  // quests: getter 함수를 일반 문자열로 고정
-  const safeQuests = (G.quests||[]).map(q => ({
-    type: q.type,
-    target: q.target||null,
-    goal: q.goal,
-    current: q.current,
-    done: q.done,
-    desc: q.desc,          // getter 결과를 string으로 저장
-    reward: q.reward,
-    rewardDesc: q.rewardDesc,
-  }));
-  const data = {
-    ...G,
-    triggeredEvents: [...G.triggeredEvents],
-    contest: safeContest,
-    quests: safeQuests,
-    savedAt: new Date().toLocaleString(),
-  };
-  try {
-    localStorage.setItem('farmcafe_v3', JSON.stringify(data));
-    updateSaveStatus(true);
-  } catch(e) {
-    // 저장 실패 시 contest 제외하고 재시도
-    data.contest = null;
-    try { localStorage.setItem('farmcafe_v3', JSON.stringify(data)); updateSaveStatus(true); } catch(e2) {}
-  }
+  const data={...G, triggeredEvents:[...G.triggeredEvents], savedAt:new Date().toLocaleString()};
+  localStorage.setItem('farmcafe_v3',JSON.stringify(data));
+  updateSaveStatus(true);
 }
 function saveGame() { saveToStorage(); showNotif('💾 저장 완료!'); closeModal('saveModal'); }
 
 function loadGame() {
-  const raw = localStorage.getItem('farmcafe_v3');
-  if (!raw) {
-    showNotif('❌ 저장된 데이터가 없습니다.');
-    return;
+  const raw=localStorage.getItem('farmcafe_v3'); if (!raw) return;
+  const d=JSON.parse(raw); Object.assign(G,d);
+  G.triggeredEvents=new Set(d.triggeredEvents||[]);
+  if (!G.staff) G.staff={};
+  closeModal('saveModal'); boot();
+  addLog(`💾 불러오기 완료! (${d.savedAt})`);
+  // 저장 시간 복원
+  if (d.savedAt) {
+    G._lastSavedTime = Date.now();
+    updateSaveStatus(true);
   }
-  
-  let d;
-  try {
-    d = JSON.parse(raw);
-  } catch (e) {
-    showNotif('❌ 데이터 형식이 잘못되었습니다.');
-    return;
-  }
-
-  // 1. 기존 G 객체에 데이터 복사
-  Object.assign(G, d);
-
-  // 2. [가장 중요] triggeredEvents를 반드시 Set 객체로 재생성
-  // 저장될 때 배열로 바뀌어 들어오기 때문에, 여기서 다시 Set으로 만들어야 .has() 함수가 작동합니다.
-  G.triggeredEvents = new Set(Array.isArray(d.triggeredEvents) ? d.triggeredEvents : []);
-
-  // 3. 기타 누락될 수 있는 객체들 안전하게 초기화
-  if (!G.staff) G.staff = {};
-  if (!G.inventory) G.inventory = {};
-  if (!G.boosters) G.boosters = {};
-  if (!G.staffLevels) G.staffLevels = {};
-
-  // 4. 모달 닫고 게임 엔진 재시작
-  closeModal('saveModal');
-  
-  // 5. boot() 함수를 호출하여 화면 갱신
-  boot();
-  
-  addLog(`💾 불러오기 완료! (Day ${G.day})`);
-  showNotif('✅ 성공적으로 불러왔습니다!');
 }
 function exportSave() {
   const d={...G,triggeredEvents:[...G.triggeredEvents],savedAt:new Date().toLocaleString()};
@@ -2059,17 +1937,7 @@ function importSave() {
   const inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
   inp.onchange=e=>{
     const r=new FileReader(); r.onload=ev=>{
-      try {
-        const d=JSON.parse(ev.target.result);
-        Object.assign(G,d);
-        G.triggeredEvents=new Set(Array.isArray(d.triggeredEvents)?d.triggeredEvents:[]);
-        G.triggeredContests=Array.isArray(d.triggeredContests)?d.triggeredContests:[];
-        G.contestHistory=Array.isArray(d.contestHistory)?d.contestHistory:[];
-        G.quests=Array.isArray(d.quests)?d.quests:[];
-        if(!G.staff)G.staff={};
-        if(G.contest){G.contest._judgeSpawnTimer=null;G.contest._judgeQueue=G.contest._judgeQueue||[];}
-        boot(); showNotif('✅ 완료!'); closeModal('saveModal');
-      }
+      try { const d=JSON.parse(ev.target.result); Object.assign(G,d); G.triggeredEvents=new Set(d.triggeredEvents||[]); if(!G.staff)G.staff={}; boot(); showNotif('✅ 완료!'); closeModal('saveModal'); }
       catch { showNotif('❌ 파일 오류'); }
     }; r.readAsText(e.target.files[0]);
   }; inp.click();
@@ -2655,8 +2523,8 @@ function activateBooster(key) {
     showNotif(`⛔ 오늘 이 부스터는 더 이상 사용할 수 없어요! (${h}시간 ${m}분 후 초기화)`);
     return;
   }
-  const costs = {bean:30000, ads:20000, popup:15000, lucky:2000, staffB:25000};
-  const cost = costs[key] ?? 0;
+  const costs = {bean:30000, ads:20000, popup:15000, lucky:10000, staffB:25000};
+  const cost = costs[key];
   if (G.money < cost) { showNotif('💰 돈이 부족해요!'); return; }
   G.money -= cost;
   saveBoosterLog(key, getBoosterLog(key) + 1);
@@ -2726,9 +2594,6 @@ const ACHIEVEMENTS = [
   {id:'regular_5',     emoji:'💝', name:'단골 부자',          desc:'단골 손님 5명',                     check:()=>Object.values(G.regulars||{}).filter(r=>r.visits>=5).length>=5},
   {id:'vip_10',        emoji:'🤩', name:'VIP 단골',           desc:'VIP 손님 10명 서빙',                check:()=>(G.vipServed||0)>=10},
   {id:'stage_up_all',  emoji:'🚀', name:'승승장구',           desc:'3번 연속 스테이지 업',              check:()=>(G.consecutiveStageUp||0)>=3},
-  {id:'contest_first', emoji:'🏆', name:'첫 대회 참가!',       desc:'첫 번째 대회에 참가했어요',          check:()=>(G.contestHistory||[]).length>=1},
-  {id:'contest_gold',  emoji:'🥇', name:'대회 우승!',           desc:'대회에서 1위를 차지했어요',           check:()=>(G.contestHistory||[]).some(h=>h.rank.includes('1위')||h.rank.includes('대상')||h.rank.includes('MVP')||h.rank.includes('미슐랭'))},
-  {id:'contest_all',   emoji:'🎖️', name:'대회 마스터',          desc:'모든 종류의 대회에 참가했어요',       check:()=>['local_champ','barista_cup','dessert_fest','gourmet_event','xmas_market'].every(id=>(G.triggeredContests||[]).includes(id))},
 ];
 
 function checkAchievements() {
@@ -2875,632 +2740,12 @@ function renderStats() {
         </div>`
       ).join('')}
     </div>` : ''}
-    ${(G.contestHistory||[]).length ? `
-    <div style="font-size:11px;font-weight:700;color:var(--espresso);margin:10px 0 5px;padding-bottom:4px;border-bottom:2px dashed rgba(200,149,108,0.28);">🏆 대회 전적</div>
-    <div style="display:flex;flex-direction:column;gap:4px;">
-      ${G.contestHistory.map(h=>`
-        <div style="display:flex;align-items:center;gap:7px;background:rgba(212,160,23,0.07);border-radius:8px;padding:6px 9px;font-size:12px;">
-          <span style="font-size:16px;">${h.emoji}</span>
-          <span style="flex:1;font-weight:600;">${h.name}</span>
-          <span style="color:var(--gold);font-weight:700;">${h.rank}</span>
-          <span style="font-size:10px;color:var(--latte);">Day${h.day}</span>
-        </div>`).join('')}
-    </div>` : ''}
   `;
 }
 
 // ══════════════════════════════════════════
-//  🏆 대회 시스템
+//  저장 시간 표시
 // ══════════════════════════════════════════
-
-// ── 대회 정의 ──
-const CONTESTS = [
-  // ① 지역 카페 챔피언십 — 5단계 달성 직후 (필수)
-  {
-    id: 'local_champ',
-    emoji: '🏆', name: '지역 카페 챔피언십',
-    triggerStage: 5, forceTrigger: true,
-    announceDays: 2,
-    desc: '지역 최고 카페를 가리는 챔피언십! 심사 기준은 메뉴 다양성, 손님 만족도, 서비스예요.',
-    prepChoices: [
-      { label: '🍽️ 시그니처 메뉴 집중 연습', desc: '본선 메뉴 점수 +20%', key: 'menu_drill', cost: 0 },
-      { label: '🖼️ 카페 인테리어 투자', desc: '인테리어 점수 +30%', key: 'interior', cost: 30000 },
-      { label: '📣 단골 손님 홍보 동원', desc: '심사위원 호감도 +15%', key: 'promo', cost: 0 },
-    ],
-    dayRule: '심사위원 3명이 특별 손님으로 방문해요. 모두 서빙하면 보너스!',
-    judgeCount: 3,
-    judgePatience: 40,   // 인내심 빠르게 감소
-    judgeOrders: null,   // null = 현재 배운 메뉴 중 랜덤
-    evaluate(ctx) {
-      const { servedJudges, prepKeys } = ctx;
-      const bonusMult = 1
-        + (prepKeys.includes('menu_drill') ? 0.20 : 0)
-        + (prepKeys.includes('interior')   ? 0.30 : 0)
-        + (prepKeys.includes('promo')      ? 0.15 : 0);
-      if (servedJudges >= 3) {
-        return { rank:'🥇 1위', rep: Math.round(500*bonusMult), money: Math.round(50000*bonusMult), badge:'🏆', msg:'완벽한 서비스로 챔피언십 우승!', title:'카페 챔피언' };
-      } else if (servedJudges === 2) {
-        return { rank:'🥈 2위', rep: Math.round(250*bonusMult), money: 20000, msg:'아쉽게 2위! 다음엔 꼭 1위를!' };
-      } else if (servedJudges === 1) {
-        return { rank:'🥉 3위', rep: 80, money: 0, msg:'3위 입상! 분발해요~' };
-      } else {
-        return { rank:'😞 탈락', rep: -30, money: 0, msg:'다음 기회에 다시 도전해봐요...' };
-      }
-    },
-  },
-
-  // ② 바리스타 경연 대회 — 커피 레시피 4종 이상
-  {
-    id: 'barista_cup',
-    emoji: '☕', name: '바리스타 경연 대회',
-    triggerStage: 4, forceTrigger: false,
-    requireRecipes: ['latte','americano','strawb_latte','peach_tea'],
-    announceDays: 2,
-    desc: '전국 바리스타 경연! 라떼·아메리카노·딸기라떼를 순서대로 완벽하게 서빙하면 퍼펙트 루틴 달성!',
-    prepChoices: [
-      { label: '☕ 특별 원두 구매', desc: '커피 품질 점수 대폭 상승', key: 'bean_buy', cost: 20000 },
-      { label: '🎓 직원 특훈 (직원 필요)', desc: '서빙 속도 2배로 당일 가동', key: 'staff_train', cost: 0, requireStaff: true },
-      { label: '📝 레시피 연구 (무료)', desc: '커피 신메뉴 1개 무료 습득', key: 'recipe_study', cost: 0 },
-    ],
-    dayRule: '심사위원이 아메리카노 → 라떼 → 딸기라떼 순서로 주문해요. 순서대로 3연속 서빙하면 퍼펙트!',
-    judgeCount: 3,
-    judgePatience: 35,
-    judgeOrders: ['americano','latte','strawb_latte'],
-    evaluate(ctx) {
-      const { servedJudges, prepKeys, perfectCombo } = ctx;
-      const hasBeans = prepKeys.includes('bean_buy');
-      if (perfectCombo && hasBeans) {
-        return { rank:'🏅 대상', rep: 800, money: 80000, badge:'☕', msg:'퍼펙트 루틴 + 최상급 원두! 역대급 점수!', title:'바리스타 챔피언' };
-      } else if (perfectCombo) {
-        return { rank:'🥇 금상', rep: 400, money: 30000, badge:'🥇', msg:'퍼펙트 루틴 달성! 뛰어난 기량이에요!' };
-      } else if (servedJudges >= 2) {
-        return { rank:'🥈 은상', rep: 150, money: 0, msg:'아쉽게 은상. 순서만 맞췄다면...' };
-      } else {
-        return { rank:'🎖️ 참가상', rep: 30, money: 0, msg:'참가에 의의를! 다음엔 순서를 기억해요.' };
-      }
-    },
-  },
-
-  // ③ 디저트 페스티벌 — 디저트 레시피 2종 이상
-  {
-    id: 'dessert_fest',
-    emoji: '🎪', name: '디저트 페스티벌',
-    triggerStage: 5, forceTrigger: false,
-    requireRecipes: ['strawb_cake','macaron'],
-    announceDays: 2,
-    desc: '시청 주최 디저트 페스티벌 부스 참가! 당일 디저트 메뉴 수익이 1.5배, 손님이 3배로 몰려와요!',
-    prepChoices: [
-      { label: '🍓 딸기 대량 재배', desc: '씨앗 2개 자동 심기 (재료 확보)', key: 'grow_strawb', cost: 0 },
-      { label: '🎁 예쁜 포장 투자', desc: '손님 만족도 +0.5 (당일)', key: 'packaging', cost: 10000 },
-      { label: '📱 SNS 홍보', desc: '블로거 손님 출현율 3배 (무료)', key: 'sns', cost: 0 },
-    ],
-    dayRule: '하루 동안 손님 3배! 디저트(케이크·마카롱·와플·크레페) 서빙 수익 1.5배. 당일 총 수익으로 순위가 결정돼요.',
-    judgeCount: 0,   // 개인 심사위원 없음 — 수익 기반
-    judgePatience: 60,
-    judgeOrders: null,
-    evaluate(ctx) {
-      const { festRevenue } = ctx;
-      if (festRevenue >= 200000) {
-        return { rank:'🥇 인기 부스상', rep: 600, money: 0, badge:'🎪', msg:`페스티벌 최고 인기 부스! 수익 ${festRevenue.toLocaleString()}원!`, title:'디저트 페스티벌 MVP' };
-      } else if (festRevenue >= 100000) {
-        return { rank:'🥈 우수상', rep: 300, money: 0, msg:`훌륭해요! 수익 ${festRevenue.toLocaleString()}원 달성!` };
-      } else if (festRevenue >= 50000) {
-        return { rank:'🥉 참가상', rep: 100, money: 0, msg:`참가 완료! 수익 ${festRevenue.toLocaleString()}원.` };
-      } else {
-        return { rank:'😅 아쉬운 결과', rep: 0, money: -5000, msg:`부스 철수 비용 5,000원... 다음엔 더 잘할 수 있어요!` };
-      }
-    },
-  },
-
-  // ④ 미식가 초청 시식회 — 명성 8000+
-  {
-    id: 'gourmet_event',
-    emoji: '🌟', name: '미식가 초청 시식회',
-    triggerStage: 7, forceTrigger: false,
-    requireRep: 8000,
-    announceDays: 2,
-    desc: '전국 50인의 미식가를 초대한 프라이빗 시식회! 최고의 메뉴로 그들을 감동시키세요.',
-    prepChoices: [
-      { label: '✨ 프리미엄 식재료 긴급 구매', desc: '고급 메뉴 점수 +40%', key: 'premium_ingr', cost: 50000 },
-      { label: '👨‍🍳 수석 셰프 특별 지시 (직원 필요)', desc: '서빙 실수 없음 보장', key: 'chef_direct', cost: 0, requireStaff: true },
-      { label: '📋 메뉴 구성 연구 (무료)', desc: '보유 최고가 메뉴 자동 선택', key: 'menu_study', cost: 0 },
-    ],
-    dayRule: '미식가 10명 연속 방문! 고급 메뉴(스테이크·리조또·트러플)를 주문해요. 인내심이 빠르게 닳으니 서두르세요.',
-    judgeCount: 10,
-    judgePatience: 25,
-    judgeOrders: ['steak','mushroom_risotto','truffle_pasta','prime_steak'],
-    evaluate(ctx) {
-      const { servedJudges, finalSat, prepKeys } = ctx;
-      const bonusMult = prepKeys.includes('premium_ingr') ? 1.4 : 1.0;
-      if (servedJudges >= 10 && finalSat >= 4.5) {
-        return { rank:'⭐ 미슐랭 추천', rep: Math.round(2000*bonusMult), money: 200000, badge:'⭐', msg:'만점 서비스! 미슐랭 가이드 추천 등재!', title:'미슐랭 스타 셰프' };
-      } else if (servedJudges >= 8) {
-        return { rank:'🥇 호평', rep: Math.round(800*bonusMult), money: 80000, msg:`${servedJudges}명 서빙 성공! 미식가들이 감탄했어요.` };
-      } else if (servedJudges >= 5) {
-        return { rank:'🥈 보통', rep: 300, money: 0, msg:`${servedJudges}명 서빙. 더 많이 서빙할 수 있었는데...` };
-      } else {
-        return { rank:'😞 혹평', rep: -100, money: 0, msg:'기대에 못 미쳤어요. 재료와 스피드를 다시 점검해봐요.' };
-      }
-    },
-  },
-
-  // ⑤ 크리스마스 마켓 — 겨울 시즌 + 5단계
-  {
-    id: 'xmas_market',
-    emoji: '🎄', name: '크리스마스 마켓',
-    triggerStage: 5, forceTrigger: false,
-    requireSeason: 'winter',
-    announceDays: 1,
-    desc: '마을 크리스마스 마켓에 카페 부스 운영! 겨울 한정 메뉴가 있으면 특별 점수를 받아요.',
-    prepChoices: [
-      { label: '☃️ 겨울 메뉴 집중 준비', desc: '핫초코·비프 스튜 수익 2배', key: 'winter_menu', cost: 0 },
-      { label: '🎄 부스 장식 투자', desc: '손님 만족도 +1 (당일만)', key: 'decor', cost: 20000 },
-      { label: '🎁 무료 시식 행사', desc: '손님 3배, 수익 70%', key: 'free_taste', cost: 0 },
-    ],
-    dayRule: '겨울 전용 손님이 몰려와요! 당일 서빙 수로 순위 결정.',
-    judgeCount: 0,
-    judgePatience: 60,
-    judgeOrders: null,
-    evaluate(ctx) {
-      const { xmasServed } = ctx;
-      if (xmasServed >= 20) {
-        return { rank:'🥇 마켓 MVP', rep: 1000, money: 150000, badge:'🎄', msg:`${xmasServed}명 서빙! 올해 크리스마스 마켓의 주인공!`, title:'크리스마스 스타' };
-      } else if (xmasServed >= 12) {
-        return { rank:'🥈 인기 부스', rep: 400, money: 50000, msg:`${xmasServed}명 서빙! 따뜻하고 인기 많은 부스였어요.` };
-      } else if (xmasServed >= 6) {
-        return { rank:'🥉 참가상', rep: 120, money: 0, msg:`${xmasServed}명 서빙. 내년엔 더 열심히!` };
-      } else {
-        return { rank:'😅 조용한 부스', rep: 20, money: 0, msg:'손님이 별로 없었네요... 겨울 메뉴를 더 준비해봐요.' };
-      }
-    },
-  },
-];
-
-// ── 대회 트리거 체크 ──
-function checkContestTrigger() {
-  if (G.contest) return;                  // 이미 진행 중
-  if (Math.random() > 0.004) return;      // 초당 0.4% 확률 체크
-
-  const seasonId = SEASONS[G.seasonIndex].id;
-  const triggered = G.triggeredContests || [];
-
-  for (const c of CONTESTS) {
-    if (triggered.includes(c.id)) continue;
-    if (c.triggerStage > G.stage) continue;
-    if (c.requireRecipes && !c.requireRecipes.every(r => G.learnedRecipes.includes(r))) continue;
-    if (c.requireRep && G.reputation < c.requireRep) continue;
-    if (c.requireSeason && seasonId !== c.requireSeason) continue;
-
-    // forceTrigger는 단계 달성 직후 한 번만
-    launchContestAnnounce(c);
-    return;
-  }
-}
-
-// 단계 달성 시 forceTrigger 대회 즉시 발생
-function checkForcedContest(stage) {
-  if (G.contest) return;
-  const triggered = G.triggeredContests || [];
-  const c = CONTESTS.find(x => x.forceTrigger && x.triggerStage === stage && !triggered.includes(x.id));
-  if (c) setTimeout(()=>launchContestAnnounce(c), 3000);
-}
-
-function launchContestAnnounce(contestDef) {
-  if (!G.triggeredContests) G.triggeredContests=[];
-  G.triggeredContests.push(contestDef.id);
-  G.contest = {
-    defId: contestDef.id,
-    phase: 'announce',   // announce → prep → day → result
-    announceDay: G.day,
-    startDay: G.day + contestDef.announceDays,
-    prepKeys: [],
-    servedJudges: 0,
-    judgesLeft: [],
-    perfectCombo: false,
-    perfectIdx: 0,
-    festRevenue: 0,
-    xmasServed: 0,
-    finalSat: G.satisfaction,
-  };
-  showContestAnnounceModal(contestDef);
-  addLog(`🏆 [대회 공지] ${contestDef.name} — ${contestDef.announceDays}일 후 개최!`);
-  showNotif(`🏆 ${contestDef.name} 개최 공지!`);
-  updateContestBanner();
-}
-
-// ── 매 tick 대회 진행 ──
-function tickContest() {
-  if (!G.contest) return;
-  const def = getContestDef();
-  if (!def) return;
-
-  const c = G.contest;
-
-  // announce → prep 전환
-  if (c.phase === 'announce' && G.day >= c.startDay) {
-    c.phase = 'prep';
-    showContestPrepModal(def);
-    addLog(`🏆 [대회] ${def.name} 준비 기간 시작! 준비 선택지를 골라주세요.`);
-    showNotif(`🏆 ${def.name} 준비 시작! 카페탭을 확인하세요`);
-    updateContestBanner();
-    return;
-  }
-
-  // prep → day 전환 (준비 기간 1일 후)
-  if (c.phase === 'prep' && G.day >= c.startDay + 1) {
-    c.phase = 'day';
-    c.dayStartMoney = G.money;
-    c.dayStartServed = G.totalServed;
-    // 준비 선택지 효과 즉시 적용
-    applyPrepEffects(def, c);
-    spawnContestJudges(def, c);
-    addLog(`🏆 [대회 당일] ${def.name} 본선 시작! ${def.dayRule}`);
-    showNotif(`🏆 ${def.name} 본선 시작!`);
-    updateContestBanner();
-    return;
-  }
-
-  // day 중 — 심사위원 스폰 완료 체크 (judgeCount > 0인 대회)
-  if (c.phase === 'day' && def.judgeCount > 0) {
-    // 심사위원이 모두 처리됐는지(서빙되거나 기다리다 감)
-    const judgesStillWaiting = G.customers.filter(x => x.isContestJudge).length;
-    const allDone = c.judgesLeft.length === 0 && judgesStillWaiting === 0 && c._judgesSpawned;
-    if (allDone) {
-      finishContest(def);
-      return;
-    }
-    // 다음 심사위원 스폰
-    if (c._judgeQueue && c._judgeQueue.length > 0 && !c._judgeSpawnTimer) {
-      c._judgeSpawnTimer = setTimeout(()=>{
-        c._judgeSpawnTimer = null;
-        spawnNextJudge(def, c);
-      }, 3000);
-    }
-  }
-
-  // day 중 — 수익 기반 대회 (judgeCount === 0): 1일 경과 후 결과
-  if (c.phase === 'day' && def.judgeCount === 0) {
-    if (G.day >= c.startDay + 2) {
-      finishContest(def);
-    }
-  }
-}
-
-function getContestDef() {
-  if (!G.contest) return null;
-  return CONTESTS.find(c => c.id === G.contest.defId) || null;
-}
-
-// ── 준비 효과 적용 ──
-function applyPrepEffects(def, c) {
-  const keys = c.prepKeys;
-  if (def.id === 'barista_cup' && keys.includes('recipe_study')) {
-    // 커피 계열 미습득 레시피 중 하나 무료 습득
-    const coffeeRecipes = ['latte','americano','strawb_latte','peach_tea','spring_blossom','winter_choco','autumn_latte','summer_ice'];
-    const notLearned = coffeeRecipes.filter(k => RECIPES[k] && !G.learnedRecipes.includes(k) && RECIPES[k].stageReq <= G.stage);
-    if (notLearned.length > 0) {
-      G.learnedRecipes.push(notLearned[0]);
-      addLog(`📖 레시피 연구 성과: ${RECIPES[notLearned[0]].emoji} ${RECIPES[notLearned[0]].name} 무료 습득!`);
-      renderMenu && renderMenu();
-    }
-  }
-  if (def.id === 'dessert_fest' && keys.includes('grow_strawb')) {
-    let planted = 0;
-    G.plots.forEach((p,i) => {
-      if (p.stage==='empty' && planted < 2 && G.money >= CROPS['strawb'].cost) {
-        G.money -= CROPS['strawb'].cost;
-        G.plots[i] = {crop:'strawb', plantedAt:Date.now(), growTime:CROPS['strawb'].growTime, stage:'growing'};
-        planted++;
-      }
-    });
-    if (planted > 0) addLog(`🍓 딸기 씨앗 ${planted}개 자동 심기 완료!`);
-    renderFarm();
-  }
-  // 페스티벌·크리스마스: 손님 스폰 3배 속도
-  if ((def.id === 'dessert_fest' || def.id === 'xmas_market')) {
-    resetSpawnTimer(1200);
-    addLog(`🎪 [대회 당일] 손님이 평소보다 3배 빠르게 몰려와요!`);
-    showNotif(`🎪 손님 폭주 시작!`);
-    // 대회 종료 후 스폰 원복 — 2일 뒤
-    setTimeout(()=>{ if(!G.contest || G.contest.phase==='result') resetSpawnTimer(); }, 180000);
-  }
-  // 포장 투자: 만족도 +0.5
-  if (keys.includes('packaging') || keys.includes('decor')) {
-    G.satisfaction = Math.min(5, G.satisfaction + 0.5);
-    addLog(`✨ [대회 준비] 인테리어/포장 효과: 만족도 +0.5`);
-  }
-  // SNS 홍보: 블로거 스폰율 임시 3배 (G._contestSNS 플래그)
-  if (keys.includes('sns')) {
-    G._contestSNS = true;
-    addLog(`📱 SNS 홍보 효과: 블로거 손님 출현율 3배!`);
-    setTimeout(()=>{ G._contestSNS = false; }, 180000);
-  }
-}
-
-// ── 심사위원 스폰 ──
-function spawnContestJudges(def, c) {
-  if (def.judgeCount === 0) return;
-  // 주문 목록 준비
-  let orders = def.judgeOrders
-    ? def.judgeOrders.filter(k => G.learnedRecipes.includes(k) && RECIPES[k].stageReq <= G.stage)
-    : G.learnedRecipes.filter(k => RECIPES[k] && RECIPES[k].stageReq <= G.stage && !RECIPES[k].season).slice(0, def.judgeCount);
-  // 학습된 메뉴가 없으면 보유 메뉴로 폴백
-  if (orders.length === 0) orders = G.learnedRecipes.filter(k => RECIPES[k] && RECIPES[k].stageReq <= G.stage).slice(0, 3);
-
-  c._judgeQueue = [];
-  for (let i = 0; i < def.judgeCount; i++) {
-    c._judgeQueue.push(orders[i % orders.length]);
-  }
-  c._judgesSpawned = false;
-  c._judgeSpawnTimer = null;
-  spawnNextJudge(def, c);
-}
-
-function spawnNextJudge(def, c) {
-  if (!c._judgeQueue || c._judgeQueue.length === 0) {
-    c._judgesSpawned = true;
-    return;
-  }
-  if (G.customers.length >= 6) {
-    // 대기
-    c._judgeSpawnTimer = setTimeout(()=>{ c._judgeSpawnTimer=null; spawnNextJudge(def,c); }, 4000);
-    return;
-  }
-  const orderKey = c._judgeQueue.shift();
-  if (!RECIPES[orderKey]) { spawnNextJudge(def,c); return; }
-
-  const judgeNames = ['김 심사위원','박 심사위원','이 심사위원','최 심사위원','정 심사위원',
-                      '한 심사위원','오 심사위원','신 심사위원','장 심사위원','임 심사위원'];
-  const judgeEmojis = ['👨‍⚖️','👩‍⚖️','🧑‍⚖️'];
-
-  const cust = {
-    id: Date.now() + Math.random(),
-    name: judgeNames[c.servedJudges] || `심사위원 ${c.servedJudges+1}`,
-    emoji: judgeEmojis[c.servedJudges % judgeEmojis.length],
-    order: orderKey, order2: null,
-    patience: def.judgePatience,
-    type: 'vip',
-    isContestJudge: true,
-    judgeIdx: c.servedJudges + c._judgeQueue.length,  // for perfect combo tracking
-  };
-  G.customers.push(cust);
-  appendCustCard(cust);
-  document.getElementById('custCount').textContent = `(${G.customers.length}명)`;
-  addLog(`👨‍⚖️ [대회] ${cust.name} 방문 — ${RECIPES[orderKey].emoji} ${RECIPES[orderKey].name} 주문`);
-  updateServeAllBtn();
-
-  if (c._judgeQueue.length === 0) c._judgesSpawned = true;
-}
-
-// ── 서빙 시 심사위원 체크 (serveCustomer 에서 호출) ──
-function onContestJudgeServed(cust) {
-  if (!G.contest || G.contest.phase !== 'day') return;
-  const def = getContestDef();
-  if (!def) return;
-  const c = G.contest;
-
-  c.servedJudges++;
-  c.finalSat = G.satisfaction;
-
-  // 퍼펙트 콤보 (바리스타 대회)
-  if (def.judgeOrders) {
-    if (cust.order === def.judgeOrders[c.perfectIdx]) {
-      c.perfectIdx++;
-      if (c.perfectIdx >= def.judgeOrders.filter(k=>G.learnedRecipes.includes(k)).length) {
-        c.perfectCombo = true;
-        floatText('🎯 퍼펙트 루틴!', window.innerWidth/2-60, window.innerHeight/3, '#D4A017');
-        showNotif('🎯 퍼펙트 루틴 달성!');
-        addLog('🎯 [대회] 퍼펙트 루틴 달성!!');
-      }
-    } else {
-      c.perfectIdx = 0; // 순서 틀리면 리셋
-    }
-  }
-
-  addLog(`✅ [대회] ${cust.name} 서빙 완료! (${c.servedJudges}/${def.judgeCount})`);
-  floatText(`✅ 심사위원 +1`, window.innerWidth/2-60, window.innerHeight/3-30, '#5A8A3C');
-}
-
-// ── 수익 기반 대회 수익 누적 (serveCustomer 에서 호출) ──
-function onContestRevenueServed(price, cust) {
-  if (!G.contest || G.contest.phase !== 'day') return;
-  const def = getContestDef();
-  if (!def || def.judgeCount !== 0) return;
-  const c = G.contest;
-
-  const dessertKeys = ['strawb_cake','macaron','waffle','spring_strawb_crepe','strawb_smoothie'];
-  const winterKeys  = ['winter_choco','winter_stew'];
-
-  let earned = price;
-  // 페스티벌: 디저트 1.5배
-  if (def.id === 'dessert_fest' && (dessertKeys.includes(cust.order) || dessertKeys.includes(cust.order2))) {
-    earned = Math.floor(price * 1.5);
-    G.money += (earned - price); // 추가 수익
-  }
-  // 크리스마스: 겨울 메뉴 2배 (winter_menu 준비 시)
-  if (def.id === 'xmas_market' && c.prepKeys.includes('winter_menu') && (winterKeys.includes(cust.order) || winterKeys.includes(cust.order2))) {
-    const bonus = price;
-    G.money += bonus;
-    earned += bonus;
-  }
-  // 무료 시식 (70%만)
-  if (def.id === 'xmas_market' && c.prepKeys.includes('free_taste')) {
-    const penalty = Math.floor(price * 0.3);
-    G.money -= penalty;
-    earned -= penalty;
-  }
-
-  c.festRevenue = (c.festRevenue||0) + earned;
-  if (def.id === 'xmas_market') c.xmasServed = (c.xmasServed||0) + 1;
-}
-
-// ── 대회 종료 및 결과 ──
-function finishContest(def) {
-  if (!G.contest || G.contest.phase === 'result') return;
-  const c = G.contest;
-  c.phase = 'result';
-
-  const result = def.evaluate({
-    servedJudges: c.servedJudges,
-    prepKeys: c.prepKeys,
-    perfectCombo: c.perfectCombo,
-    festRevenue: c.festRevenue || 0,
-    xmasServed: c.xmasServed || 0,
-    finalSat: c.finalSat || G.satisfaction,
-  });
-
-  // 보상 적용
-  if (result.rep > 0)  G.reputation = Math.max(0, G.reputation + result.rep);
-  if (result.rep < 0)  G.reputation = Math.max(0, G.reputation + result.rep);
-  if (result.money > 0) { G.money += result.money; G.totalMoneyEarned += result.money; }
-  if (result.money < 0)  G.money = Math.max(0, G.money + result.money);
-  if (result.badge) {
-    if (!G.contestBadges) G.contestBadges = {};
-    G.contestBadges[def.id] = result.badge;
-  }
-
-  // 전적 기록
-  if (!G.contestHistory) G.contestHistory = [];
-  G.contestHistory.unshift({ name: def.name, emoji: def.emoji, rank: result.rank, day: G.day });
-
-  addLog(`🏆 [대회 결과] ${def.name}: ${result.rank}`);
-  showContestResultModal(def, result);
-  updateContestBanner();
-  updateHeader();
-  checkAchievements();
-}
-
-// ── 대회 배너 ──
-function updateContestBanner() {
-  const area = document.getElementById('storyBannerArea');
-  if (!area) return;
-  area.querySelectorAll('.contest-banner').forEach(el => el.remove());
-
-  if (!G.contest || G.contest.phase === 'result') return;
-  const def = getContestDef(); if (!def) return;
-  const c = G.contest;
-
-  const phaseLabel = {
-    announce: `📢 D-${c.startDay - G.day} 공지`,
-    prep:     '📋 준비 기간',
-    day:      '🔥 대회 당일!',
-  }[c.phase] || '';
-
-  let extra = '';
-  if (c.phase === 'day' && def.judgeCount > 0) extra = ` (${c.servedJudges}/${def.judgeCount}명 서빙)`;
-  if (c.phase === 'day' && def.judgeCount === 0) extra = ` (수익: ${(c.festRevenue||0).toLocaleString()}원)`;
-
-  const d = document.createElement('div');
-  d.className = 'contest-banner';
-  d.style.cssText = 'background:linear-gradient(135deg,#c0392b,#8e44ad);color:white;border-radius:10px;padding:8px 12px;font-size:12px;margin-bottom:4px;cursor:pointer;';
-  d.innerHTML = `${def.emoji} <strong>[대회] ${def.name}</strong> <span style="font-size:10px;opacity:0.8;">${phaseLabel}${extra}</span>`;
-  d.onclick = () => {
-    if (c.phase === 'prep') showContestPrepModal(def);
-    else showContestAnnounceModal(def);
-  };
-  area.prepend(d);
-}
-
-// ── 모달: 공지 ──
-function showContestAnnounceModal(def) {
-  const c = G.contest;
-  document.getElementById('contestModalTitle').textContent = `${def.emoji} ${def.name}`;
-  document.getElementById('contestModalBody').innerHTML = `
-    <div style="font-size:13px;line-height:1.8;color:var(--text);margin-bottom:12px;">${def.desc}</div>
-    <div style="background:rgba(142,68,173,0.08);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--soil);margin-bottom:10px;">
-      <strong>📋 본선 규칙:</strong><br>${def.dayRule}
-    </div>
-    <div style="background:rgba(212,160,23,0.1);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--espresso);">
-      🗓️ 본선 Day: <strong>${c.startDay + 1}</strong> (현재 Day ${G.day})
-    </div>`;
-  document.getElementById('contestModalBtns').innerHTML = `
-    <button class="btn btn-primary" onclick="closeModal('contestModal')">알겠어요! 준비할게요 💪</button>`;
-  showModal('contestModal');
-}
-
-// ── 모달: 준비 선택 ──
-function showContestPrepModal(def) {
-  const c = G.contest;
-  document.getElementById('contestModalTitle').textContent = `${def.emoji} ${def.name} — 준비하기`;
-  const choicesHtml = def.prepChoices.map((ch, i) => {
-    const alreadyPicked = c.prepKeys.includes(ch.key);
-    const needStaff = ch.requireStaff && Object.keys(G.staff||{}).length === 0;
-    const cantAfford = ch.cost > 0 && G.money < ch.cost;
-    const disabled = alreadyPicked || needStaff || cantAfford;
-    const costTxt = ch.cost > 0 ? ` (💰${ch.cost.toLocaleString()}원)` : '';
-    const staffWarn = needStaff ? '<span style="color:#e74c3c;font-size:10px;"> ⚠️직원 필요</span>' : '';
-    return `
-      <div style="background:${alreadyPicked?'rgba(90,138,60,0.12)':'rgba(107,66,38,0.06)'};border:1.5px solid ${alreadyPicked?'var(--grass)':'rgba(200,149,108,0.25)'};border-radius:10px;padding:10px 12px;margin-bottom:7px;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="flex:1;">
-            <div style="font-size:12px;font-weight:700;color:var(--espresso);">${ch.label}${costTxt}${staffWarn}</div>
-            <div style="font-size:11px;color:var(--latte);margin-top:2px;">${ch.desc}</div>
-          </div>
-          <button onclick="pickContestPrep('${ch.key}',${ch.cost})" ${disabled?'disabled':''} class="btn ${alreadyPicked?'btn-green':'btn-primary'} btn-sm">
-            ${alreadyPicked?'✅ 선택됨':'선택'}
-          </button>
-        </div>
-      </div>`;
-  }).join('');
-  document.getElementById('contestModalBody').innerHTML = `
-    <div style="font-size:12px;color:var(--latte);margin-bottom:10px;">최대 2개까지 선택할 수 있어요. (현재 ${c.prepKeys.length}/2)</div>
-    ${choicesHtml}
-    <div style="background:rgba(212,160,23,0.1);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--espresso);margin-top:5px;">
-      🔥 본선은 <strong>Day ${c.startDay + 1}</strong>에 자동 시작돼요!
-    </div>`;
-  document.getElementById('contestModalBtns').innerHTML = `
-    <button class="btn btn-secondary" onclick="closeModal('contestModal')">닫기</button>`;
-  showModal('contestModal');
-}
-
-function pickContestPrep(key, cost) {
-  const c = G.contest;
-  if (!c) return;
-  if (c.prepKeys.includes(key)) return;
-  if (c.prepKeys.length >= 2) { showNotif('⚠️ 준비 선택은 최대 2개까지!'); return; }
-  if (cost > 0 && G.money < cost) { showNotif('💰 돈이 부족해요!'); return; }
-  if (cost > 0) { G.money -= cost; updateHeader(); }
-  c.prepKeys.push(key);
-  const def = getContestDef();
-  if (def) showContestPrepModal(def);
-  addLog(`✅ [대회 준비] ${CONTESTS.flatMap(x=>x.prepChoices).find(x=>x.key===key)?.label || key} 선택!`);
-  showNotif(`✅ 대회 준비 선택 완료!`);
-}
-
-// ── 모달: 결과 ──
-function showContestResultModal(def, result) {
-  const rankColors = { '🥇':['#D4A017','#fffbe6'], '🥈':['#aaa','#f0f0f0'], '🥉':['#cd7f32','#fff4ec'],
-    '🏅':['#D4A017','#fffbe6'], '⭐':['#f39c12','#fffbe6'], '😞':['#e74c3c','#fff0f0'], '😅':['#e67e22','#fff7f0'] };
-  const rankKey = Object.keys(rankColors).find(k => result.rank.includes(k)) || '🥉';
-  const [color, bg] = rankColors[rankKey];
-
-  document.getElementById('contestModalTitle').textContent = `${def.emoji} ${def.name} — 결과 발표!`;
-  document.getElementById('contestModalBody').innerHTML = `
-    <div style="text-align:center;padding:16px 0;">
-      <div style="font-size:52px;margin-bottom:8px;">${result.badge || def.emoji}</div>
-      <div style="background:${bg};border:2px solid ${color};border-radius:12px;padding:10px 18px;display:inline-block;margin-bottom:12px;">
-        <span style="font-family:'Jua',sans-serif;font-size:22px;color:${color};">${result.rank}</span>
-      </div>
-      <div style="font-size:13px;line-height:1.8;color:var(--text);margin-bottom:12px;">${result.msg}</div>
-      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-        ${result.rep>0 ? `<div style="background:rgba(155,89,182,0.12);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;color:#8e44ad;">⭐ 명성 +${result.rep}</div>` : ''}
-        ${result.rep<0 ? `<div style="background:rgba(231,76,60,0.12);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;color:#c0392b;">⭐ 명성 ${result.rep}</div>` : ''}
-        ${result.money>0 ? `<div style="background:rgba(212,160,23,0.12);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;color:var(--gold);">💰 +${result.money.toLocaleString()}원</div>` : ''}
-        ${result.money<0 ? `<div style="background:rgba(231,76,60,0.12);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;color:#c0392b;">💰 ${result.money.toLocaleString()}원</div>` : ''}
-        ${result.title ? `<div style="background:rgba(212,160,23,0.12);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--espresso);">🏷️ ${result.title}</div>` : ''}
-      </div>
-    </div>`;
-  document.getElementById('contestModalBtns').innerHTML = `
-    <button class="btn btn-gold" onclick="closeModal('contestModal');G.contest=null;updateContestBanner();">계속하기 🚀</button>`;
-  showModal('contestModal');
-
-  // 화려한 연출
-  screenShake();
-  audio.init(); audio.playSfx('stageup');
-  if (result.rep > 0) floatText(`🏆 ${result.rank}`, window.innerWidth/2-60, window.innerHeight/3, '#D4A017');
-}
-
-
 function updateSaveStatus(isSaving) {
   const el = document.getElementById('save-status');
   if (!el) return;
@@ -3715,7 +2960,7 @@ setInterval(function() {
       var pc = c.patience > 60 ? '#5A8A3C' : c.patience > 30 ? '#F4C430' : '#e74c3c';
       var td = SPECIAL_TYPES[c.type];
       var tag = td ? '<span style="font-size:9px;background:rgba(255,255,255,0.15);color:white;padding:1px 5px;border-radius:5px;margin-left:3px;">' + td.label + '</span>' : '';
-      return '<div data-cid="' + c.id + '" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:8px;padding:6px 9px;margin-bottom:4px;">' +
+      return '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:8px;padding:6px 9px;margin-bottom:4px;">' +
         '<span style="font-size:20px;">' + c.emoji + '</span>' +
         '<div style="flex:1;min-width:0;">' +
           '<div style="font-size:11px;font-weight:600;color:white;">' + c.name + tag + '</div>' +
@@ -3778,14 +3023,6 @@ setInterval(function() {
     <div style="text-align:center;margin-top:12px;">
       <button class="btn btn-secondary" onclick="closeModal('emergencyModal')">닫기</button>
     </div>
-  </div>
-</div>
-<!-- 대회 모달 -->
-<div id="contestModal" class="modal-overlay">
-  <div class="modal" style="max-width:480px;">
-    <div class="modal-title" id="contestModalTitle">🏆 대회</div>
-    <div class="modal-body" style="max-height:65vh;overflow-y:auto;" id="contestModalBody"></div>
-    <div class="modal-btns" id="contestModalBtns"></div>
   </div>
 </div>
 </body>
