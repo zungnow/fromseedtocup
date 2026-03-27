@@ -1746,7 +1746,12 @@ function checkDailyQuest() {
   G.quests=G.quests.filter(q=>!q.done);
   if (G.quests.length>=2) return;
   G.questDay=G.day;
-  const learned=G.learnedRecipes.filter(k=>RECIPES[k]&&RECIPES[k].stageReq<=G.stage&&!RECIPES[k].isCombo&&!RECIPES[k].isGift);
+  const seasonId = SEASONS[G.seasonIndex].id;
+const learned = G.learnedRecipes.filter(k =>
+  RECIPES[k] && RECIPES[k].stageReq <= G.stage
+  && !RECIPES[k].isCombo && !RECIPES[k].isGift
+  && (RECIPES[k].season === null || RECIPES[k].season === seasonId)
+);
   const pool=[
     learned.length>0?{type:'serve_menu',target:learned[Math.floor(Math.random()*learned.length)],goal:3,current:0,done:false,get desc(){return `${RECIPES[this.target]?.emoji||''} ${RECIPES[this.target]?.name||''} 3개 팔기`;},reward:{money:10000},rewardDesc:'💰 +10,000원'}:null,
     {type:'serve_count',goal:5,current:0,done:false,desc:'손님 5명 서빙',reward:{rep:30},rewardDesc:'⭐ 명성 +30'},
