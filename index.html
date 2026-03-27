@@ -2145,7 +2145,7 @@ function renderInventory() {
     if (statusEl) {
       if (rem < EMERGENCY_MAX) {
         const { h, m } = getEmergencyResetTime();
-        statusEl.textContent = `🕐 자정까지 ${h}시간 ${m}분 후 초기화`;
+        statusEl.textContent = `🕐 ${h}시간 ${m}분 후 초기화`;
       } else {
         statusEl.textContent = '';
       }
