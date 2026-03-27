@@ -1879,12 +1879,21 @@ function addLog(msg) {
 
 // 알림 스택 관리
 const _notifStack = [];
-const NOTIF_TOP_START = 62;
 const NOTIF_GAP = 48;
 
+function _getNotifTopStart() {
+  const header = document.querySelector('header');
+  if (header) {
+    const rect = header.getBoundingClientRect();
+    return rect.bottom + 8;
+  }
+  return 70;
+}
+
 function _updateNotifPositions() {
+  const topStart = _getNotifTopStart();
   _notifStack.forEach((el, i) => {
-    el.style.top = (NOTIF_TOP_START + i * NOTIF_GAP) + 'px';
+    el.style.top = (topStart + i * NOTIF_GAP) + 'px';
   });
 }
 
@@ -1892,7 +1901,7 @@ function showNotif(msg) {
   const el = document.createElement('div');
   el.className = 'notif';
   el.textContent = msg;
-  el.style.top = (NOTIF_TOP_START + _notifStack.length * NOTIF_GAP) + 'px';
+  el.style.top = (_getNotifTopStart() + _notifStack.length * NOTIF_GAP) + 'px';
   document.body.appendChild(el);
   _notifStack.push(el);
   setTimeout(() => {
