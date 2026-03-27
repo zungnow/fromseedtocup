@@ -908,6 +908,34 @@ function boot() {
   if (!tickTimer) startTimers();
   addLog(`🌱 ${G.brandName}의 이야기가 시작됩니다!`);
   renderAutoHarvestBtn();
+
+// 1. [핵심] 불러온 데이터가 Set 객체인지 검증하고, 아니면 다시 생성합니다.
+  if (!(G.triggeredEvents instanceof Set)) {
+    G.triggeredEvents = new Set(Array.isArray(G.triggeredEvents) ? G.triggeredEvents : []);
+  }
+
+  // 2. [안전장치] 기타 누락될 수 있는 필수 객체들을 초기화합니다.
+  if (!G.staff) G.staff = {};
+  if (!G.boosters) G.boosters = {};
+  if (!G.staffLevels) G.staffLevels = {};
+  if (!G.inventory) G.inventory = {};
+
+  // 3. UI 업데이트 (기존 로직 유지)
+  document.getElementById('brandNameDisplay').textContent = G.brandName;
+  
+  if (G.cafeOpen) {
+    document.getElementById('cafe-locked').style.display = 'none';
+    document.getElementById('cafe-open').style.cssText = 'display:flex;flex-direction:column';
+  }
+  
+  applySeasonBg();
+  renderAll(); // 전체 화면 다시 그리기
+  
+  // 4. 타이머 중복 실행 방지 및 시작
+  if (tickTimer) clearInterval(tickTimer); 
+  startTimers();
+  
+  addLog(`🌱 ${G.brandName} 카페 경영을 다시 시작합니다!`);
 }
 
 function startTimers() {
@@ -1987,30 +2015,40 @@ function saveGame() { saveToStorage(); showNotif('💾 저장 완료!'); closeMo
 
 function loadGame() {
   const raw = localStorage.getItem('farmcafe_v3');
-  if (!raw) return;
-  let d;
-  try { d = JSON.parse(raw); } catch(e) { showNotif('❌ 데이터 오류'); return; }
-
-  // 데이터 덮어쓰기
-  Object.assign(G, d);
-
-  // 핵심 수정: 배열로 들어온 데이터를 다시 Set 객체로 변환 (중요!)
-  G.triggeredEvents = new Set(Array.isArray(d.triggeredEvents) ? d.triggeredEvents : []);
+  if (!raw) {
+    showNotif('❌ 저장된 데이터가 없습니다.');
+    return;
+  }
   
-  // 기타 배열 데이터 안전하게 초기화
-  G.triggeredContests = Array.isArray(d.triggeredContests) ? d.triggeredContests : [];
-  G.contestHistory = Array.isArray(d.contestHistory) ? d.contestHistory : [];
-  G.quests = Array.isArray(d.quests) ? d.quests : [];
-
-  // contest 내부 타이머 관련 초기화
-  if (G.contest) {
-    G.contest._judgeSpawnTimer = null;
-    G.contest._judgeQueue = G.contest._judgeQueue || [];
+  let d;
+  try {
+    d = JSON.parse(raw);
+  } catch (e) {
+    showNotif('❌ 데이터 형식이 잘못되었습니다.');
+    return;
   }
 
+  // 1. 기존 G 객체에 데이터 복사
+  Object.assign(G, d);
+
+  // 2. [가장 중요] triggeredEvents를 반드시 Set 객체로 재생성
+  // 저장될 때 배열로 바뀌어 들어오기 때문에, 여기서 다시 Set으로 만들어야 .has() 함수가 작동합니다.
+  G.triggeredEvents = new Set(Array.isArray(d.triggeredEvents) ? d.triggeredEvents : []);
+
+  // 3. 기타 누락될 수 있는 객체들 안전하게 초기화
+  if (!G.staff) G.staff = {};
+  if (!G.inventory) G.inventory = {};
+  if (!G.boosters) G.boosters = {};
+  if (!G.staffLevels) G.staffLevels = {};
+
+  // 4. 모달 닫고 게임 엔진 재시작
   closeModal('saveModal');
-  boot(); // 게임 재시작
-  addLog(`💾 불러오기 성공! (${d.savedAt || ''})`);
+  
+  // 5. boot() 함수를 호출하여 화면 갱신
+  boot();
+  
+  addLog(`💾 불러오기 완료! (Day ${G.day})`);
+  showNotif('✅ 성공적으로 불러왔습니다!');
 }
 function exportSave() {
   const d={...G,triggeredEvents:[...G.triggeredEvents],savedAt:new Date().toLocaleString()};
