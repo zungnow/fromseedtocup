@@ -408,7 +408,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
         </div>
       </div>
       <div class="panel">
-        <div style="display:flex;align-items:center;justify-content:space-between;"><div class="panel-title">🌾 농장</div><button class="btn btn-green btn-sm" onclick="harvestAll()" id="harvestAllBtn" style="font-size:11px;padding:3px 8px;">모두수확</button></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;"><div class="panel-title">🌾 농장</div><div style="display:flex;gap:5px;"><button class="btn btn-sm autoHarvestToggleBtn" onclick="toggleAutoHarvest()" style="font-size:11px;padding:3px 8px;display:none;">🚜 자동수확 ON</button><button class="btn btn-green btn-sm" onclick="harvestAll()" id="harvestAllBtn" style="font-size:11px;padding:3px 8px;">모두수확</button></div></div>
         <div style="display:flex;gap:6px;align-items:center;">
   <button class="btn btn-danger btn-sm" onclick="openEmergencyModal()" style="font-size:12px;white-space:nowrap;">🚚 긴급 주문 <span id="emergencyBadge" style="background:rgba(255,255,255,0.25);border-radius:6px;padding:1px 6px;font-size:10px;"></span></button>
   <div id="emergencyStatus" style="flex:1;font-size:10px;color:var(--latte);text-align:center;line-height:1.3;"></div>
@@ -703,23 +703,22 @@ const RECIPES = {
 };
 
 const UPGRADES = {
-  fertilizer:  {name:'비료 시스템',     emoji:'🌿',desc:'작물 성장 30% 단축',          cost:50000,  stageReq:0},
-  display:      {name:'예쁜 진열대',    emoji:'🖼', desc:'손님 만족도 +10%',           cost:150000,  stageReq:1},
-  espresso_m:   {name:'에스프레소 머신',emoji:'⚙️',desc:'커피류 재료 필요량 1개 절감',  cost:300000,  stageReq:4},
-  loyalty:      {name:'단골 카드',      emoji:'🃏',desc:'단골 손님 방문 빈도 +20%',    cost:100000,  stageReq:3},
-  premium_mat:  {name:'프리미엄 식재료',emoji:'✨',desc:'메뉴 판매가 +15%',            cost:100000,  stageReq:5},
-  auto_harvest: {name:'자동 수확기',    emoji:'🚜',desc:'익은 작물 자동 수확',          cost:100000,  stageReq:2},
-  pro_kitchen:  {name:'전문 주방',      emoji:'🍳',desc:'조리 메뉴 판매가 +10%',       cost:200000,  stageReq:6},
-  wine_cellar:  {name:'와인 셀러',      emoji:'🍷',desc:'파인다이닝 메뉴 가격 +20%',   cost:250000, stageReq:8},
+  fertilizer:  {name:'비료 시스템',     emoji:'🌿',desc:'작물 성장 30% 단축',          cost:10000,  stageReq:0},
+  display:      {name:'예쁜 진열대',    emoji:'🖼', desc:'손님 만족도 +10%',           cost:25000,  stageReq:1},
+  espresso_m:   {name:'에스프레소 머신',emoji:'⚙️',desc:'커피류 재료 필요량 1개 절감',  cost:15000,  stageReq:4},
+  loyalty:      {name:'단골 카드',      emoji:'🃏',desc:'단골 손님 방문 빈도 +20%',    cost:40000,  stageReq:3},
+  premium_mat:  {name:'프리미엄 식재료',emoji:'✨',desc:'메뉴 판매가 +15%',            cost:50000,  stageReq:5},
+  auto_harvest: {name:'자동 수확기',    emoji:'🚜',desc:'익은 작물 자동 수확',          cost:10000,  stageReq:2},
+  pro_kitchen:  {name:'전문 주방',      emoji:'🍳',desc:'조리 메뉴 판매가 +10%',       cost:80000,  stageReq:6},
+  wine_cellar:  {name:'와인 셀러',      emoji:'🍷',desc:'파인다이닝 메뉴 가격 +20%',   cost:150000, stageReq:8},
 };
 
 const STAFF_DEFS = {
-  parttime: {name:'아르바이트생', emoji:'👧',role:'barista',  desc:'손님 1명 자동 서빙',             hireCost:15000,  dailyCost:30000,  stageReq:1},
-  farmer_w: {name:'농장 일꾼',   emoji:'👨‍🌾',role:'farmer',   desc:'빈 밭에 자동으로 씨앗 심고 수확', hireCost:20000,  dailyCost:40000,  stageReq:0},
-  barista:  {name:'바리스타',    emoji:'☕',role:'barista',   desc:'손님 자동 서빙 (빠름)',           hireCost:25000,  dailyCost:45000, stageReq:4},
-  manager:  {name:'재료 관리자', emoji:'🧑‍💼',role:'manager',  desc:'부족한 재료 자동 파악 & 심기',    hireCost:30000,  dailyCost:50000, stageReq:3},
-  head_chef:{name:'수석 셰프',   emoji:'👨‍🍳',role:'barista',  desc:'메뉴 판매가 +10% & 자동 서빙',   hireCost:50000, dailyCost:55000, stageReq:6},
-  sommelier:{name:'소믈리에',    emoji:'🍷',role:'barista',   desc:'파인다이닝 손님 만족도 +30%',     hireCost:70000, dailyCost:60000, stageReq:8},
+  parttime: {name:'아르바이트생', emoji:'👧',role:'barista',  desc:'손님 1명 자동 서빙',             hireCost:5000,  dailyCost:3000,  stageReq:1},
+  barista:  {name:'바리스타',    emoji:'☕',role:'barista',   desc:'손님 자동 서빙 (빠름)',           hireCost:7000,  dailyCost:4500, stageReq:4},
+  manager:  {name:'재료 관리자', emoji:'🧑‍💼',role:'manager',  desc:'레시피 기반으로 부족한 재료 스마트 심기',    hireCost:7000,  dailyCost:5000, stageReq:3},
+  head_chef:{name:'수석 셰프',   emoji:'👨‍🍳',role:'barista',  desc:'메뉴 판매가 +10% & 자동 서빙',   hireCost:10000, dailyCost:4500, stageReq:6},
+  sommelier:{name:'소믈리에',    emoji:'🍷',role:'barista',   desc:'파인다이닝 손님 만족도 +30%',     hireCost:20000, dailyCost:5000, stageReq:8},
 };
 
 const STAGE_DATA = [
@@ -730,9 +729,9 @@ const STAGE_DATA = [
   {name:'☕ 카페',       building:'☕', desc:'본격 카페! 커피와 디저트를 선보이세요',       repReq:3000},
   {name:'🍰 디저트카페', building:'🎂', desc:'달콤한 디저트로 감성 카페를 꾸려보세요',     repReq:6000},
   {name:'🍝 비스트로',   building:'🍝', desc:'파스타와 수프로 유럽식 감성을 더하세요',     repReq:11000},
-  {name:'🍽️ 레스토랑',  building:'🍽️',desc:'스테이크와 코스 요리로 격조를 높이세요',     repReq:25000},
-  {name:'🥂 파인다이닝', building:'🥂', desc:'트러플과 프라임 스테이크, 최고급 요리',      repReq:40000},
-  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드로 성장했어요!',      repReq:60000},
+  {name:'🍽️ 레스토랑',  building:'🍽️',desc:'스테이크와 코스 요리로 격조를 높이세요',     repReq:20000},
+  {name:'🥂 파인다이닝', building:'🥂', desc:'트러플과 프라임 스테이크, 최고급 요리',      repReq:30000},
+  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드로 성장했어요!',      repReq:50000},
 ];
 
 // SPECIAL GUEST types
@@ -790,6 +789,7 @@ let G = {
   harvestedCrops:{},
   regulars:{},
   totalMoneyEarned:0,
+  autoHarvestEnabled:true,
 };
 
 // ══════════════════════════════════════════
@@ -853,6 +853,7 @@ function boot() {
   renderAll();
   if (!tickTimer) startTimers();
   addLog(`🌱 ${G.brandName}의 이야기가 시작됩니다!`);
+  renderAutoHarvestBtn();
 }
 
 function startTimers() {
@@ -924,7 +925,7 @@ function tick() {
       if (elapsed>=p.growTime*sm) {
         p.stage='ready'; farmChanged=true;
         // If auto_harvest upgrade, harvest immediately
-        if (G.upgrades.includes('auto_harvest')) {
+        if (G.upgrades.includes('auto_harvest') && G.autoHarvestEnabled !== false) {
           const crop=CROPS[p.crop];
           G.inventory[crop.gives]=(G.inventory[crop.gives]||0)+crop.yield;
           p.stage='empty'; p.crop=null;
@@ -1183,6 +1184,25 @@ function harvestAll() {
   showNotif(`🎉 ${readyPlots.length}개 밭 한번에 수확!`);
 }
 
+function toggleAutoHarvest() {
+  G.autoHarvestEnabled = !G.autoHarvestEnabled;
+  const onOff = G.autoHarvestEnabled ? 'ON' : 'OFF';
+  showNotif(`🚜 자동수확기 ${onOff}`);
+  addLog(`🚜 자동수확기 ${onOff}`);
+  renderAutoHarvestBtn();
+}
+
+function renderAutoHarvestBtn() {
+  const on = G.autoHarvestEnabled !== false;
+  const owned = G.upgrades.includes('auto_harvest');
+  const label = `🚜 자동수확 ${on?'ON':'OFF'}`;
+  document.querySelectorAll('.autoHarvestToggleBtn').forEach(btn => {
+    btn.textContent = label;
+    btn.setAttribute('style', `font-size:11px;padding:3px 8px;background:${on?'var(--grass)':'rgba(107,66,38,0.2)'};color:${on?'white':'var(--soil)'};border-radius:7px;border:none;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-weight:600;display:${owned?'inline-flex':'none'};`);
+  });
+}
+
+
 function openPlantModal(idx) {
   const season = SEASONS[G.seasonIndex];
   document.getElementById('plantModalTitle').textContent = `🌱 밭 ${idx+1}번 — 씨앗 고르기`;
@@ -1247,31 +1267,6 @@ function hasStaff(id) { return !!G.staff[id]; }
 
 function runStaffActions() {
   if (G.paused) return;
-
-  // FARMER: plant empty plots with season-recommended crops
-  if (hasStaff('farmer_w')) {
-    const season=SEASONS[G.seasonIndex];
-    let planted=0;
-    G.plots.forEach((p,i)=>{
-      if (p.stage==='empty' && planted<2) {
-        // Pick cheapest season crop we can afford
-        const candidates=season.dayCrops.filter(k=>
-  G.money>=CROPS[k].cost &&
-  (G.inventory[CROPS[k].gives]||0) < 50
-);
-        if (candidates.length>0) {
-          const cropKey=candidates[Math.floor(Math.random()*candidates.length)];
-          const crop=CROPS[cropKey];
-          G.money-=crop.cost;
-          G.plots[i]={crop:cropKey,plantedAt:Date.now(),growTime:crop.growTime,stage:'growing'};
-          planted++;
-        }
-      }
-      // Also harvest ready plots
-      if (p.stage==='ready') harvestPlot(i);
-    });
-    if (planted>0) { addLog(`👨‍🌾 농장 일꾼이 씨앗 ${planted}개 심었어요`); renderFarm(); updateHeader(); }
-  }
 
   // MANAGER: identify most-needed ingredients for learned recipes and plant accordingly
   if (hasStaff('manager')) {
@@ -2028,7 +2023,8 @@ function renderFarm() {
     return `<div class="plot growing" onclick="plotClick(${i})">${crop.emoji}<div class="plot-label">${Math.floor(pct)}%</div><div class="plot-bar"><div class="plot-bar-fill" style="width:${pct}%"></div></div></div>`;
   }).join('');
 
-const harvestBtn = document.getElementById('harvestAllBtn');
+  // 모두수확 버튼 상태
+  const harvestBtn = document.getElementById('harvestAllBtn');
   if (harvestBtn) {
     const hasReady = G.plots.some(p => p.stage === 'ready');
     harvestBtn.disabled = !hasReady;
@@ -2058,7 +2054,6 @@ const EMERGENCY_MAX = 3;
 const EMERGENCY_WINDOW_MS = 24 * 60 * 60 * 1000; // 24시간
 const EMERGENCY_PRICE_MULT = 3;
 const EMERGENCY_QTY = 5;
-
 function getTodayKey() {
   const d = new Date();
   return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
@@ -2331,7 +2326,7 @@ function renderUpgrades() {
     return `<div class="upg-row">
       <span style="font-size:18px;">${u.emoji}</span>
       <div class="upg-info"><div class="upg-name">${u.name}${owned?' ✓':''}</div><div class="upg-desc">${u.desc}</div></div>
-      ${owned?`<span style="color:var(--grass);font-size:11px;">완료</span>`:
+      ${owned?`<span style="color:var(--grass);font-size:11px;">${k==='auto_harvest'?`<button class="btn btn-sm autoHarvestToggleBtn" onclick="toggleAutoHarvest()" style="font-size:11px;padding:3px 8px;">🚜 자동수확 ${G.autoHarvestEnabled!==false?'ON':'OFF'}</button>`:'완료'}</span>`:
         stageLocked?`<span style="color:var(--latte);font-size:11px;">🔒</span>`:
         `<button class="btn btn-gold btn-sm" onclick="buyUpgrade('${k}')">💰${u.cost}</button>`}
     </div>`;
@@ -2413,7 +2408,7 @@ function activateBooster(key) {
   const remaining = getBoosterRemaining();
   if (remaining <= 0) {
     const { h, m } = getEmergencyResetTime();
-    showNotif(`⛔ 사용 횟수를 초과했어요! (${h}시간 ${m}분 후 초기화)`);
+    showNotif(`⛔ 오늘 부스터 사용 횟수를 모두 썼어요! (${h}시간 ${m}분 후 초기화)`);
     return;
   }
   const costs = {bean:30000, ads:20000, popup:15000, lucky:10000, staffB:25000};
