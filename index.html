@@ -484,9 +484,11 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
         <div class="tab-bar">
           <button class="tab-btn active" onclick="switchTab('staff')">👥 직원</button>
           <button class="tab-btn" onclick="switchTab('upgrades')">🔧 업그레이드</button>
+          <button class="tab-btn" onclick="switchTab('booster')">⚡ 부스터</button>
         </div>
         <div class="tab-pane active" id="tab-staff"></div>
         <div class="tab-pane" id="tab-upgrades"></div>
+        <div class="tab-pane" id="tab-booster"></div>
       </div>
       <div class="panel">
         <div class="panel-title">💬 손님 리뷰</div>
@@ -534,21 +536,21 @@ const SEASONS = [
 
 const CROPS = {
   // 기존
-  wheat:    {emoji:'🌾',name:'밀',      growTime:20, cost:500,  yield:10, gives:'wheat'},
-  strawb:   {emoji:'🍓',name:'딸기',    growTime:30, cost:1000, yield:8,  gives:'strawb'},
-  peach:    {emoji:'🍑',name:'복숭아',  growTime:45, cost:1000, yield:8,  gives:'peach'},
-  bean:     {emoji:'🫘',name:'커피콩',  growTime:40, cost:2500, yield:15, gives:'bean'},
+  wheat:    {emoji:'🌾',name:'밀',      growTime:20, cost:500,  yield:7, gives:'wheat'},
+  strawb:   {emoji:'🍓',name:'딸기',    growTime:30, cost:1000, yield:5,  gives:'strawb'},
+  peach:    {emoji:'🍑',name:'복숭아',  growTime:45, cost:1000, yield:5,  gives:'peach'},
+  bean:     {emoji:'🫘',name:'커피콩',  growTime:40, cost:2500, yield:10, gives:'bean'},
   milk_c:   {emoji:'🥛',name:'유제품',  growTime:25, cost:3000, yield:10,  gives:'milk'},
-  sugar_c:  {emoji:'🍬',name:'설탕수수',growTime:15, cost:1500, yield:25, gives:'sugar'},
+  sugar_c:  {emoji:'🍬',name:'설탕수수',growTime:15, cost:1500, yield:9, gives:'sugar'},
   // 2단계 이후
-  egg_c:    {emoji:'🥚',name:'달걀',    growTime:20, cost:800,  yield:12, gives:'egg'},
+  egg_c:    {emoji:'🥚',name:'달걀',    growTime:20, cost:800,  yield:6, gives:'egg'},
    // 4단계 이후
-  potato_c: {emoji:'🥔',name:'감자',    growTime:35, cost:1200, yield:10, gives:'potato'},
-  tomato_c: {emoji:'🍅',name:'토마토',  growTime:30, cost:1500, yield:8,  gives:'tomato'},
+  potato_c: {emoji:'🥔',name:'감자',    growTime:35, cost:1200, yield:6, gives:'potato'},
+  tomato_c: {emoji:'🍅',name:'토마토',  growTime:30, cost:1500, yield:6,  gives:'tomato'},
   mushroom_c:{emoji:'🍄',name:'버섯',   growTime:30, cost:2000, yield:6,  gives:'mushroom'},
   // 6단계 이후
-  meat_c:   {emoji:'🥩',name:'고기',    growTime:40, cost:5000, yield:5,  gives:'meat'},
-  basil_c:  {emoji:'🌿',name:'허브',    growTime:30, cost:2000, yield:10, gives:'basil'},
+  meat_c:   {emoji:'🥩',name:'고기',    growTime:40, cost:5000, yield:3,  gives:'meat'},
+  basil_c:  {emoji:'🌿',name:'허브',    growTime:30, cost:2000, yield:7, gives:'basil'},
   // 8단계 이후
   truffle_c:{emoji:'⚫',name:'트러플',  growTime:50, cost:6000,yield:8,  gives:'truffle'},
   cream_c:  {emoji:'🍶',name:'생크림',  growTime:35, cost:4000, yield:10,  gives:'cream'},
@@ -669,7 +671,7 @@ const SPECIAL_TYPES = {
 // STORY EVENTS (triggered at rep milestones or random)
 const STORY_EVENTS = [
   {id:'rival_cafe',     triggerRep:300,   title:'🏪 경쟁 가게 등장!',     text:'골목 맞은편에 새로운 가게가 오픈했어요. 메뉴도 비슷하고 손님들이 비교하기 시작했어요.', choices:[{label:'품질로 승부하기',reward:{rep:50},msg:'품질 향상에 집중! 명성 +50'},{label:'프로모션 행사하기',reward:{money:20000,rep:20},msg:'할인 행사 진행! 명성 +20'}]},
-  {id:'regular_chan',   triggerRep:250,   title:'👴 단골손님 찬호 씨',     text:'"저 여기 매일 오거든요. 오늘도 항상 먹던 거 주세요." 찬호 씨는 이제 가게의 숨은 홍보대사가 됐어요.', choices:[{label:'감사 선물 드리기',reward:{rep:80,money:-10000},msg:'찬호 씨 감동! 명성 +80'},{label:'메뉴 이름 붙여주기',reward:{rep:120},msg:'"찬호 특선" 탄생! 명성 +120'}]},
+  {id:'regular_chan',   triggerRep:250,   title:'👴 단골손님 건희 씨',     text:'"저 여기 매일 오거든요. 오늘도 항상 먹던 거 주세요." 건희 씨는 이제 가게의 숨은 홍보대사가 됐어요.', choices:[{label:'감사 선물 드리기',reward:{rep:80,money:-10000},msg:'건희 씨 감동! 명성 +80'},{label:'메뉴 이름 붙여주기',reward:{rep:120},msg:'"건희 특선" 탄생! 명성 +120'}]},
   {id:'food_magazine',  triggerRep:800,   title:'📰 잡지 취재 요청!',     text:'지역 음식 잡지에서 취재 요청이 왔어요. 기사가 실리면 대박날 수도 있어요!', choices:[{label:'취재 수락하기',reward:{rep:300},msg:'잡지 기사 게재! 명성 +300'},{label:'정중히 거절하기',reward:{money:0},msg:'다음 기회로...'}]},
   {id:'staff_story',    triggerRep:500,   title:'👧 아르바이트생 소연',   text:'"사장님, 저 창업이 꿈이에요. 많이 배우고 싶어요!" 소연이의 열정이 가게 분위기를 밝게 만들어요.', choices:[{label:'열심히 가르쳐주기',reward:{rep:80},msg:'소연이 성장! 명성 +80'},{label:'운영 노하우 전수',reward:{rep:150,money:-5000},msg:'소연이 감동! 명성 +150'}]},
   {id:'rainy_day',      triggerRep:0,     title:'🌧 비 오는 날',           text:'갑자기 비가 내리기 시작했어요. 빗소리와 함께 가게 안이 더 아늑해진 것 같아요.', choices:[{label:'무료 음료 한 잔 제공',reward:{rep:100,money:-8000},msg:'따뜻한 서비스! 명성 +100'},{label:'분위기 음악 틀기',reward:{rep:50},msg:'분위기 UP! 명성 +50'}]},
@@ -706,6 +708,8 @@ let G = {
   rival:{active:false, level:0, lastStealDay:0},
   trendMenu:null, trendSeason:-1,
   quests:[], questDay:0,
+  boosters:{}, // {beanBoost:{endDay}, adsBoost:{endDay}, staffBoost:{endDay,staffId}}
+  staffLevels:{}, // {staffId: level} 1~3
 };
 
 // ══════════════════════════════════════════
@@ -766,7 +770,8 @@ function resetSpawnTimer(customRate) {
 
 function resetStaffTimer() {
   clearInterval(staffTimer);
-  staffTimer=setInterval(runStaffActions,15000);
+  const interval = (G.boosters?.staffB && G.day <= (G.boosters.staffB.endDay||0)) ? 7500 : 15000;
+  staffTimer=setInterval(runStaffActions, interval);
 }
 
 // ══════════════════════════════════════════
@@ -793,6 +798,17 @@ function tick() {
     // Season change (every 7 game-days)
     if (G.seasonDay>7) { G.seasonDay=1; advanceSeason(); }
     addLog(`📅 Day ${G.day} 시작! (${SEASONS[G.seasonIndex].name})`);
+    // 부스터 만료 체크
+    if (G.boosters?.ads && G.day > G.boosters.ads.endDay) {
+      delete G.boosters.ads; resetSpawnTimer();
+      addLog('📢 SNS 광고 효과 종료');
+    }
+    if (G.boosters?.bean && G.day > G.boosters.bean.endDay) {
+      delete G.boosters.bean; addLog('☕ 특별 원두 효과 종료');
+    }
+    if (G.boosters?.staffB && G.day > G.boosters.staffB.endDay) {
+      delete G.boosters.staffB; addLog('🎁 직원 보너스 효과 종료');
+    }
     saveToStorage();
     renderSeasonStrip();
   }
@@ -1300,6 +1316,12 @@ function serveCustomer(custId, isAuto, staffName) {
   if (cust.order2) price+=RECIPES[cust.order2].price*(td?.moneyMult||1);
   if (G.upgrades.includes('premium_mat')) price*=1.15;
   if (hasStaff('head_chef')) price*=1.1;
+  // 직원 레벨 보너스 (수석 셰프)
+  const chefLv=G.staffLevels?.head_chef||1;
+  if (hasStaff('head_chef')&&chefLv>1) price*=(1+(chefLv-1)*0.2);
+  // 특별 원두 부스터
+  const coffeeKeys=['latte','americano','strawb_latte','spring_blossom','summer_ice','autumn_latte','winter_choco','combo_americano_cookie','combo_latte_waffle','combo_cake_latte','peach_tea'];
+  if (G.boosters?.bean&&G.day<=G.boosters.bean.endDay&&(coffeeKeys.includes(cust.order)||coffeeKeys.includes(cust.order2))) price*=2;
   price=Math.floor(price);
   G.money+=price;
 
@@ -1683,12 +1705,12 @@ function updateTimeDisplay() {
   document.getElementById('game-time').textContent=`${m}:${s}`;
 }
 
-// TABS — 직원/업그레이드만
+// TABS
 let currentTab='staff';
 function switchTab(tab) {
   currentTab=tab;
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    const tabs=['staff','upgrades'];
+    const tabs=['staff','upgrades','booster'];
     b.classList.toggle('active',tabs[i]===tab);
   });
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
@@ -1698,6 +1720,7 @@ function switchTab(tab) {
 function renderTab(tab) {
   if (tab==='staff') renderStaff();
   else if (tab==='upgrades') renderUpgrades();
+  else if (tab==='booster') renderBooster();
 }
 
 // ══════════════════════════════════════════
@@ -1705,7 +1728,7 @@ function renderTab(tab) {
 // ══════════════════════════════════════════
 function renderAll() {
   updateHeader(); renderSeasonStrip(); renderFarm(); renderInventory();
-  if (G.cafeOpen) { renderCafeInfo(); renderMenu(); renderCustomers(); }
+  if (G.cafeOpen) { renderCafeInfo(); renderMenu(); renderCustomers(); updateAllBanners(); renderQuestPanel(); }
   else checkCafeEligibility();
   renderTab(currentTab); renderReviews();
   applySeasonBg();
@@ -1874,6 +1897,122 @@ function renderUpgrades() {
         `<button class="btn btn-gold btn-sm" onclick="buyUpgrade('${k}')">💰${u.cost}</button>`}
     </div>`;
   }).join('');
+}
+
+function renderBooster() {
+  if (!G.cafeOpen) {
+    document.getElementById('tab-booster').innerHTML='<div style="text-align:center;color:var(--latte);font-size:12px;padding:16px;">카페 오픈 후 이용 가능해요!</div>';
+    return;
+  }
+  if (!G.boosters) G.boosters={};
+  if (!G.staffLevels) G.staffLevels={};
+
+  const now = G.day;
+  const beanActive   = G.boosters.bean   && now <= G.boosters.bean.endDay;
+  const adsActive    = G.boosters.ads    && now <= G.boosters.ads.endDay;
+  const staffBActive = G.boosters.staffB && now <= G.boosters.staffB.endDay;
+
+  // 단기 부스터
+  const boosters = [
+    {key:'bean',   emoji:'☕', name:'특별 원두',    desc:'1일간 커피 메뉴 수익 2배',     cost:30000, stageReq:4, active:beanActive,   endDay:G.boosters.bean?.endDay},
+    {key:'ads',    emoji:'📢', name:'SNS 광고',     desc:'1일간 손님 스폰 속도 2배',     cost:20000, stageReq:1, active:adsActive,    endDay:G.boosters.ads?.endDay},
+    {key:'popup',  emoji:'🎪', name:'팝업 이벤트',  desc:'즉시 손님 6명 소환',           cost:15000, stageReq:2, active:false,        endDay:null},
+    {key:'lucky',  emoji:'🍀', name:'럭키 박스',    desc:'랜덤 보상 (돈/명성/재료)',     cost:10000, stageReq:1, active:false,        endDay:null},
+    {key:'staffB', emoji:'🎁', name:'직원 보너스',  desc:'1일간 서빙 속도 2배',          cost:25000, stageReq:1, active:staffBActive, endDay:G.boosters.staffB?.endDay},
+  ];
+
+  // 직원 교육
+  const staffTraining = Object.entries(STAFF_DEFS).filter(([k])=>G.staff[k]).map(([k,s])=>{
+    const lv = G.staffLevels[k]||1;
+    const upgCost = lv * 20000;
+    const canUpg = lv < 3;
+    return {key:k, s, lv, upgCost, canUpg};
+  });
+
+  document.getElementById('tab-booster').innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:var(--espresso);margin-bottom:4px;padding-bottom:3px;border-bottom:1px dashed rgba(200,149,108,0.3);">⚡ 단기 부스터</div>
+    ${boosters.map(b=>{
+      const locked = b.stageReq > G.stage;
+      const canBuy = !locked && G.money >= b.cost && !b.active;
+      return `<div style="display:flex;align-items:center;gap:7px;background:${b.active?'rgba(90,138,60,0.08)':'rgba(107,66,38,0.06)'};border:1.5px solid ${b.active?'rgba(90,138,60,0.3)':'transparent'};border-radius:9px;padding:7px 9px;font-size:12px;margin-bottom:3px;">
+        <span style="font-size:18px;">${b.emoji}</span>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:11px;">${b.name}${b.active?` <span style="font-size:9px;color:var(--grass);">~Day ${b.endDay}</span>`:''}</div>
+          <div style="font-size:9px;color:var(--latte);">${b.desc}</div>
+        </div>
+        ${b.active
+          ? `<span style="font-size:10px;color:var(--grass);">활성중</span>`
+          : locked
+            ? `<span style="font-size:10px;color:var(--latte);">🔒 ${b.stageReq}단계</span>`
+            : `<button class="btn btn-gold btn-sm" onclick="activateBooster('${b.key}')" ${canBuy?'':'disabled'}>💰${b.cost.toLocaleString()}</button>`
+        }
+      </div>`;
+    }).join('')}
+    ${staffTraining.length > 0 ? `
+    <div style="font-size:11px;font-weight:700;color:var(--espresso);margin:8px 0 4px;padding-bottom:3px;border-bottom:1px dashed rgba(200,149,108,0.3);">🎓 직원 교육</div>
+    ${staffTraining.map(({key,s,lv,upgCost,canUpg})=>`
+      <div style="display:flex;align-items:center;gap:7px;background:rgba(107,66,38,0.06);border-radius:9px;padding:7px 9px;font-size:12px;margin-bottom:3px;">
+        <span style="font-size:18px;">${s.emoji}</span>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:11px;">${s.name} <span style="font-size:10px;color:var(--gold);">Lv.${lv}</span></div>
+          <div style="font-size:9px;color:var(--latte);">${lv===1?'기본':lv===2?'능력치 +20%':'최강화 +40%'}</div>
+        </div>
+        ${canUpg
+          ? `<button class="btn btn-sm" style="background:var(--espresso);color:white;font-size:10px;" onclick="trainStaff('${key}')" ${G.money>=upgCost?'':'disabled'}>💰${upgCost.toLocaleString()}</button>`
+          : `<span style="font-size:10px;color:var(--gold);">MAX</span>`
+        }
+      </div>`).join('')}` : `<div style="font-size:11px;color:var(--latte);text-align:center;margin-top:8px;">직원을 고용하면 교육할 수 있어요!</div>`}
+  `;
+}
+
+function activateBooster(key) {
+  if (!G.boosters) G.boosters={};
+  const costs = {bean:30000, ads:20000, popup:15000, lucky:10000, staffB:25000};
+  const cost = costs[key];
+  if (G.money < cost) { showNotif('💰 돈이 부족해요!'); return; }
+  G.money -= cost;
+
+  if (key==='bean') {
+    G.boosters.bean = {endDay: G.day+1};
+    showNotif('☕ 특별 원두 효과 시작! 커피 수익 2배 (1일)');
+    addLog('☕ 특별 원두 구매! 커피 메뉴 수익 2배');
+  } else if (key==='ads') {
+    G.boosters.ads = {endDay: G.day+1};
+    resetSpawnTimer(Math.max(1000, (()=>{const base=[null,14000,10000,7000,5000,3500]; return (base[G.stage]||8000)/2;})()));
+    showNotif('📢 SNS 광고 시작! 손님 2배 (1일)');
+    addLog('📢 SNS 광고 집행! 손님 스폰 2배');
+  } else if (key==='popup') {
+    let spawned=0;
+    for (let i=0;i<6&&G.customers.length<6;i++) { spawnCustomer(); spawned++; }
+    showNotif(`🎪 팝업 이벤트! 손님 ${spawned}명 즉시 방문!`);
+    addLog(`🎪 팝업 이벤트 개최! 손님 ${spawned}명 소환`);
+  } else if (key==='lucky') {
+    const roll = Math.random();
+    if (roll<0.33) { const m=Math.floor(Math.random()*50000)+20000; G.money+=m; showNotif(`🍀 럭키! 💰+${m.toLocaleString()}원`); addLog(`🍀 럭키 박스: +${m.toLocaleString()}원`); }
+    else if (roll<0.66) { const r=Math.floor(Math.random()*500)+200; G.reputation+=r; showNotif(`🍀 럭키! ⭐+${r} 명성`); addLog(`🍀 럭키 박스: +${r} 명성`); }
+    else { const items=Object.keys(G.inventory); const item=items[Math.floor(Math.random()*items.length)]; G.inventory[item]=(G.inventory[item]||0)+20; showNotif(`🍀 럭키! ${ITEMS[item]?.emoji||''}${ITEMS[item]?.name||item} +20개`); addLog(`🍀 럭키 박스: ${ITEMS[item]?.name||item} +20`); renderInventory(); }
+  } else if (key==='staffB') {
+    G.boosters.staffB = {endDay: G.day+1};
+    showNotif('🎁 직원 보너스! 서빙 속도 2배 (1일)');
+    addLog('🎁 직원 보너스 지급! 서빙 속도 2배');
+  }
+  updateHeader();
+  renderBooster();
+}
+
+function trainStaff(key) {
+  if (!G.staffLevels) G.staffLevels={};
+  const lv = G.staffLevels[key]||1;
+  if (lv>=3) { showNotif('이미 최고 레벨이에요!'); return; }
+  const cost = lv * 20000;
+  if (G.money < cost) { showNotif('💰 돈이 부족해요!'); return; }
+  G.money -= cost;
+  G.staffLevels[key] = lv+1;
+  const s = STAFF_DEFS[key];
+  showNotif(`🎓 ${s.name} Lv.${lv+1} 교육 완료!`);
+  addLog(`🎓 ${s.emoji} ${s.name} Lv.${lv+1} 달성!`);
+  updateHeader();
+  renderBooster();
 }
 
 function renderReviews() {
