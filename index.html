@@ -1380,6 +1380,7 @@ function spawnCustomer() {
   addLog(`${cust.emoji} ${cust.name}님 방문 — ${recipe.emoji}${recipe.name}${r2?` + ${r2.emoji}${r2.name}`:''} 주문`);
   appendCustCard(cust);
   document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
+  updateServeAllBtn();
 }
 
 function appendCustCard(c) {
@@ -1411,6 +1412,7 @@ function appendCustCard(c) {
 function showCustEmpty() {
   const list=document.getElementById('customerList');
   if (!list.querySelector('.cust-empty')) list.innerHTML='<div class="cust-empty">손님을 기다리는 중...</div>';
+  updateServeAllBtn();
 }
 
 function updatePatBars() {
@@ -1418,6 +1420,14 @@ function updatePatBars() {
     const bar=document.querySelector(`[data-cid="${c.id}"] .cust-pat-fill`);
     if (bar) { bar.style.width=c.patience+'%'; bar.style.background=c.patience>60?'var(--grass)':c.patience>30?'var(--sun)':'#e74c3c'; }
   });
+}
+
+function updateServeAllBtn() {
+  const btn = document.getElementById('serveAllBtn');
+  if (!btn) return;
+  const has = G.cafeOpen && G.customers.length > 0;
+  btn.disabled = !has;
+  btn.style.opacity = has ? '1' : '0.4';
 }
 
 function serveAll() {
@@ -2323,6 +2333,7 @@ function renderCustomers() {
   if (G.customers.length===0) showCustEmpty();
   else G.customers.forEach(c=>appendCustCard(c));
   document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
+  updateServeAllBtn();
 }
 
 function renderRecipes() {
@@ -2391,11 +2402,11 @@ function renderBooster() {
 
   // 단기 부스터
   const boosters = [
-    {key:'bean',   emoji:'☕', name:'특별 원두',    desc:'1일간 커피 메뉴 수익 2배',     cost:30000, stageReq:4, active:beanActive,   endDay:G.boosters.bean?.endDay},
-    {key:'ads',    emoji:'📢', name:'SNS 광고',     desc:'1일간 손님 스폰 속도 2배',     cost:20000, stageReq:1, active:adsActive,    endDay:G.boosters.ads?.endDay},
+    {key:'bean',   emoji:'☕', name:'특별 원두',    desc:'1일간 커피 메뉴 수익 2배',     cost:10000, stageReq:4, active:beanActive,   endDay:G.boosters.bean?.endDay},
+    {key:'ads',    emoji:'📢', name:'SNS 광고',     desc:'1일간 손님 스폰 속도 2배',     cost:10000, stageReq:1, active:adsActive,    endDay:G.boosters.ads?.endDay},
     {key:'popup',  emoji:'🎪', name:'팝업 이벤트',  desc:'즉시 손님 6명 소환',           cost:15000, stageReq:2, active:false,        endDay:null},
-    {key:'lucky',  emoji:'🍀', name:'럭키 박스',    desc:'랜덤 보상 (돈/명성/재료)',     cost:10000, stageReq:1, active:false,        endDay:null},
-    {key:'staffB', emoji:'🎁', name:'직원 보너스',  desc:'1일간 서빙 속도 2배',          cost:25000, stageReq:1, active:staffBActive, endDay:G.boosters.staffB?.endDay},
+    {key:'lucky',  emoji:'🍀', name:'럭키 박스',    desc:'랜덤 보상 (돈/명성/재료)',     cost:2000, stageReq:1, active:false,        endDay:null},
+    {key:'staffB', emoji:'🎁', name:'직원 보너스',  desc:'1일간 서빙 속도 2배',          cost:10000, stageReq:1, active:staffBActive, endDay:G.boosters.staffB?.endDay},
   ];
 
   // 직원 교육
