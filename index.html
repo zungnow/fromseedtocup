@@ -496,7 +496,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
         <div class="tab-bar">
           <button class="tab-btn active" onclick="switchTab('staff')">👥 직원</button>
           <button class="tab-btn" onclick="switchTab('upgrades')">🔧 설정</button>
-          <button class="tab-btn" onclick="switchTab('booster')">⚡ UP</button>
+          <button class="tab-btn" onclick="switchTab('booster')">⚡ 버프</button>
           <button class="tab-btn" onclick="switchTab('achieve')">🏅 업적</button>
           <button class="tab-btn" onclick="switchTab('encyclo')">📖 도감</button>
         </div>
@@ -2094,12 +2094,36 @@ function getEmergencyResetTime() {
   return { h, m, ms };
 }
 
+// ── 단기 부스터 사용 횟수 제한 (자정 기준, 1일 2회) ──
+const BOOSTER_MAX_PER_DAY = 2;
+
+function getBoosterLog() {
+  try {
+    const raw = localStorage.getItem('boosterLog');
+    const data = raw ? JSON.parse(raw) : {};
+    const today = getTodayKey();
+    return data[today] || 0;
+  } catch(e) { return 0; }
+}
+
+function saveBoosterLog(count) {
+  try {
+    const today = getTodayKey();
+    localStorage.setItem('boosterLog', JSON.stringify({[today]: count}));
+  } catch(e) {}
+}
+
+function getBoosterRemaining() {
+  return Math.max(0, BOOSTER_MAX_PER_DAY - getBoosterLog());
+}
+
+
 function openEmergencyModal() {
   const available = EMERGENCY_ITEMS.filter(e => e.stageReq <= G.stage);
   const remaining = getEmergencyRemaining();
   const { h, m } = getEmergencyResetTime();
   let nextRefill = remaining < EMERGENCY_MAX
-    ? `<div style="font-size:10px;color:var(--latte);margin-top:3px;">🕐 ${h}시간 ${m}분 후 초기화</div>` : '';
+    ? `<div style="font-size:10px;color:var(--latte);margin-top:3px;">🕐 자정까지 ${h}시간 ${m}분 남음</div>` : '';
   let html = `<div style="font-size:12px;color:var(--latte);margin-bottom:10px;">
     오늘 남은 횟수: <b style="color:${remaining>0?'var(--grass)':'#c0392b'}">${remaining}회</b> / ${EMERGENCY_MAX}회
     ${nextRefill}
@@ -2159,7 +2183,7 @@ function renderInventory() {
     if (statusEl) {
       if (rem < EMERGENCY_MAX) {
         const { h, m } = getEmergencyResetTime();
-        statusEl.textContent = `🕐 ${h}시간 ${m}분 후 초기화`;
+        statusEl.textContent = `🕐 자정까지 ${h}시간 ${m}분 후 초기화`;
       } else {
         statusEl.textContent = '';
       }
@@ -2345,10 +2369,14 @@ function renderBooster() {
   });
 
   document.getElementById('tab-booster').innerHTML = `
-    <div style="font-size:11px;font-weight:700;color:var(--espresso);margin-bottom:4px;padding-bottom:3px;border-bottom:1px dashed rgba(200,149,108,0.3);">⚡ 단기 부스터</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding-bottom:3px;border-bottom:1px dashed rgba(200,149,108,0.3);">
+      <div style="font-size:11px;font-weight:700;color:var(--espresso);">⚡ 단기 부스터</div>
+      <div style="font-size:10px;color:${getBoosterRemaining()>0?'var(--grass)':'#c0392b'};">${getBoosterRemaining()}회 남음 · 자정 초기화</div>
+    </div>
     ${boosters.map(b=>{
       const locked = b.stageReq > G.stage;
-      const canBuy = !locked && G.money >= b.cost && !b.active;
+      const boosterRem = getBoosterRemaining();
+    const canBuy = !locked && G.money >= b.cost && !b.active && boosterRem > 0;
       return `<div style="display:flex;align-items:center;gap:7px;background:${b.active?'rgba(90,138,60,0.08)':'rgba(107,66,38,0.06)'};border:1.5px solid ${b.active?'rgba(90,138,60,0.3)':'transparent'};border-radius:9px;padding:7px 9px;font-size:12px;margin-bottom:3px;">
         <span style="font-size:18px;">${b.emoji}</span>
         <div style="flex:1;">
@@ -2382,10 +2410,17 @@ function renderBooster() {
 
 function activateBooster(key) {
   if (!G.boosters) G.boosters={};
+  const remaining = getBoosterRemaining();
+  if (remaining <= 0) {
+    const { h, m } = getEmergencyResetTime();
+    showNotif(`⛔ 사용 횟수를 초과했어요! (${h}시간 ${m}분 후 초기화)`);
+    return;
+  }
   const costs = {bean:30000, ads:20000, popup:15000, lucky:10000, staffB:25000};
   const cost = costs[key];
   if (G.money < cost) { showNotif('💰 돈이 부족해요!'); return; }
   G.money -= cost;
+  saveBoosterLog(getBoosterLog() + 1);
 
   if (key==='bean') {
     G.boosters.bean = {endDay: G.day+1};
