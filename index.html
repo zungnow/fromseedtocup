@@ -272,8 +272,77 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 .tut-btn{background:var(--gold);color:var(--espresso);border:none;border-radius:8px;padding:6px 14px;font-family:'Jua',sans-serif;font-size:12px;cursor:pointer;flex:1;}
 .tut-btn-skip{background:transparent;color:rgba(255,248,240,0.5);border:1px solid rgba(255,248,240,0.2);border-radius:8px;padding:6px 10px;font-family:'Gowun Dodum',sans-serif;font-size:11px;cursor:pointer;}
 
-/* ── 저장 시간 표시 ── */
-#save-status{font-size:10px;color:var(--latte);background:rgba(107,66,38,0.08);padding:2px 8px;border-radius:8px;white-space:nowrap;}
+/* ── 가게 꾸미기 테마 ── */
+.deco-item{background:rgba(107,66,38,0.06);border:1.5px solid rgba(200,149,108,0.2);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:12px;transition:all 0.15s;}
+.deco-item.owned{border-color:rgba(212,160,23,0.5);background:rgba(212,160,23,0.08);}
+.deco-item.active{border-color:var(--grass);background:rgba(90,138,60,0.1);}
+.deco-preview{font-size:26px;min-width:36px;text-align:center;}
+.deco-info{flex:1;}
+.deco-name{font-weight:700;font-size:12px;}
+.deco-desc{font-size:10px;color:var(--latte);margin-top:1px;}
+
+/* ── 테마별 카페 topbar ── */
+body.theme-cozy   .cafe-topbar{background:linear-gradient(135deg,#5C3317,#8B5E3C);}
+body.theme-modern .cafe-topbar{background:linear-gradient(135deg,#1a252f,#2c3e50);}
+body.theme-nature .cafe-topbar{background:linear-gradient(135deg,#1e5631,#2e7d32);}
+body.theme-luxury .cafe-topbar{background:linear-gradient(135deg,#2c1a00,#7d5a00);}
+
+/* ── 테마별 progress bar ── */
+body.theme-cozy   .prog-fill{background:linear-gradient(90deg,#C8956C,#F4C430);}
+body.theme-modern .prog-fill{background:linear-gradient(90deg,#2980b9,#6dd5fa);}
+body.theme-nature .prog-fill{background:linear-gradient(90deg,#27ae60,#a8e063);}
+body.theme-luxury .prog-fill{background:linear-gradient(90deg,#b8860b,#FFD700);}
+
+/* ── 테마별 패널 테두리 ── */
+body.theme-cozy   .panel{border-color:rgba(200,120,60,0.35);}
+body.theme-modern .panel{border-color:rgba(41,128,185,0.25);}
+body.theme-nature .panel{border-color:rgba(46,125,50,0.3);}
+body.theme-luxury .panel{border-color:rgba(212,160,23,0.45);}
+
+/* ── 모바일 패널 기본 배경 ── */
+.mob-panel-bg{background:linear-gradient(135deg,var(--espresso),#5C3A1E);}
+body.theme-cozy   .mob-panel-bg{background:linear-gradient(135deg,#5C3317,#8B5E3C);}
+body.theme-modern .mob-panel-bg{background:linear-gradient(135deg,#1a252f,#2c3e50);}
+body.theme-nature .mob-panel-bg{background:linear-gradient(135deg,#1e5631,#2e7d32);}
+body.theme-luxury .mob-panel-bg{background:linear-gradient(135deg,#2c1a00,#7d5a00);}
+/* ── 모바일 진행도 바 ── */
+.mob-progress-bar{background:linear-gradient(90deg,#5A8A3C,#F4C430);}
+body.theme-cozy   .mob-progress-bar{background:linear-gradient(90deg,#C8956C,#F4C430);}
+body.theme-modern .mob-progress-bar{background:linear-gradient(90deg,#2980b9,#6dd5fa);}
+body.theme-nature .mob-progress-bar{background:linear-gradient(90deg,#27ae60,#a8e063);}
+body.theme-luxury .mob-progress-bar{background:linear-gradient(90deg,#b8860b,#FFD700);}
+/* ── 모바일 일러스트 ── */
+.mob-illustration{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 6px;margin-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.1);min-height:0;}
+.mob-illustration:empty{display:none;margin:0;padding:0;border:none;}
+.mob-illust-scene{display:flex;gap:4px;align-items:center;}
+.mob-illust-scene span{font-size:17px;animation:sceneFloat 3s ease-in-out infinite;}
+.mob-illust-scene span:nth-child(2){animation-delay:0.5s;}
+.mob-illust-scene span:nth-child(3){animation-delay:1s;}
+.mob-illust-label{font-size:10px;color:rgba(255,255,255,0.65);font-family:'Jua',sans-serif;}
+.mob-prop-row{display:flex;gap:3px;}
+.mob-prop-row span{font-size:13px;}
+
+/* ── 가게 일러스트 배너 (모바일 메인탭과 동일 스타일) ── */
+#cafe-illustration{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 12px 8px;margin:0;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+  min-height:0;
+  transition:background 0.7s;
+}
+#cafe-illustration:empty{display:none;}
+#cafe-illustration .cafe-scene{display:flex;gap:5px;align-items:center;}
+#cafe-illustration .cafe-scene span{font-size:20px;animation:sceneFloat 3s ease-in-out infinite;}
+#cafe-illustration .cafe-scene span:nth-child(2){animation-delay:0.5s;}
+#cafe-illustration .cafe-scene span:nth-child(3){animation-delay:1s;}
+#cafe-illustration .scene-label{font-size:11px;color:rgba(255,255,255,0.65);font-family:'Jua',sans-serif;}
+#cafe-illustration .prop-row{display:flex;gap:3px;}
+#cafe-illustration .prop-row span{font-size:16px;}
+/* 소품 배지는 일러스트 블록 안 prop-row 로 표시 */
+@keyframes sceneFloat{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-4px);}
+}
 
 /* 플로팅 텍스트 */
 .float-text{position:fixed;pointer-events:none;z-index:500;font-family:'Jua',sans-serif;font-size:16px;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,0.3);animation:floatUp 1.2s ease-out forwards;}
@@ -474,7 +543,9 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 
       <!-- 모바일 전용: 카페 오픈 후 방문손님 미니패널 -->
       <div id="mob-cust-panel" style="display:none;">
-        <div style="background:linear-gradient(135deg,var(--espresso),#5C3A1E);border-radius:12px;padding:10px 12px;">
+        <div id="mob-panel-bg-farm" class="mob-panel-bg" style="border-radius:12px;padding:10px 12px;transition:background 0.7s;">
+          <!-- 모바일 일러스트 + 소품 -->
+          <div id="mob-illustration-farm" class="mob-illustration"></div>
           <!-- 이벤트 배너 -->
           <div id="mob-event-banner-farm"></div>
           <!-- 단계 + 진행도 -->
@@ -483,7 +554,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
             <span id="mob-progress-text" style="font-size:10px;color:rgba(255,248,240,0.6);"></span>
           </div>
           <div style="height:5px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden;margin-bottom:8px;">
-            <div id="mob-progress-fill" style="height:100%;background:linear-gradient(90deg,#5A8A3C,#F4C430);border-radius:3px;transition:width 0.6s;width:0%;"></div>
+            <div id="mob-progress-fill" class="mob-progress-bar" style="height:100%;border-radius:3px;transition:width 0.6s,background 0.7s;width:0%;"></div>
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;">👥 방문 손님 <span id="mob-cust-count"></span></div><button onclick="serveAll()" class="serve-all-btn" style="background:var(--grass);color:white;border:none;border-radius:7px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-weight:600;">모두서빙</button></div>
           <div id="mob-cust-list"><div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div></div>
@@ -535,6 +606,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
               <span class="sat-val" id="satVal">0.0</span>
             </div>
           </div>
+          <div id="cafe-illustration"></div>
           <div class="cafe-body">
             <div id="storyBannerArea"></div>
             <div>
@@ -569,7 +641,9 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
     <div id="col-manage">
       <!-- 모바일: 방문손님 미니패널 (관리탭에도 표시) -->
       <div id="mob-cust-panel-manage" style="display:none;">
-        <div style="background:linear-gradient(135deg,var(--espresso),#5C3A1E);border-radius:12px;padding:10px 12px;">
+        <div id="mob-panel-bg-manage" class="mob-panel-bg" style="border-radius:12px;padding:10px 12px;transition:background 0.7s;">
+          <!-- 모바일 일러스트 + 소품 -->
+          <div id="mob-illustration-manage" class="mob-illustration"></div>
           <!-- 이벤트 배너 -->
           <div id="mob-event-banner-manage"></div>
           <!-- 단계 + 진행도 -->
@@ -578,7 +652,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
             <span id="mob-progress-text-manage" style="font-size:10px;color:rgba(255,248,240,0.6);"></span>
           </div>
           <div style="height:5px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden;margin-bottom:8px;">
-            <div id="mob-progress-fill-manage" style="height:100%;background:linear-gradient(90deg,#5A8A3C,#F4C430);border-radius:3px;transition:width 0.6s;width:0%;"></div>
+            <div id="mob-progress-fill-manage" class="mob-progress-bar" style="height:100%;border-radius:3px;transition:width 0.6s,background 0.7s;width:0%;"></div>
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;">👥 방문 손님 <span id="mob-cust-count-manage"></span></div><button onclick="serveAll()" class="serve-all-btn" style="background:var(--grass);color:white;border:none;border-radius:7px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-weight:600;">모두서빙</button></div>
           <div id="mob-cust-list-manage"><div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div></div>
@@ -589,6 +663,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
         <div class="tab-bar">
           <button class="tab-btn active" onclick="switchTab('staff')">👥<br>직원</button>
           <button class="tab-btn" onclick="switchTab('upgrades')">🔧<br>설정</button>
+          <button class="tab-btn" onclick="switchTab('interior')">🎨<br>꾸미기</button>
           <button class="tab-btn" onclick="switchTab('booster')">⚡<br>버프</button>
           <button class="tab-btn" onclick="switchTab('achieve')">🏅<br>업적</button>
           <button class="tab-btn" onclick="switchTab('encyclo')">📖<br>도감</button>
@@ -596,6 +671,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
         </div>
         <div class="tab-pane active" id="tab-staff"></div>
         <div class="tab-pane" id="tab-upgrades"></div>
+        <div class="tab-pane" id="tab-interior"></div>
         <div class="tab-pane" id="tab-booster"></div>
         <div class="tab-pane" id="tab-achieve"></div>
         <div class="tab-pane" id="tab-encyclo"></div>
@@ -630,6 +706,9 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
     </button>
     <button class="mbt" id="mbt-save" onclick="openSaveModal()">
       <span class="mbt-i">💾</span><span class="mbt-l">저장</span>
+    </button>
+    <button class="mbt" id="mbt-mute" onclick="toggleMute()">
+      <span class="mbt-i" id="mob-mute-icon">🔊</span><span class="mbt-l">소리</span>
     </button>
   </div>
 
@@ -821,13 +900,13 @@ const STAGE_DATA = [
   {name:'🌱 농장',       building:'🏕️',desc:'작물을 재배하고 재료를 모아보세요',           repReq:0},
   {name:'🛖 노점',       building:'🛖', desc:'길거리 노점으로 첫 장사를 시작해보세요!',    repReq:100},
   {name:'🥪 토스트점',   building:'🏠', desc:'작은 토스트 가게를 운영해보세요',            repReq:600},
-  {name:'🍱 분식점',     building:'🏪', desc:'떡볶이, 김밥으로 손님을 모아보세요',         repReq:1500},
-  {name:'☕ 카페',       building:'☕', desc:'본격 카페! 커피와 디저트를 선보이세요',       repReq:3000},
-  {name:'🍰 디저트카페', building:'🎂', desc:'달콤한 디저트로 감성 카페를 꾸려보세요',     repReq:6000},
-  {name:'🍝 비스트로',   building:'🍝', desc:'파스타와 수프로 유럽식 감성을 더하세요',     repReq:11000},
-  {name:'🍽️ 레스토랑',  building:'🍽️',desc:'스테이크와 코스 요리로 격조를 높이세요',     repReq:20000},
-  {name:'🥂 파인다이닝', building:'🥂', desc:'트러플과 프라임 스테이크, 최고급 요리',      repReq:35000},
-  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드로 성장했어요!',      repReq:60000},
+  {name:'🍱 분식점',     building:'🏪', desc:'떡볶이, 김밥으로 손님을 모아보세요',         repReq:1800},
+  {name:'☕ 카페',       building:'☕', desc:'본격 카페! 커피와 디저트를 선보이세요',       repReq:4000},
+  {name:'🍰 디저트카페', building:'🎂', desc:'달콤한 디저트로 감성 카페를 꾸려보세요',     repReq:8500},
+  {name:'🍝 비스트로',   building:'🍝', desc:'파스타와 수프로 유럽식 감성을 더하세요',     repReq:17000},
+  {name:'🍽️ 레스토랑',  building:'🍽️',desc:'스테이크와 코스 요리로 격조를 높이세요',     repReq:32000},
+  {name:'🥂 파인다이닝', building:'🥂', desc:'트러플과 프라임 스테이크, 최고급 요리',      repReq:55000},
+  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드로 성장했어요!',      repReq:90000},
 ];
 
 // SPECIAL GUEST types
@@ -835,7 +914,7 @@ const SPECIAL_TYPES = {
   regular: {name:'단골손님',   emoji:'🥰',tag:'ctag-regular', label:'단골',   patBonus:30, repMult:1.2, moneyMult:1.0, fussiness:0,   spawnChance:0.25},
   vip:     {name:'VIP 손님',   emoji:'🤩',tag:'ctag-vip',     label:'VIP',    patBonus:10, repMult:2.0, moneyMult:1.5, fussiness:0.2, spawnChance:0.10},
   fussy:   {name:'까다로운 손님',emoji:'😤',tag:'ctag-fussy', label:'까다로움',patBonus:-20,repMult:3.0, moneyMult:1.0, fussiness:0.5, spawnChance:0.10},
-  blogger: {name:'푸드 블로거',emoji:'📸',tag:'ctag-blogger', label:'블로거', patBonus:0,  repMult:5.0, moneyMult:1.2, fussiness:0.1, spawnChance:0.05},
+  blogger: {name:'푸드 블로거',emoji:'📸',tag:'ctag-blogger', label:'블로거', patBonus:0,  repMult:5.0, moneyMult:1.2, fussiness:0.1, spawnChance:0.02},
 };
 
 // STORY EVENTS (triggered at rep milestones or random)
@@ -949,6 +1028,10 @@ function boot() {
   if (!G.menuSoldCount) G.menuSoldCount={};
   if (!G.contestHistory) G.contestHistory=[];
   if (!G.triggeredContests) G.triggeredContests=[];
+  if (!G.staffFatigue) G.staffFatigue={};
+  if (!G.interior) G.interior={theme:null,props:[]};
+  if (!G.interiorOwned) G.interiorOwned=[];
+  if (!G._interiorApplied) G._interiorApplied={};
   // 날씨 계절 검증 — 현재 계절에 맞지 않으면 초기화
   if (G.weather) {
     const seasonId = SEASONS[G.seasonIndex].id;
@@ -977,6 +1060,12 @@ function boot() {
   addLog(`🌱 ${G.brandName}의 이야기가 시작됩니다!`);
   renderAutoHarvestBtn();
   initDailyBonus();
+  // 인테리어 테마 복원
+  applyInteriorTheme();
+  applyInteriorEffects();
+  renderCafeIllustration();
+  renderPropDisplay();
+  renderMobIllustration();
 }
 
 function startTimers() {
@@ -991,6 +1080,8 @@ function resetSpawnTimer(customRate) {
   const base=[null,14000,10000,7000,5000,3500];
   let rate=customRate||base[G.stage]||8000;
   if (!customRate && hasStaff('loyalty')) rate*=0.8;
+  // 인테리어 내추럴 가든: 손님 방문 속도 +15%
+  if (!customRate && getInteriorBonus('regularBonus') > 0) rate *= (1 - getInteriorBonus('regularBonus'));
   spawnTimer=setInterval(spawnCustomer,rate);
 }
 
@@ -1018,8 +1109,14 @@ function tick() {
       wages+=STAFF_DEFS[sid]?.dailyCost||0;
     });
     if (wages>0) {
-      G.money=Math.max(0,G.money-wages);
-      addLog(`💸 직원 일급 -${wages}원`);
+      const actualWages = Math.min(wages, G.money);
+      G.money = Math.max(0, G.money - wages);
+      if (actualWages < wages) {
+        addLog(`⚠️ 돈이 부족해 일급 일부만 지급! (${actualWages.toLocaleString()}/${wages.toLocaleString()}원)`);
+        showNotif('⚠️ 직원 일급 미지급! 돈을 더 벌어야 해요!');
+      } else {
+        addLog(`💸 직원 일급 -${wages.toLocaleString()}원`);
+      }
     }
     // Season change (every 7 game-days)
     if (G.seasonDay>7) { G.seasonDay=1; advanceSeason(); }
@@ -1166,6 +1263,8 @@ function openCafe() {
   showStageAnnounce(1);
   addLog(`☕ ${G.brandName} 카페 오픈!!`);
   renderAll();
+  renderCafeIllustration();
+  renderMobIllustration();
 }
 
 // ══════════════════════════════════════════
@@ -1180,6 +1279,8 @@ function checkStageUp() {
     addLog(`🎊 ${STAGE_DATA[G.stage].name} 달성!`);
     screenShake(); audio.init(); audio.playSfx('stageup');
     checkForcedContest(G.stage);
+    renderCafeIllustration();
+    renderMobIllustration();
     if (G.stage===9) {
       setTimeout(()=>{
         showStageAnnounce(null,
@@ -1433,9 +1534,12 @@ function runStaffActions() {
     }
   }
 
-  // BARISTA / PARTTIME: auto-serve one customer
+  // BARISTA / PARTTIME: auto-serve one customer (피로도 반영)
   const autoServe=hasStaff('head_chef')||hasStaff('barista')||hasStaff('parttime');
   if (autoServe && G.cafeOpen && G.customers.length>0) {
+    const staffKey = hasStaff('head_chef')?'head_chef':hasStaff('barista')?'barista':'parttime';
+    // 피로도 체크 — 불가 시 서빙 중단
+    if (!staffFatigueEffect(staffKey)) return;
     // Serve the customer with most patience loss (most urgent)
     const sorted=[...G.customers].sort((a,b)=>a.patience-b.patience);
     const target=sorted[0];
@@ -1445,15 +1549,21 @@ function runStaffActions() {
     if (canServe) {
       const staffName=hasStaff('head_chef')?'수석 셰프':hasStaff('barista')?'바리스타':'아르바이트생';
       serveCustomer(target.id, true, staffName);
+      // 서빙할 때마다 피로도 +5~8 누적
+      addStaffFatigue(staffKey, 5 + Math.floor(Math.random()*4));
     }
   }
+  // 관리자 피로도 누적 (매 staffTimer 호출)
+  if (hasStaff('manager')) addStaffFatigue('manager', 3);
 }
 
 // ══════════════════════════════════════════
 //  CUSTOMERS
 // ══════════════════════════════════════════
 function spawnCustomer() {
-  if (G.paused||!G.cafeOpen||G.customers.length>=6) return;
+  const maxCustBonus = getInteriorBonus('maxCust');
+  const maxCust = 6 + Math.round(maxCustBonus);
+  if (G.paused||!G.cafeOpen||G.customers.length>=maxCust) return;
   // 날씨 손님 수 제한
   if (G.weather) {
     const wLimit={blizzard:3,rain:4,heatwave:6,festival:6}[G.weather.id];
@@ -1493,19 +1603,23 @@ function spawnCustomer() {
   const roll=Math.random(); let cum=0;
   // SNS 홍보 대회 효과: 블로거 출현율 3배
   const snsBoost = G._contestSNS ? 3 : 1;
+  // 인테리어 모던 테마: VIP 스폰 +10%
+  const vipInteriorBonus = getInteriorBonus('vipBonus');
   for (const [tid,td] of Object.entries(SPECIAL_TYPES)) {
-    const chance = tid==='blogger' ? td.spawnChance*snsBoost : td.spawnChance;
+    let chance = tid==='blogger' ? td.spawnChance*snsBoost : td.spawnChance;
+    if (tid==='vip') chance = Math.min(0.25, chance + vipInteriorBonus);
     cum+=chance; if (roll<cum){custType=tid;break;}
   }
 
   const typeData=SPECIAL_TYPES[custType];
   const weatherPatBonus=G.weather?.id==='rain'?20:0;
+  const interiorPatBonus=getInteriorBonus('patBonus');
   const cust={
     id:Date.now()+Math.random(),
     name:CUST_NAMES[Math.floor(Math.random()*CUST_NAMES.length)],
     emoji:typeData?typeData.emoji:CUST_EMOJIS[Math.floor(Math.random()*CUST_EMOJIS.length)],
     order:orderKey, order2:orderKey2,
-    patience:Math.min(100,100+(typeData?.patBonus||0)+weatherPatBonus),
+    patience:Math.min(100,100+(typeData?.patBonus||0)+weatherPatBonus+interiorPatBonus),
     type:custType,
   };
   G.customers.push(cust);
@@ -1621,6 +1735,12 @@ function serveCustomer(custId, isAuto, staffName) {
   if (cust.order2) price+=RECIPES[cust.order2].price*(td?.moneyMult||1);
   if (G.upgrades.includes('premium_mat')) price*=1.15;
   if (hasStaff('head_chef')) price*=1.1;
+  // 인테리어 테마 가격 보너스 (럭셔리 +20%)
+  const interiorPriceBonus = getInteriorBonus('priceBonus');
+  if (interiorPriceBonus > 0) price *= (1 + interiorPriceBonus);
+  // 인테리어 디저트 쇼케이스 보너스 (+10%)
+  const dessertKeys2 = ['strawb_cake','macaron','waffle','spring_strawb_crepe','macaron','peach_smoothie'];
+  if (dessertKeys2.includes(cust.order) && getInteriorBonus('dessertPrice') > 0) price *= (1 + getInteriorBonus('dessertPrice'));
   // 직원 레벨 보너스 (수석 셰프)
   const chefLv=G.staffLevels?.head_chef||1;
   if (hasStaff('head_chef')&&chefLv>1) price*=(1+(chefLv-1)*0.2);
@@ -1648,6 +1768,9 @@ function serveCustomer(custId, isAuto, staffName) {
   const patPct=cust.patience/100;
   let newSat=2+Math.round(patPct*3);
   if (G.upgrades.includes('display')) newSat = Math.min(5, newSat + 0.3);
+  // 인테리어: 예술 작품 → VIP 만족도 +0.3
+  if (cust.type==='vip') newSat = Math.min(5, newSat + getInteriorBonus('vipSat'));
+  // 인테리어: 아늑한 감성/식물 → 전체 만족도 소폭 상향 (스폰 시 적용됨)
   newSat=Math.min(5,newSat);
   G.satisfaction=Math.min(5,(G.satisfaction*(G.totalServed-1)+newSat)/G.totalServed);
   G.reputation+=Math.round(newSat*(td?.repMult||1)*5);
@@ -1917,10 +2040,29 @@ function updateMobEventBanners() {
 }
 
 // ══════════════════════════════════════════
-//  경쟁 가게
+//  경쟁 가게 (강화판)
 // ══════════════════════════════════════════
+const RIVAL_EVENTS = [
+  { id:'price_war',   title:'🏷️ 경쟁 가게 가격 할인!',  text:'맞은편 가게가 10% 할인 행사를 시작했어요. 손님들이 흔들리고 있어요!',
+    choices:[
+      {label:'📣 SNS 홍보로 맞불',    effect(){ G.rival._defBonus=(G.rival._defBonus||0)+0.3; G.reputation+=80;  showNotif('📣 SNS로 맞불 작전! 명성 +80'); addLog('📣 경쟁: SNS 홍보로 대응'); } },
+      {label:'⭐ 품질로 정면 승부',    effect(){ G.rival._defBonus=(G.rival._defBonus||0)+0.5; G.satisfaction=Math.min(5,G.satisfaction+0.4); showNotif('⭐ 품질 UP! 만족도 +0.4'); addLog('⭐ 경쟁: 품질로 대응'); } },
+    ]},
+  { id:'poach_staff', title:'🤝 경쟁 가게가 직원을 스카우트!', text:'경쟁 가게가 우리 직원에게 스카우트 제의를 했어요. 어떻게 대응할까요?',
+    choices:[
+      {label:'💰 급여 인상 (30,000원)',effect(){ if(G.money>=30000){G.money-=30000; G.rival._staffLost=false; showNotif('💰 급여 인상! 직원 잔류 확정'); addLog('💰 경쟁: 급여 인상으로 직원 방어');}else{showNotif('돈이 부족해요!');} } },
+      {label:'🎓 성장 기회로 설득',    effect(){ if(Math.random()<0.65){G.rival._staffLost=false; showNotif('🎓 직원이 남기로 했어요!'); addLog('🎓 경쟁: 설득 성공');}else{showNotif('😢 설득 실패... 직원이 이직했어요'); addLog('😢 경쟁: 직원 이직'); } } },
+    ]},
+  { id:'negative_review', title:'😡 악성 리뷰 공격!', text:'경쟁 가게 팬이 우리 가게에 악성 리뷰를 남겼어요. 명성이 흔들려요!',
+    choices:[
+      {label:'🤝 정중하게 대응',       effect(){ G.reputation=Math.max(0,G.reputation-50); showNotif('명성 -50... 하지만 품위 있는 대응!'); addLog('😤 경쟁: 악성 리뷰 정중 대응'); } },
+      {label:'💬 단골 리뷰로 방어',    effect(){ const regularsCount=Object.values(G.regulars||{}).filter(r=>r.visits>=5).length; const bonus=regularsCount*20; G.reputation+=bonus; showNotif(`🥰 단골 ${regularsCount}명이 응원! +${bonus} 명성`); addLog(`🥰 경쟁: 단골 리뷰 방어 +${bonus}`); } },
+    ]},
+];
+
 function checkRivalSteal() {
-  if (!G.rival) G.rival={active:false,level:0,lastStealDay:0};
+  if (!G.rival) G.rival={active:false,level:0,lastStealDay:0,eventCooldown:0,_defBonus:0};
+  // 활성화
   if (!G.rival.active && G.stage>=3) {
     G.rival.active=true; G.rival.level=1;
     addLog('🏪 맞은편에 경쟁 가게가 오픈했어요!');
@@ -1928,20 +2070,74 @@ function checkRivalSteal() {
     updateAllBanners();
   }
   if (!G.rival.active) return;
-  G.rival.level=Math.min(5,Math.floor(G.stage/2));
-  if (G.day-G.rival.lastStealDay>=1 && Math.random()<0.04*G.rival.level) {
-    G.rival.lastStealDay=G.day;
-    if (G.customers.length>0) {
-      const idx=Math.floor(Math.random()*G.customers.length);
-      const stolen=G.customers[idx];
-      G.customers.splice(idx,1);
-      document.querySelector(`[data-cid="${stolen.id}"]`)?.remove();
-      if (G.customers.length===0) showCustEmpty();
-      document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
-      addLog(`🏪 경쟁 가게가 ${stolen.name}님을 데려갔어요!`);
-      showNotif('🏪 경쟁 가게에 손님을 뺏겼어요!');
+
+  // 레벨 = 단계에 비례, 최대 5
+  G.rival.level = Math.min(5, Math.floor(G.stage / 2));
+
+  // 경쟁 이벤트 (3일에 한 번, 5단계 이상)
+  if (G.stage >= 5 && G.day - (G.rival.eventCooldown||0) >= 3 && Math.random() < 0.2) {
+    G.rival.eventCooldown = G.day;
+    const ev = RIVAL_EVENTS[Math.floor(Math.random()*RIVAL_EVENTS.length)];
+    if (!G.triggeredEvents.has('rival_ev_'+ev.id+'_'+G.day)) {
+      G.triggeredEvents.add('rival_ev_'+ev.id+'_'+G.day);
+      triggerRivalEvent(ev);
+      return;
     }
   }
+
+  // 손님 스틸 — 레벨 & 방어 보너스 반영
+  const defBonus = G.rival._defBonus || 0;
+  const stealChance = Math.max(0, 0.06 * G.rival.level - defBonus * 0.02);
+  if (G.day - G.rival.lastStealDay >= 1 && Math.random() < stealChance) {
+    G.rival.lastStealDay = G.day;
+    if (G.customers.length > 0) {
+      const stealCount = G.rival.level >= 4 ? (Math.random()<0.3 ? 2 : 1) : 1;
+      let stolen = 0;
+      for (let s=0; s<stealCount && G.customers.length>0; s++) {
+        const idx = Math.floor(Math.random()*G.customers.length);
+        const c = G.customers[idx];
+        // VIP·단골은 50% 확률로 저항
+        if ((c.type==='vip'||c.type==='regular') && Math.random()<0.5) {
+          addLog(`💪 ${c.name}님이 경쟁 가게를 거절했어요!`); continue;
+        }
+        G.customers.splice(idx,1);
+        document.querySelector(`[data-cid="${c.id}"]`)?.remove();
+        stolen++;
+      }
+      if (stolen > 0) {
+        if (G.customers.length===0) showCustEmpty();
+        document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
+        G.satisfaction = Math.max(0, G.satisfaction - 0.05 * stolen);
+        const msgs = stolen===2
+          ? ['🏪 경쟁 가게가 손님 2명을 연속으로 데려갔어요!','😡 경쟁 가게의 공세가 거세요! 손님 2명 이탈']
+          : ['🏪 경쟁 가게가 손님을 데려갔어요!','😠 경쟁 가게에 손님을 뺏겼어요'];
+        const msg = msgs[Math.floor(Math.random()*msgs.length)];
+        addLog(msg); showNotif(msg);
+      }
+    }
+    // 방어 보너스 서서히 감소
+    if (defBonus > 0) G.rival._defBonus = Math.max(0, defBonus - 0.1);
+  }
+}
+
+function triggerRivalEvent(ev) {
+  queueEvent(() => {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay show';
+    overlay.innerHTML = `<div class="modal" style="max-width:360px;">
+      <div class="modal-title">${ev.title}</div>
+      <div class="modal-body"><p style="font-size:13px;line-height:1.7;color:var(--text);">${ev.text}</p></div>
+      <div class="modal-btns" style="flex-direction:column;gap:7px;">
+        ${ev.choices.map((c,i) => `<button class="btn btn-primary" style="width:100%" onclick="
+          window._rivalChoices[${i}]();
+          this.closest('.modal-overlay').remove();
+          _eventDone();
+        ">${c.label}</button>`).join('')}
+      </div>
+    </div>`;
+    window._rivalChoices = ev.choices.map(c => c.effect);
+    document.body.appendChild(overlay);
+  });
 }
 
 // ══════════════════════════════════════════
@@ -2129,6 +2325,10 @@ function loadGame() {
   G.menuSoldCount  = d.menuSoldCount  && typeof d.menuSoldCount  === 'object' ? d.menuSoldCount  : {};
   G.contestBadges  = d.contestBadges  && typeof d.contestBadges  === 'object' ? d.contestBadges  : {};
   G.rival          = d.rival          && typeof d.rival          === 'object' ? d.rival          : {active:false,level:0,lastStealDay:0};
+  G.staffFatigue   = d.staffFatigue   && typeof d.staffFatigue   === 'object' ? d.staffFatigue   : {};
+  G.interior       = d.interior       && typeof d.interior       === 'object' ? d.interior       : {theme:null,props:[]};
+  G.interiorOwned  = Array.isArray(d.interiorOwned) ? d.interiorOwned : [];
+  G._interiorApplied = d._interiorApplied && typeof d._interiorApplied === 'object' ? d._interiorApplied : {};
 
   // Set / Array 복원
   G.learnedRecipes    = Array.isArray(d.learnedRecipes)    ? d.learnedRecipes    : ['egg_toast'];
@@ -2202,6 +2402,8 @@ function toggleMute() {
   if (btn) btn.textContent = muted ? '🔇' : '🔊';
   const mobIcon = document.getElementById('mob-mute-icon');
   if (mobIcon) mobIcon.textContent = muted ? '🔇' : '🔊';
+  const mobBtn = document.getElementById('mbt-mute');
+  if (mobBtn) mobBtn.querySelector('.mbt-l').textContent = muted ? '음소거' : '소리';
   showNotif(muted ? '🔇 음소거' : '🔊 소리 켜짐');
 }
 
@@ -2328,7 +2530,7 @@ let currentTab='staff';
 function switchTab(tab) {
   currentTab=tab;
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    const tabs=['staff','upgrades','booster','achieve','encyclo','stats'];
+    const tabs=['staff','upgrades','interior','booster','achieve','encyclo','stats'];
     b.classList.toggle('active',tabs[i]===tab);
   });
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
@@ -2338,6 +2540,7 @@ function switchTab(tab) {
 function renderTab(tab) {
   if (tab==='staff') renderStaff();
   else if (tab==='upgrades') renderUpgrades();
+  else if (tab==='interior') renderInteriorPanel();
   else if (tab==='booster') renderBooster();
   else if (tab==='achieve') renderAchievements();
   else if (tab==='encyclo') renderEncyclopedia();
@@ -2353,6 +2556,7 @@ function renderAll() {
   else checkCafeEligibility();
   renderTab(currentTab); renderReviews();
   applySeasonBg();
+  applyInteriorTheme();
 }
 
 function updateHeader() {
@@ -2708,6 +2912,7 @@ function renderRecipes() {
 
 function renderStaff() {
   if (!G.staffLevels) G.staffLevels = {};
+  if (!G.staffFatigue) G.staffFatigue = {};
   document.getElementById('tab-staff').innerHTML=Object.entries(STAFF_DEFS).map(([k,s])=>{
     const hired=!!G.staff[k];
     const stageLocked=s.stageReq>G.stage||!G.cafeOpen;
@@ -2716,7 +2921,11 @@ function renderStaff() {
     const canUpg = hired && lv < 3 && G.money >= upgCost;
     const lvStars = hired ? '⭐'.repeat(lv) + '☆'.repeat(3-lv) : '';
     const lvDesc = lv===1 ? '' : lv===2 ? ' (효율 +30%)' : ' (효율 +60%)';
-    return `<div class="staff-row ${hired?'hired':''}">
+    const fatigue = G.staffFatigue[k] || 0;
+    const fatigueColor = getFatigueColor(fatigue);
+    const fatigueLabel = getFatigueLabel(fatigue);
+    const canRest = hired && fatigue >= 40 && G.money >= 10000;
+    return `<div class="staff-row ${hired?'hired':''}" style="${hired && fatigue>=90?'border-color:#e74c3c;background:rgba(231,76,60,0.05);':''}">
       <div class="staff-head">
         <span class="staff-icon">${s.emoji}</span>
         <div style="flex:1;">
@@ -2731,8 +2940,21 @@ function renderStaff() {
           : `<button class="btn btn-green btn-sm" onclick="hireStaff('${k}')">고용 💰${s.hireCost.toLocaleString()}</button>`}
       </div>
       <div class="staff-desc">${s.desc}</div>
-      ${hired ? `<div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;gap:6px;">
-        <span style="color:var(--grass);font-size:11px;">✓ 재직중</span>
+      ${hired ? `
+      <div style="margin-top:5px;">
+        <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;">
+          <span style="color:${fatigueColor};font-weight:700;">💪 피로도 ${fatigueLabel}</span>
+          <span style="color:var(--latte);">${fatigue}/100</span>
+        </div>
+        <div style="height:5px;background:rgba(107,66,38,0.12);border-radius:3px;overflow:hidden;margin-bottom:5px;">
+          <div style="height:100%;width:${fatigue}%;background:${fatigueColor};border-radius:3px;transition:width 0.5s;"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+        ${fatigue >= 40
+          ? `<button class="btn btn-sm" ${canRest?'':'disabled'} onclick="restStaff('${k}')"
+              style="background:#3498db;color:white;font-size:11px;">😴 휴식 -10,000원</button>`
+          : `<span style="color:var(--grass);font-size:11px;">✓ 재직중</span>`}
         ${lv < 3
           ? `<button class="btn btn-gold btn-sm" ${canUpg?'':'disabled'} onclick="trainStaff('${k}')" style="font-size:11px;">
               🎓 Lv.${lv+1} 교육 💰${upgCost.toLocaleString()}원
@@ -2870,6 +3092,62 @@ function activateBooster(key) {
   renderBooster();
 }
 
+// ══════════════════════════════════════════
+//  직원 피로도 시스템
+// ══════════════════════════════════════════
+// G.staffFatigue[staffKey] = 0~100 (100이면 탈진)
+function getStaffFatigue(key) {
+  if (!G.staffFatigue) G.staffFatigue = {};
+  return G.staffFatigue[key] || 0;
+}
+function addStaffFatigue(key, amt) {
+  if (!G.staffFatigue) G.staffFatigue = {};
+  G.staffFatigue[key] = Math.min(100, (G.staffFatigue[key] || 0) + amt);
+}
+function restStaff(key) {
+  if (!G.staff[key]) return;
+  if (!G.staffFatigue) G.staffFatigue = {};
+  const cost = 10000;
+  if (G.money < cost) { showNotif('💰 돈이 부족해요! (10,000원 필요)'); return; }
+  G.money -= cost;
+  G.staffFatigue[key] = 0;
+  const s = STAFF_DEFS[key];
+  showNotif(`😴 ${s.name} 휴식 완료! 피로도 초기화 (-${cost.toLocaleString()}원)`);
+  addLog(`😴 ${s.emoji} ${s.name} 휴식 부여 — 피로도 0으로 초기화`);
+  updateHeader(); renderStaff();
+}
+function getFatigueColor(fatigue) {
+  if (fatigue < 40) return '#5A8A3C';
+  if (fatigue < 70) return '#F4C430';
+  return '#e74c3c';
+}
+function getFatigueLabel(fatigue) {
+  if (fatigue < 40) return '😊 활기참';
+  if (fatigue < 70) return '😓 피곤함';
+  if (fatigue < 90) return '😵 지침';
+  return '🚨 탈진!';
+}
+// 직원이 자동 서빙할 때 피로도 반영 (runStaffActions 에서 호출)
+function staffFatigueEffect(key) {
+  const fatigue = getStaffFatigue(key);
+  // 피로 70 이상: 실수 확률 20%
+  if (fatigue >= 70 && Math.random() < 0.2) {
+    const s = STAFF_DEFS[key];
+    G.satisfaction = Math.max(0, G.satisfaction - 0.1);
+    addLog(`😵 ${s.name} 피로로 실수! 만족도 -0.1`);
+    showNotif(`😵 ${s.name}이 지쳐서 실수했어요! 휴식을 줘야 해요`);
+    return false; // 서빙 취소
+  }
+  // 피로 90 이상: 서빙 완전 거부
+  if (fatigue >= 90) {
+    const s = STAFF_DEFS[key];
+    addLog(`🚨 ${s.name} 탈진 — 서빙 불가! 휴식을 주세요`);
+    if (Math.random() < 0.3) showNotif(`🚨 ${s.name} 탈진! 관리 탭에서 휴식을 주세요!`);
+    return false;
+  }
+  return true;
+}
+
 function trainStaff(key) {
   if (!G.staffLevels) G.staffLevels={};
   const lv = G.staffLevels[key]||1;
@@ -2883,7 +3161,233 @@ function trainStaff(key) {
   addLog(`🎓 ${s.emoji} ${s.name} Lv.${lv+1} 달성!`);
   updateHeader();
   renderBooster();
-  renderStaff(); // 직원 탭도 즉시 갱신
+  renderStaff();
+}
+
+// ══════════════════════════════════════════
+//  🎨 가게 꾸미기 (인테리어) 시스템
+// ══════════════════════════════════════════
+const INTERIOR_ITEMS = [
+  { id:'theme_cozy',   type:'theme', emoji:'🕯️', name:'아늑한 감성',      desc:'따뜻한 카페 분위기. 만족도 +0.2',     cost:50000,  stageReq:1, effect:{sat:0.2},         themeClass:'theme-cozy'   },
+  { id:'theme_modern', type:'theme', emoji:'🖤', name:'모던 인테리어',     desc:'세련된 현대적 느낌. VIP 손님 +10%',  cost:80000,  stageReq:4, effect:{vipBonus:0.1},    themeClass:'theme-modern' },
+  { id:'theme_nature', type:'theme', emoji:'🌿', name:'내추럴 가든',       desc:'자연 친화적. 단골 방문 속도 +15%',   cost:70000,  stageReq:3, effect:{regularBonus:0.15},themeClass:'theme-nature' },
+  { id:'theme_luxury', type:'theme', emoji:'✨', name:'럭셔리 파인다이닝', desc:'고급스러운 분위기. 메뉴 가격 +20%',  cost:150000, stageReq:7, effect:{priceBonus:0.20},  themeClass:'theme-luxury' },
+  { id:'prop_plant',   type:'prop',  emoji:'🪴', name:'식물 인테리어',     desc:'손님 만족도 +0.1',                   cost:20000,  stageReq:1, effect:{sat:0.1}   },
+  { id:'prop_board',   type:'prop',  emoji:'🪧', name:'메뉴 칠판',         desc:'신메뉴 판매 시 명성 보너스 +10%',    cost:30000,  stageReq:2, effect:{newMenuRep:0.1}},
+  { id:'prop_lamp',    type:'prop',  emoji:'🪔', name:'무드 조명',          desc:'손님 인내심 +15',                    cost:40000,  stageReq:3, effect:{patBonus:15} },
+  { id:'prop_artwork', type:'prop',  emoji:'🖼️', name:'예술 작품',         desc:'VIP 손님 만족도 추가 +0.3',          cost:60000,  stageReq:5, effect:{vipSat:0.3}  },
+  { id:'prop_counter', type:'prop',  emoji:'🍫', name:'디저트 쇼케이스',   desc:'디저트 메뉴 가격 +10%',              cost:80000,  stageReq:5, effect:{dessertPrice:0.1}},
+  { id:'prop_garden',  type:'prop',  emoji:'🌸', name:'야외 테라스',       desc:'최대 손님 수 +2명 (최대 8명)',        cost:100000, stageReq:4, effect:{maxCust:2}    },
+];
+
+function getOwnedInterior() {
+  if (!G.interior) G.interior = { theme: null, props: [] };
+  return G.interior;
+}
+
+function buyInterior(id) {
+  const item = INTERIOR_ITEMS.find(x => x.id === id);
+  if (!item) return;
+  const interior = getOwnedInterior();
+  if (!G.interiorOwned) G.interiorOwned = [];
+  if (item.stageReq > G.stage) { showNotif('카페 단계가 더 높아야 해요!'); return; }
+
+  if (item.type === 'theme') {
+    if (interior.theme === id) { showNotif('이미 적용된 테마예요!'); return; }
+    const alreadyOwned = G.interiorOwned.includes(id);
+    if (!alreadyOwned) {
+      // 처음 구매할 때만 돈 확인
+      if (G.money < item.cost) { showNotif('💰 돈이 부족해요!'); return; }
+      G.money -= item.cost;
+      G.interiorOwned.push(id);
+      addLog(`🎨 테마 구매: ${item.emoji} ${item.name}`);
+    }
+    interior.theme = id;
+    applyInteriorTheme();
+    showNotif(`${item.emoji} ${item.name} 테마 적용!`);
+  } else {
+    if (G.interiorOwned.includes(id)) { showNotif('이미 구매한 소품이에요!'); return; }
+    if (G.money < item.cost) { showNotif('💰 돈이 부족해요!'); return; }
+    G.money -= item.cost;
+    G.interiorOwned.push(id);
+    interior.props.push(id);
+    applyInteriorEffects();
+    renderCafeIllustration();
+    renderPropDisplay();
+    renderMobIllustration();
+    addLog(`🎨 소품 설치: ${item.emoji} ${item.name}`);
+    showNotif(`${item.emoji} ${item.name} 설치 완료! ${item.desc}`);
+  }
+  updateHeader(); renderUpgrades(); renderInteriorPanel();
+}
+
+function applyInteriorTheme() {
+  // 기존 테마 클래스 모두 제거
+  INTERIOR_ITEMS.filter(x => x.type==='theme').forEach(x => {
+    if (x.themeClass) document.body.classList.remove(x.themeClass);
+  });
+  const interior = getOwnedInterior();
+  if (interior.theme) {
+    const item = INTERIOR_ITEMS.find(x => x.id === interior.theme);
+    if (item?.themeClass) document.body.classList.add(item.themeClass);
+  }
+  renderCafeIllustration();
+  renderPropDisplay();
+  renderMobIllustration();
+  if (currentTab === 'interior') renderInteriorPanel();
+}
+
+// ── 모바일 패널 일러스트 + 소품 렌더링 ──
+function renderMobIllustration() {
+  ['mob-illustration-farm', 'mob-illustration-manage'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!G.cafeOpen) { el.innerHTML = ''; return; }
+
+    const interior = getOwnedInterior();
+    const themeKey = interior.theme || null;
+    const scene = THEME_SCENES[themeKey] || THEME_SCENES[null];
+    // 씬 아이템 앞 3개만 (모바일은 공간이 좁으므로)
+    const stageItem = STAGE_SCENE_ITEMS[G.stage] ? [STAGE_SCENE_ITEMS[G.stage][0]] : [];
+    const sceneItems = [...scene.items.slice(0, 3), ...stageItem];
+
+    // 소품 이모지
+    const propIcons = { prop_plant:'🪴', prop_board:'🪧', prop_lamp:'🪔', prop_artwork:'🖼️', prop_counter:'🍫', prop_garden:'🌸' };
+    const ownedProps = (interior.props || []).map(p => propIcons[p]).filter(Boolean);
+
+    el.innerHTML = `
+      <div class="mob-illust-scene">
+        ${sceneItems.map(i => `<span>${i}</span>`).join('')}
+        <span class="mob-illust-label">${scene.label}</span>
+      </div>
+      ${ownedProps.length ? `<div class="mob-prop-row">${ownedProps.map(e => `<span title="">${e}</span>`).join('')}</div>` : ''}
+    `;
+  });
+}
+
+// ── 테마별 가게 일러스트 ──
+const THEME_SCENES = {
+  null:         { bg:'linear-gradient(135deg,rgba(59,31,15,0.85),rgba(92,58,30,0.9))',  label:'☕ 우리 카페',    items:['🏕️','☕','🌱','✨','🍽️'] },
+  theme_cozy:   { bg:'linear-gradient(135deg,rgba(92,58,30,0.9),rgba(139,94,60,0.85))', label:'🕯️ 아늑한 공간', items:['🕯️','🛋️','☕','📚','🧸'] },
+  theme_modern: { bg:'linear-gradient(135deg,rgba(26,37,47,0.92),rgba(44,62,80,0.88))', label:'🖤 모던 카페',    items:['🖤','💻','☕','🎵','🔲'] },
+  theme_nature: { bg:'linear-gradient(135deg,rgba(30,86,49,0.9),rgba(46,125,50,0.85))', label:'🌿 내추럴 가든',  items:['🌿','🌸','🪴','🌞','🍃'] },
+  theme_luxury: { bg:'linear-gradient(135deg,rgba(44,26,0,0.92),rgba(125,90,0,0.88))',  label:'✨ 럭셔리 공간',  items:['✨','🥂','🌹','💎','🕊️'] },
+};
+
+// 스테이지별 추가 아이템
+const STAGE_SCENE_ITEMS = {
+  1:['🛖'],2:['🏠'],3:['🍱'],4:['☕'],5:['🎂'],6:['🍝'],7:['🍽️'],8:['🥂'],9:['🏢'],
+};
+
+function renderCafeIllustration() {
+  const el = document.getElementById('cafe-illustration');
+  if (!el || !G.cafeOpen) { if(el) el.innerHTML=''; return; }
+
+  const interior = getOwnedInterior();
+  const themeKey = interior.theme || null;
+  const scene = THEME_SCENES[themeKey] || THEME_SCENES[null];
+
+  // 씬 아이템 (앞 3개 + 현재 단계 아이콘)
+  const stageItem = STAGE_SCENE_ITEMS[G.stage] ? [STAGE_SCENE_ITEMS[G.stage][0]] : [];
+  const sceneItems = [...scene.items.slice(0, 3), ...stageItem];
+
+  // 소품 이모지 (오른쪽에 별도 표시)
+  const propIcons = { prop_plant:'🪴', prop_board:'🪧', prop_lamp:'🪔', prop_artwork:'🖼️', prop_counter:'🍫', prop_garden:'🌸' };
+  const ownedProps = (interior.props || []).map(id => propIcons[id]).filter(Boolean);
+
+  el.innerHTML = `
+    <div class="cafe-scene">
+      ${sceneItems.map(icon => `<span>${icon}</span>`).join('')}
+      <span class="scene-label">${scene.label}</span>
+    </div>
+    ${ownedProps.length ? `<div class="prop-row">${ownedProps.map(e=>`<span>${e}</span>`).join('')}</div>` : ''}
+  `;
+}
+
+// ── 소품 배지 (topbar 우측) ──
+const PROP_DISPLAY_INFO = {
+  prop_plant:   { emoji:'🪴', name:'식물 인테리어' },
+  prop_board:   { emoji:'🪧', name:'메뉴 칠판' },
+  prop_lamp:    { emoji:'🪔', name:'무드 조명' },
+  prop_artwork: { emoji:'🖼️', name:'예술 작품' },
+  prop_counter: { emoji:'🍫', name:'디저트 쇼케이스' },
+  prop_garden:  { emoji:'🌸', name:'야외 테라스' },
+};
+
+function renderPropDisplay() {
+  const el = document.getElementById('prop-display');
+  if (!el) return;
+  const interior = getOwnedInterior();
+  const props = interior.props || [];
+  if (props.length === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = props.map(id => {
+    const info = PROP_DISPLAY_INFO[id];
+    if (!info) return '';
+    return `<span class="prop-badge" data-name="${info.name}" title="${info.name}">${info.emoji}</span>`;
+  }).join('');
+}
+
+function applyInteriorEffects() {
+  const interior = getOwnedInterior();
+  if (!G._interiorApplied) G._interiorApplied = {};
+  (interior.props || []).forEach(id => {
+    if (G._interiorApplied[id]) return;
+    G._interiorApplied[id] = true;
+    const item = INTERIOR_ITEMS.find(x => x.id === id);
+    if (item?.effect?.sat) G.satisfaction = Math.min(5, G.satisfaction + item.effect.sat);
+  });
+}
+
+function getInteriorBonus(type) {
+  const interior = getOwnedInterior();
+  let bonus = 0;
+  if (interior.theme) {
+    const theme = INTERIOR_ITEMS.find(x => x.id === interior.theme);
+    if (theme?.effect?.[type]) bonus += theme.effect[type];
+  }
+  (interior.props || []).forEach(id => {
+    const prop = INTERIOR_ITEMS.find(x => x.id === id);
+    if (prop?.effect?.[type]) bonus += prop.effect[type];
+  });
+  return bonus;
+}
+
+function renderInteriorPanel() {
+  const el = document.getElementById('tab-interior');
+  if (!el) return;
+  const interior = getOwnedInterior();
+  const owned = G.interiorOwned || [];
+  const themes = INTERIOR_ITEMS.filter(x => x.type === 'theme');
+  const props   = INTERIOR_ITEMS.filter(x => x.type === 'prop');
+
+  const renderItem = (item) => {
+    const isOwned  = owned.includes(item.id);
+    const isActive = item.type==='theme' ? interior.theme===item.id : (interior.props||[]).includes(item.id);
+    const locked   = item.stageReq > G.stage;
+    const canBuy   = !isOwned && !locked && G.money >= item.cost;
+    return `<div class="deco-item ${isOwned?'owned':''} ${isActive?'active':''}">
+      <div class="deco-preview">${item.emoji}</div>
+      <div class="deco-info">
+        <div class="deco-name">${item.name}${isActive?' <span style="font-size:9px;background:var(--grass);color:white;padding:1px 5px;border-radius:5px;">적용중</span>':''}</div>
+        <div class="deco-desc">${item.desc}</div>
+      </div>
+      ${locked
+        ? `<span style="font-size:10px;color:var(--latte);">🔒 Lv.${item.stageReq}</span>`
+        : isOwned && item.type==='prop'
+          ? `<span style="font-size:11px;color:var(--grass);">✓ 설치됨</span>`
+          : isOwned && item.type==='theme' && !isActive
+            ? `<button class="btn btn-green btn-sm" onclick="buyInterior('${item.id}')">적용</button>`
+            : `<button class="btn btn-gold btn-sm" ${canBuy?'':'disabled'} onclick="buyInterior('${item.id}')">💰${item.cost.toLocaleString()}</button>`
+      }
+    </div>`;
+  };
+
+  el.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:var(--espresso);margin-bottom:6px;padding-bottom:4px;border-bottom:2px dashed rgba(200,149,108,0.28);">🎨 테마 변경</div>
+    <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">${themes.map(renderItem).join('')}</div>
+    <div style="font-size:11px;font-weight:700;color:var(--espresso);margin-bottom:6px;padding-bottom:4px;border-bottom:2px dashed rgba(200,149,108,0.28);">🪴 소품 설치</div>
+    <div style="display:flex;flex-direction:column;gap:5px;">${props.map(renderItem).join('')}</div>
+  `;
 }
 
 // ══════════════════════════════════════════
@@ -2911,6 +3415,10 @@ const ACHIEVEMENTS = [
   {id:'contest_first', emoji:'🏆', name:'첫 대회 참가!',       desc:'첫 번째 대회에 참가했어요',          check:()=>(G.contestHistory||[]).length>=1},
   {id:'contest_gold',  emoji:'🥇', name:'대회 우승!',           desc:'대회에서 1위를 차지했어요',           check:()=>(G.contestHistory||[]).some(h=>h.rank.includes('1위')||h.rank.includes('대상')||h.rank.includes('MVP')||h.rank.includes('미슐랭'))},
   {id:'contest_all',   emoji:'🎖️', name:'대회 마스터',          desc:'모든 종류의 대회에 참가했어요',       check:()=>['local_champ','barista_cup','dessert_fest','gourmet_event','xmas_market'].every(id=>(G.triggeredContests||[]).includes(id))},
+  {id:'interior_1',    emoji:'🎨', name:'내 공간 꾸미기',        desc:'인테리어 소품 첫 설치',               check:()=>(G.interiorOwned||[]).length>=1},
+  {id:'interior_full', emoji:'🏡', name:'나만의 카페',            desc:'테마 + 소품 3개 이상 설치',           check:()=>(G.interior?.theme)&&(G.interior?.props||[]).length>=3},
+  {id:'regular_deep',  emoji:'💝', name:'진짜 단골',              desc:'단골 손님과 심층 스토리 진행',         check:()=>G.triggeredEvents&&[...G.triggeredEvents].some(e=>e.startsWith('reg_deep_'))},
+  {id:'staff_rest',    emoji:'😴', name:'직원 복지 사장',         desc:'직원에게 처음으로 휴식을 줬어요',      check:()=>Object.values(G.staffFatigue||{}).some(f=>f===0&&Object.keys(G.staff||{}).length>0)},
 ];
 
 function checkAchievements() {
@@ -3041,6 +3549,12 @@ function renderStats() {
       ${statBox('🏪','현재 단계', STAGE_DATA[G.stage].name)}
       ${statBox('⏱️','총 플레이 시간', playStr)}
       ${statBox('🥰','단골 손님 수', Object.values(G.regulars||{}).filter(r=>r.visits>=5).length+'명', '#e91e8c')}
+      ${statBox('🎨','인테리어 구매', (G.interiorOwned||[]).length+'개')}
+      ${Object.keys(G.staff||{}).length > 0 ? statBox('💪','직원 평균 피로도',
+        (Object.keys(G.staff).reduce((sum,k)=>(sum+(G.staffFatigue?.[k]||0)),0)/Object.keys(G.staff).length).toFixed(0)+'%',
+        Object.keys(G.staff).some(k=>(G.staffFatigue?.[k]||0)>=90)?'#e74c3c':
+        Object.keys(G.staff).some(k=>(G.staffFatigue?.[k]||0)>=70)?'#F4C430':'var(--grass)'
+      ) : ''}
     </div>
     ${topMenus.length ? `
     <div style="font-size:11px;font-weight:700;color:var(--espresso);margin:10px 0 5px;padding-bottom:4px;border-bottom:2px dashed rgba(200,149,108,0.28);">🏆 베스트 메뉴 TOP5</div>
@@ -3862,28 +4376,130 @@ function endTutorial() {
 
 
 const REGULAR_STORIES = [
+  // 일상적 방문
   '"{name}님이 오늘도 오셨어요! 항상 감사해요 🥰"',
   '"{name}님: 여기 음식이 최고예요! 매일 올게요~"',
   '"{name}님이 친구를 데려왔어요! 소문내줘서 고마워요 😊"',
   '"{name}님: 사장님 덕분에 요즘 행복해요!"',
   '"{name}님이 SNS에 우리 카페를 올렸대요! 🎉"',
+  // 음식 칭찬
+  '"{name}님: 어제도 생각나서 또 왔어요. 이집 중독인가봐요 😆"',
+  '"{name}님이 포장 주문까지 했어요! 집에서도 먹고 싶대요 🛍️"',
+  '"{name}님: 다른 데 가봤는데 역시 여기가 제일 맛있어요!"',
+  '"{name}님이 메뉴 다 먹어봤다며 다음 신메뉴 기다린대요 🍽️"',
+  '"{name}님: 이거 레시피 알 수 있을까요? 집에서도 만들고 싶어요!"',
+  '"{name}님이 접시까지 깨끗하게 비웠어요 ✨"',
+  '"{name}님: 가격 대비 너무 훌륭해요. 양도 많고!"',
+  // 감동·감사
+  '"{name}님: 힘든 날에도 여기 오면 기분이 나아져요 🌸"',
+  '"{name}님이 생일을 우리 카페에서 보내고 싶대요 🎂"',
+  '"{name}님: 직장 때문에 이 동네 왔는데, 여기 덕분에 행복해요!"',
+  '"{name}님이 감사 카드를 두고 갔어요 💌"',
+  '"{name}님: 사장님 항상 웃는 얼굴이 너무 좋아요 😊"',
+  '"{name}님이 음료를 다 마시고 엄지척을 하고 갔어요 👍"',
+  // 홍보·소문
+  '"{name}님 덕분에 새 손님이 왔어요! 소문을 냈나봐요 📣"',
+  '"{name}님: 회사 동료들한테 강력 추천했어요!"',
+  '"{name}님이 블로그에 후기를 올렸어요! 사진도 예쁘게 찍었대요 📸"',
+  '"{name}님: 부모님도 모시고 오고 싶어요. 꼭 다시 올게요!"',
+  // 귀여운 에피소드
+  '"{name}님이 자기 단골 자리가 생겼다며 좋아했어요 😄"',
+  '"{name}님: 오늘 회의 잘 됐어요! 여기서 먹으면 왠지 잘 풀려요 🍀"',
+  '"{name}님이 우산을 두고 갔다가 또 와서 겸사겸사 추가 주문했어요 ☂️"',
+  '"{name}님: 다이어트 중인데 여기만큼은 참을 수가 없어요 🤤"',
+  '"{name}님이 웨이팅 중에도 전혀 안 지루하다고 했어요 😊"',
+  '"{name}님: 출근길에 들르는 게 하루의 낙이에요!"',
+  '"{name}님이 늘 먹던 메뉴가 품절이자 실망하며 다음에 또 온다고 했어요 😢➡️🔜"',
+  '"{name}님: 여기 없어지면 진짜 큰일나요. 오래오래 해주세요! 🙏"',
+];
+
+// 단골 심층 스토리 이벤트 (10·20·30회 방문 시)
+const REGULAR_DEEP_EVENTS = [
+  { visits:10, title:'🥰 단골 {name}님의 비밀',
+    text:'"{name}님이 조심스럽게 말을 꺼냈어요. \'사실... 여기 음식이 저한테 정말 큰 위로가 돼요. 힘든 시기에도 여기만 오면 기분이 나아지거든요.\' 따뜻한 말에 마음이 뭉클해져요.",',
+    choices:[
+      {label:'☕ 오늘 음료 무료로 드리기', effect(name){ G.money=Math.max(0,G.money-5000); G.reputation+=60; showNotif(`🥰 ${name}님 감동! 명성 +60`); addLog(`☕ ${name}님께 음료 무료 서비스`); }},
+      {label:'💌 단골 카드 만들어드리기', effect(name){ G.reputation+=100; if(G.regulars[name]) G.regulars[name].hasCard=true; showNotif(`💌 ${name}님 단골 카드 발급! 명성 +100`); addLog(`💌 ${name}님 단골 카드 발급`); }},
+    ]},
+  { visits:20, title:'🎂 {name}님의 생일!',
+    text:'"{name}님이 오늘 생일이에요! 몰래 케이크에 초를 꽂고 깜짝 파티를 준비할까요, 아니면 조용히 축하해드릴까요?"',
+    choices:[
+      {label:'🎉 깜짝 파티 열기 (-15,000원)', effect(name){ if(G.money>=15000){G.money-=15000; G.reputation+=200; floatText('🎂 생일 파티!', window.innerWidth/2-60, window.innerHeight/3, '#e91e8c'); showNotif(`🎉 ${name}님 생일 파티! 명성 +200`);}else showNotif('돈이 부족해요!'); addLog(`🎉 ${name}님 생일 파티 개최`); }},
+      {label:'🌸 꽃 한 송이 선물하기', effect(name){ G.reputation+=120; showNotif(`🌸 ${name}님 감동! 명성 +120`); addLog(`🌸 ${name}님께 꽃 선물`); }},
+    ]},
+  { visits:30, title:'🤝 {name}님의 제안',
+    text:'"{name}님이 진지하게 얘기했어요. \'저 친구들 단체로 데려올게요. 사장님 가게 소문 제대로 내드릴게요!\' 진짜 홍보대사가 될 것 같아요."',
+    choices:[
+      {label:'🙏 감사하게 받아들이기', effect(name){ G.reputation+=300; resetSpawnTimer(Math.max(1500, (parseInt(G._spawnRate)||8000)*0.7)); setTimeout(()=>resetSpawnTimer(),60000); showNotif(`🙏 ${name}님 홍보 시작! 명성 +300`); addLog(`📣 ${name}님 홍보대사 활동 시작!`); }},
+      {label:'💰 사례금 드리기 (-30,000원)', effect(name){ if(G.money>=30000){G.money-=30000; G.reputation+=500; showNotif(`💰 ${name}님께 사례! 명성 +500`);}else showNotif('돈이 부족해요!'); addLog(`💰 ${name}님께 사례금 지급`); }},
+    ]},
 ];
 
 function updateRegular(custName, menuKey) {
   if (!G.regulars) G.regulars={};
-  if (!G.regulars[custName]) G.regulars[custName]={visits:0, lastMenus:[]};
+  if (!G.regulars[custName]) G.regulars[custName]={visits:0, lastMenus:[], hasCard:false};
   const r = G.regulars[custName];
   r.visits++;
   r.lastMenus.unshift(menuKey);
   if (r.lastMenus.length>5) r.lastMenus.pop();
-  // 5방문마다 단골 스토리
-  if (r.visits>0 && r.visits%5===0) {
-    const story = REGULAR_STORIES[Math.floor(Math.random()*REGULAR_STORIES.length)].replace('{name}',custName);
+
+  // 5방문마다 단골 스토리 메시지
+  if (r.visits>0 && r.visits%5===0 && r.visits%10!==0) {
+    const prevIdx = G.regulars[custName]._lastStoryIdx ?? -1;
+    let storyIdx;
+    do { storyIdx = Math.floor(Math.random() * REGULAR_STORIES.length); }
+    while (storyIdx === prevIdx && REGULAR_STORIES.length > 1);
+    G.regulars[custName]._lastStoryIdx = storyIdx;
+    const story = REGULAR_STORIES[storyIdx].replace(/{name}/g, custName);
     addLog(`🥰 ${story}`);
     showNotif(`🥰 단골 ${custName}님 ${r.visits}번째 방문!`);
-    G.reputation += Math.min(50, r.visits*5);
-    floatText(`🥰 단골 +${Math.min(50,r.visits*5)}명성`, window.innerWidth/2-60, 200, '#e91e8c');
+    const repBonus = Math.min(50, r.visits*5);
+    G.reputation += repBonus;
+    // 단골 카드 소지 시 보너스 +20%
+    if (r.hasCard) G.reputation += Math.round(repBonus*0.2);
+    floatText(`🥰 단골 +${repBonus}명성`, window.innerWidth/2-60, 200, '#e91e8c');
   }
+
+  // 10·20·30회 방문: 심층 스토리 이벤트
+  const deepEv = REGULAR_DEEP_EVENTS.find(e => e.visits === r.visits);
+  if (deepEv && !G.triggeredEvents.has(`reg_deep_${custName}_${r.visits}`)) {
+    G.triggeredEvents.add(`reg_deep_${custName}_${r.visits}`);
+    const ev = {
+      title: deepEv.title.replace(/{name}/g, custName),
+      text:  deepEv.text.replace(/{name}/g, custName).replace(/^"|"$/g,'').replace(/,$/,''),
+      choices: deepEv.choices.map(c => ({
+        label: c.label,
+        effect: () => c.effect(custName),
+      })),
+    };
+    triggerRegularDeepEvent(ev, custName, r.visits);
+  }
+}
+
+function triggerRegularDeepEvent(ev, custName, visits) {
+  queueEvent(() => {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay show';
+    overlay.innerHTML = `<div class="modal" style="max-width:380px;">
+      <div class="modal-title">${ev.title}</div>
+      <div class="modal-body">
+        <p style="font-size:13px;line-height:1.8;color:var(--text);margin-bottom:8px;">${ev.text}</p>
+        <div style="font-size:11px;color:var(--latte);background:rgba(233,30,140,0.07);border-radius:8px;padding:6px 10px;">
+          🥰 ${custName}님 방문 횟수: <strong style="color:#e91e8c;">${visits}회</strong>
+        </div>
+      </div>
+      <div class="modal-btns" style="flex-direction:column;gap:8px;">
+        ${ev.choices.map((c,i) => `<button class="btn btn-primary" style="width:100%" onclick="
+          window._regDeepChoices[${i}]();
+          this.closest('.modal-overlay').remove();
+          updateHeader(); renderStaff();
+          _eventDone();
+        ">${c.label}</button>`).join('')}
+      </div>
+    </div>`;
+    window._regDeepChoices = ev.choices.map(c => c.effect);
+    document.body.appendChild(overlay);
+  });
 }
 
 function getReg(name){ return G.regulars?.[name]; }
@@ -4388,18 +5004,7 @@ setInterval(function() {
     }).join('');
   }
 
-  var emptyHTML = '<div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div>';
-  var countText = '(' + G.customers.length + '명)';
-  var html = G.customers.length > 0 ? makeCustHTML() : emptyHTML;
-
-  // 진행도 계산
-  var cur = G.reputation;
-  var prev = STAGE_DATA[G.stage].repReq;
-  var nextData = STAGE_DATA[G.stage + 1];
-  var next = nextData ? nextData.repReq : prev;
-  var pct = G.stage >= 9 ? 100 : Math.min(100, ((cur - prev) / (next - prev)) * 100);
-  var stageLabel = STAGE_DATA[G.stage].name;
-  var progressText = G.stage >= 9 ? '🏆 최고 단계!' : cur.toLocaleString() + ' / ' + next.toLocaleString() + ' 명성';
+  // (중복 변수 선언 제거 — 위에서 이미 선언됨)
 
   // 농장탭 패널
   var p1 = document.getElementById('mob-cust-panel');
@@ -4424,6 +5029,8 @@ setInterval(function() {
   }
   updateMobEventBanners();
   updateServeAllBtn();
+  // 모바일 일러스트 동기화 (씬만, 빠른 체크)
+  if (G.cafeOpen) renderMobIllustration();
 }, 1000);
 </script>
 
