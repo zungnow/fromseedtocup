@@ -209,12 +209,31 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(200,149,108,0.4);border-radius:3px}
 
+/* ── 튜토리얼 하이라이트 ── */
+.tut-overlay{position:fixed;inset:0;z-index:400;pointer-events:none;}
+.tut-highlight{position:fixed;border-radius:14px;box-shadow:0 0 0 4000px rgba(0,0,0,0.55);z-index:401;pointer-events:none;transition:all 0.4s cubic-bezier(.4,0,.2,1);}
+.tut-tooltip{position:fixed;z-index:402;background:var(--espresso);color:var(--cream);border-radius:14px;padding:14px 16px;max-width:260px;font-size:13px;line-height:1.6;box-shadow:0 8px 30px rgba(0,0,0,0.4);border:2px solid var(--gold);animation:tut-pop 0.3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes tut-pop{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}
+.tut-tooltip-title{font-family:'Jua',sans-serif;font-size:15px;color:var(--gold);margin-bottom:6px;}
+.tut-tooltip-step{font-size:10px;opacity:0.55;margin-bottom:5px;}
+.tut-arrow{width:12px;height:12px;background:var(--espresso);transform:rotate(45deg);position:absolute;border-left:2px solid var(--gold);border-bottom:2px solid var(--gold);}
+.tut-arrow.up{top:-7px;left:50%;transform:translateX(-50%) rotate(135deg);border-left:none;border-bottom:none;border-top:2px solid var(--gold);border-right:2px solid var(--gold);}
+.tut-btn-row{display:flex;gap:8px;margin-top:10px;}
+.tut-btn{background:var(--gold);color:var(--espresso);border:none;border-radius:8px;padding:6px 14px;font-family:'Jua',sans-serif;font-size:12px;cursor:pointer;flex:1;}
+.tut-btn-skip{background:transparent;color:rgba(255,248,240,0.5);border:1px solid rgba(255,248,240,0.2);border-radius:8px;padding:6px 10px;font-family:'Gowun Dodum',sans-serif;font-size:11px;cursor:pointer;}
+
+/* ── 저장 시간 표시 ── */
+#save-status{font-size:10px;color:var(--latte);background:rgba(107,66,38,0.08);padding:2px 8px;border-radius:8px;white-space:nowrap;}
+
 /* 플로팅 텍스트 */
 .float-text{position:fixed;pointer-events:none;z-index:500;font-family:'Jua',sans-serif;font-size:16px;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,0.3);animation:floatUp 1.2s ease-out forwards;}
 @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1);}60%{opacity:1;transform:translateY(-50px) scale(1.1);}100%{opacity:0;transform:translateY(-80px) scale(0.9);}}
 /* 화면 흔들림 */
 @keyframes screenShake{0%,100%{transform:translate(0,0);}20%{transform:translate(-4px,2px);}40%{transform:translate(4px,-2px);}60%{transform:translate(-3px,3px);}80%{transform:translate(3px,-1px);}}
 .shake{animation:screenShake 0.4s ease;}
+
+/* 음식 팡 연출 */
+@keyframes foodPop{0%{opacity:1;transform:scale(0.5) translateY(0);}50%{opacity:1;transform:scale(1.4) translateY(-20px);}100%{opacity:0;transform:scale(1) translateY(-50px);}}
 
 /* ───────────────────────────────
    모바일 반응형 (768px 이하)
@@ -234,6 +253,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 
   .brand-name { font-size: 15px; }
   .brand-sub, #season-badge { display: none; }
+  #save-status { display: none; }
   .stage-badge { font-size: 11px; padding: 3px 8px; }
   .stats-bar { gap: 8px; }
   .stat { font-size: 12px; }
@@ -378,6 +398,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
       <div class="stat">⭐ <span id="repDisplay">0</span></div>
       <div class="stat">📅 Day <span id="dayDisplay">1</span></div>
       <div id="game-time">00:00</div>
+      <span id="save-status">저장 안 됨</span>
     </div>
     <div class="header-btns">
       <button class="btn btn-gold btn-sm" onclick="openSaveModal()">💾 저장</button>
@@ -499,12 +520,14 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
           <button class="tab-btn" onclick="switchTab('booster')">⚡ 버프</button>
           <button class="tab-btn" onclick="switchTab('achieve')">🏅 업적</button>
           <button class="tab-btn" onclick="switchTab('encyclo')">📖 도감</button>
+          <button class="tab-btn" onclick="switchTab('stats')">📊 통계</button>
         </div>
         <div class="tab-pane active" id="tab-staff"></div>
         <div class="tab-pane" id="tab-upgrades"></div>
         <div class="tab-pane" id="tab-booster"></div>
         <div class="tab-pane" id="tab-achieve"></div>
         <div class="tab-pane" id="tab-encyclo"></div>
+        <div class="tab-pane" id="tab-stats"></div>
       </div>
       <div class="panel">
         <div class="panel-title">💬 손님 리뷰</div>
@@ -723,7 +746,7 @@ const STAFF_DEFS = {
 
 const STAGE_DATA = [
   {name:'🌱 농장',       building:'🏕️',desc:'작물을 재배하고 재료를 모아보세요',           repReq:0},
-  {name:'🛖 노점',       building:'🛖', desc:'길거리 노점으로 첫 장사를 시작해보세요!',    repReq:200},
+  {name:'🛖 노점',       building:'🛖', desc:'길거리 노점으로 첫 장사를 시작해보세요!',    repReq:100},
   {name:'🥪 토스트점',   building:'🏠', desc:'작은 토스트 가게를 운영해보세요',            repReq:600},
   {name:'🍱 분식점',     building:'🏪', desc:'떡볶이, 김밥으로 손님을 모아보세요',         repReq:1500},
   {name:'☕ 카페',       building:'☕', desc:'본격 카페! 커피와 디저트를 선보이세요',       repReq:3000},
@@ -819,7 +842,14 @@ function startGame() {
   // 새 게임 시작 시 횟수 제한 초기화
   localStorage.removeItem('emergencyLog');
   localStorage.removeItem('boosterLog');
+  localStorage.removeItem('farmcafe_tut_done');
+  // 스타터 키트: 밀 3개, 설탕 2개, 달걀 2개 무료 지급
+  G.inventory.wheat = 3;
+  G.inventory.sugar = 2;
+  G.inventory.egg = 2;
   closeModal('nameModal'); boot();
+  // 게임 시작 후 튜토리얼 실행
+  setTimeout(()=>startTutorial(), 500);
 }
 
 function boot() {
@@ -832,6 +862,7 @@ function boot() {
   if (!G.harvestedCrops) G.harvestedCrops={};
   if (!G.regulars) G.regulars={};
   if (!G.totalMoneyEarned) G.totalMoneyEarned=0;
+  if (!G.menuSoldCount) G.menuSoldCount={};
   // 날씨 계절 검증 — 현재 계절에 맞지 않으면 초기화
   if (G.weather) {
     const seasonId = SEASONS[G.seasonIndex].id;
@@ -1467,7 +1498,7 @@ function serveCustomer(custId, isAuto, staffName) {
     // 두 주문 재료 합산
     Object.entries(ingr2).forEach(([item,qty])=>{ ingr[item]=(ingr[item]||0)+qty; });
   }
-  for (const [item,qty] of Object.entries(ingr)) if ((G.inventory[item]||0)<qty) missing.push(ITEMS[item]?.name);
+  for (const [item,qty] of Object.entries(ingr)) if ((G.inventory[item]||0)<qty) missing.push(`${ITEMS[item]?.emoji||'?'} ${ITEMS[item]?.name||item} ×${qty-(G.inventory[item]||0)}`);
   if (missing.length) { if (!isAuto) showNotif(`⚠️ 재료 부족: ${missing.join(', ')}`); return; }
   for (const [item,qty] of Object.entries(ingr)) G.inventory[item]-=qty;
 
@@ -1495,6 +1526,11 @@ function serveCustomer(custId, isAuto, staffName) {
   G.totalMoneyEarned+=price;
 
   G.totalServed++;
+  // 메뉴별 판매 횟수 기록
+  if (!G.menuSoldCount) G.menuSoldCount={};
+  G.menuSoldCount[cust.order] = (G.menuSoldCount[cust.order]||0)+1;
+  if (cust.order2) G.menuSoldCount[cust.order2] = (G.menuSoldCount[cust.order2]||0)+1;
+
   if (cust.type==='vip') { if(!G.vipServed) G.vipServed=0; G.vipServed++; }
   const patPct=cust.patience/100;
   let newSat=2+Math.round(patPct*3);
@@ -1536,6 +1572,14 @@ function serveCustomer(custId, isAuto, staffName) {
     }
   }
   audio.init(); audio.playSfx('serve'); audio.playSfx('money');
+  // 서빙 성공 음식 이모지 팡! 연출
+  if (custRect && custRect.width > 0) {
+    const foodEl = document.createElement('div');
+    foodEl.style.cssText = `position:fixed;left:${custRect.left+custRect.width/2-20}px;top:${custRect.top+10}px;font-size:28px;z-index:500;pointer-events:none;animation:foodPop 0.7s cubic-bezier(.34,1.56,.64,1) forwards;`;
+    foodEl.textContent = recipe.emoji;
+    document.body.appendChild(foodEl);
+    setTimeout(()=>foodEl.remove(), 750);
+  }
   custEl?.remove();
   if (G.customers.length===0) showCustEmpty();
   document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
@@ -1867,6 +1911,7 @@ const seasonHints = {
 function saveToStorage() {
   const data={...G, triggeredEvents:[...G.triggeredEvents], savedAt:new Date().toLocaleString()};
   localStorage.setItem('farmcafe_v3',JSON.stringify(data));
+  updateSaveStatus(true);
 }
 function saveGame() { saveToStorage(); showNotif('💾 저장 완료!'); closeModal('saveModal'); }
 
@@ -1877,6 +1922,11 @@ function loadGame() {
   if (!G.staff) G.staff={};
   closeModal('saveModal'); boot();
   addLog(`💾 불러오기 완료! (${d.savedAt})`);
+  // 저장 시간 복원
+  if (d.savedAt) {
+    G._lastSavedTime = Date.now();
+    updateSaveStatus(true);
+  }
 }
 function exportSave() {
   const d={...G,triggeredEvents:[...G.triggeredEvents],savedAt:new Date().toLocaleString()};
@@ -2011,7 +2061,7 @@ let currentTab='staff';
 function switchTab(tab) {
   currentTab=tab;
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    const tabs=['staff','upgrades','booster','achieve','encyclo'];
+    const tabs=['staff','upgrades','booster','achieve','encyclo','stats'];
     b.classList.toggle('active',tabs[i]===tab);
   });
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
@@ -2024,6 +2074,7 @@ function renderTab(tab) {
   else if (tab==='booster') renderBooster();
   else if (tab==='achieve') renderAchievements();
   else if (tab==='encyclo') renderEncyclopedia();
+  else if (tab==='stats') renderStats();
 }
 
 // ══════════════════════════════════════════
@@ -2069,7 +2120,14 @@ function renderFarm() {
     if (p.stage==='ready') return `<div class="plot ready" onclick="plotClick(${i})" title="클릭 → 즉시 수확!">${crop.emoji}<div class="plot-label">수확!</div></div>`;
     const elapsed=(Date.now()-p.plantedAt)/1000;
     const pct=Math.min(100,elapsed/(p.growTime*sm)*100);
-    return `<div class="plot growing" onclick="plotClick(${i})">${crop.emoji}<div class="plot-label">${Math.floor(pct)}%</div><div class="plot-bar"><div class="plot-bar-fill" style="width:${pct}%"></div></div></div>`;
+    // 3단계 성장 이모지
+    let growEmoji;
+    if (pct < 33) growEmoji = '🌱';
+    else if (pct < 66) growEmoji = '🌿';
+    else growEmoji = crop.emoji;
+    const remSec = Math.max(0, Math.ceil(p.growTime*sm - elapsed));
+    const remLabel = remSec >= 60 ? `${Math.ceil(remSec/60)}분` : `${remSec}초`;
+    return `<div class="plot growing" onclick="plotClick(${i})" title="${crop.name} — ${remLabel} 후 수확">${growEmoji}<div class="plot-label">${remLabel}</div><div class="plot-bar"><div class="plot-bar-fill" style="width:${pct}%"></div></div></div>`;
   }).join('');
 
   // 모두수확 버튼 상태
@@ -2614,8 +2672,208 @@ function renderEncyclopedia() {
 }
 
 // ══════════════════════════════════════════
-//  단골 시스템
+//  통계 탭
 // ══════════════════════════════════════════
+function renderStats() {
+  const el = document.getElementById('tab-stats');
+  if (!el) return;
+
+  // 메뉴별 판매 횟수 (G.menuSoldCount 사용)
+  const menuSold = G.menuSoldCount || {};
+  const topMenus = Object.entries(menuSold)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,5);
+
+  // 총 플레이 시간
+  const totalSec = G.secondsPlayed || 0;
+  const playH = Math.floor(totalSec/3600);
+  const playM = Math.floor((totalSec%3600)/60);
+  const playS = totalSec%60;
+  const playStr = playH>0 ? `${playH}시간 ${playM}분` : playM>0 ? `${playM}분 ${playS}초` : `${playS}초`;
+
+  // 단골 TOP3
+  const topRegulars = Object.entries(G.regulars||{})
+    .sort((a,b)=>b[1].visits-a[1].visits)
+    .slice(0,3);
+
+  const statBox = (emoji, label, value, color='var(--espresso)') =>
+    `<div style="background:rgba(107,66,38,0.07);border-radius:10px;padding:9px 10px;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:20px;">${emoji}</span>
+      <div style="flex:1;">
+        <div style="font-size:10px;color:var(--latte);">${label}</div>
+        <div style="font-size:14px;font-weight:700;color:${color};">${value}</div>
+      </div>
+    </div>`;
+
+  el.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:var(--espresso);margin-bottom:6px;padding-bottom:4px;border-bottom:2px dashed rgba(200,149,108,0.28);">📊 나의 경영 기록</div>
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      ${statBox('💰','누적 수익', (G.totalMoneyEarned||0).toLocaleString()+'원', 'var(--gold)')}
+      ${statBox('🍽️','총 서빙 수', (G.totalServed||0).toLocaleString()+'명', 'var(--grass)')}
+      ${statBox('⭐','현재 명성', (G.reputation||0).toLocaleString(), '#9b59b6')}
+      ${statBox('🏪','현재 단계', STAGE_DATA[G.stage].name)}
+      ${statBox('⏱️','총 플레이 시간', playStr)}
+      ${statBox('🥰','단골 손님 수', Object.values(G.regulars||{}).filter(r=>r.visits>=5).length+'명', '#e91e8c')}
+    </div>
+    ${topMenus.length ? `
+    <div style="font-size:11px;font-weight:700;color:var(--espresso);margin:10px 0 5px;padding-bottom:4px;border-bottom:2px dashed rgba(200,149,108,0.28);">🏆 베스트 메뉴 TOP5</div>
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      ${topMenus.map(([k,cnt],i)=>{
+        const r=RECIPES[k];
+        const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+        return `<div style="display:flex;align-items:center;gap:7px;background:rgba(107,66,38,0.06);border-radius:8px;padding:6px 9px;font-size:12px;">
+          <span>${medals[i]}</span>
+          <span style="font-size:16px;">${r?.emoji||'?'}</span>
+          <span style="flex:1;font-weight:600;">${r?.name||k}</span>
+          <span style="color:var(--gold);font-weight:700;">${cnt}회</span>
+        </div>`;
+      }).join('')}
+    </div>` : '<div style="font-size:12px;color:var(--latte);text-align:center;padding:10px;">아직 메뉴 판매 기록이 없어요</div>'}
+    ${topRegulars.length ? `
+    <div style="font-size:11px;font-weight:700;color:var(--espresso);margin:10px 0 5px;padding-bottom:4px;border-bottom:2px dashed rgba(200,149,108,0.28);">🥰 단골 TOP3</div>
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      ${topRegulars.map(([name,data])=>
+        `<div style="display:flex;align-items:center;gap:7px;background:rgba(233,30,140,0.06);border-radius:8px;padding:6px 9px;font-size:12px;">
+          <span style="font-size:16px;">🥰</span>
+          <span style="flex:1;font-weight:600;">${name}</span>
+          <span style="color:#e91e8c;font-weight:700;">${data.visits}회 방문</span>
+        </div>`
+      ).join('')}
+    </div>` : ''}
+  `;
+}
+
+// ══════════════════════════════════════════
+//  저장 시간 표시
+// ══════════════════════════════════════════
+function updateSaveStatus(isSaving) {
+  const el = document.getElementById('save-status');
+  if (!el) return;
+  if (isSaving) {
+    el.textContent = '💾 저장됨';
+    el.style.color = 'var(--grass)';
+    G._lastSavedTime = Date.now();
+  } else {
+    const diff = G._lastSavedTime ? Math.floor((Date.now()-G._lastSavedTime)/1000) : null;
+    if (diff === null) { el.textContent = '저장 안 됨'; el.style.color = 'var(--latte)'; }
+    else if (diff < 60) { el.textContent = `💾 ${diff}초 전`; el.style.color = 'var(--latte)'; }
+    else { el.textContent = `💾 ${Math.floor(diff/60)}분 전`; el.style.color = 'var(--latte)'; }
+  }
+}
+setInterval(updateSaveStatus, 10000);
+
+// ══════════════════════════════════════════
+//  튜토리얼 시스템
+// ══════════════════════════════════════════
+let tutStep = 0;
+let tutActive = false;
+
+const TUTORIAL_STEPS = [
+  {
+    title: '🌱 농장에 오신 걸 환영해요!',
+    text: '밭을 눌러서 씨앗을 심어보세요. 스타터 재료(밀·설탕·달걀)가 준비되어 있으니 지금 바로 심을 수 있어요!',
+    targetId: 'farm-grid',
+    arrow: 'up',
+  },
+  {
+    title: '⏳ 작물이 자라면 수확하세요',
+    text: '씨앗을 심으면 🌱→🌿→완성 순서로 자라요. 수확 준비가 되면 밭이 반짝이고, 클릭하면 즉시 수확할 수 있어요!',
+    targetId: 'farm-grid',
+    arrow: 'up',
+  },
+  {
+    title: '☕ 재료 20개를 모으면 카페 오픈!',
+    text: '창고에 재료가 20개 이상 쌓이면 카페탭에서 가게를 열 수 있어요. 다양한 작물을 심어 재료를 모아보세요!',
+    targetId: 'inventoryInline',
+    arrow: 'up',
+  },
+  {
+    title: '👥 손님이 오면 서빙하세요',
+    text: '카페를 열면 손님이 방문해요. 인내심 바가 닳기 전에 서빙 버튼을 눌러주세요! 빠를수록 만족도와 명성이 올라가요.',
+    targetId: 'col-cafe',
+    arrow: null,
+  },
+  {
+    title: '🏆 명성을 쌓아 단계를 올려요!',
+    text: '손님을 서빙할수록 명성⭐이 쌓이고, 노점→토스트점→분식점→카페→파인다이닝 순으로 성장해요. 즐거운 게임 되세요! 🌟',
+    targetId: null,
+    arrow: null,
+  },
+];
+
+function startTutorial() {
+  if (localStorage.getItem('farmcafe_tut_done')) return;
+  tutStep = 0;
+  tutActive = true;
+  showTutStep();
+}
+
+function showTutStep() {
+  clearTutorial();
+  if (tutStep >= TUTORIAL_STEPS.length) { endTutorial(); return; }
+  const step = TUTORIAL_STEPS[tutStep];
+
+  // 하이라이트 대상 찾기
+  const targetEl = step.targetId ? document.getElementById(step.targetId) : null;
+  const rect = targetEl ? targetEl.getBoundingClientRect() : null;
+
+  if (rect && rect.width > 0) {
+    const pad = 8;
+    const hl = document.createElement('div');
+    hl.id = 'tut-hl';
+    hl.className = 'tut-highlight';
+    hl.style.cssText = `left:${rect.left-pad}px;top:${rect.top-pad}px;width:${rect.width+pad*2}px;height:${rect.height+pad*2}px;`;
+    document.body.appendChild(hl);
+  }
+
+  // 툴팁
+  const tt = document.createElement('div');
+  tt.id = 'tut-tt';
+  tt.className = 'tut-tooltip';
+  tt.innerHTML = `
+    <div class="tut-tooltip-step">단계 ${tutStep+1} / ${TUTORIAL_STEPS.length}</div>
+    <div class="tut-tooltip-title">${step.title}</div>
+    <div style="font-size:12px;line-height:1.7;">${step.text}</div>
+    <div class="tut-btn-row">
+      <button class="tut-btn-skip" onclick="endTutorial()">건너뛰기</button>
+      <button class="tut-btn" onclick="nextTutStep()">${tutStep===TUTORIAL_STEPS.length-1?'시작하기 🚀':'다음 →'}</button>
+    </div>`;
+  document.body.appendChild(tt);
+
+  // 툴팁 위치 계산
+  const ttW = 280, ttH = 180;
+  let ttLeft, ttTop;
+  if (rect) {
+    ttLeft = Math.min(window.innerWidth - ttW - 16, Math.max(16, rect.left + rect.width/2 - ttW/2));
+    const spaceBelow = window.innerHeight - rect.bottom;
+    if (spaceBelow > ttH + 20) {
+      ttTop = rect.bottom + 16;
+    } else {
+      ttTop = Math.max(16, rect.top - ttH - 16);
+    }
+  } else {
+    ttLeft = window.innerWidth/2 - ttW/2;
+    ttTop = window.innerHeight/2 - ttH/2;
+  }
+  tt.style.left = ttLeft + 'px';
+  tt.style.top = ttTop + 'px';
+  tt.style.width = ttW + 'px';
+}
+
+function nextTutStep() { tutStep++; showTutStep(); }
+
+function clearTutorial() {
+  document.getElementById('tut-hl')?.remove();
+  document.getElementById('tut-tt')?.remove();
+}
+
+function endTutorial() {
+  clearTutorial();
+  tutActive = false;
+  localStorage.setItem('farmcafe_tut_done', '1');
+}
+
+
 const REGULAR_STORIES = [
   '"{name}님이 오늘도 오셨어요! 항상 감사해요 🥰"',
   '"{name}님: 여기 음식이 최고예요! 매일 올게요~"',
