@@ -1989,39 +1989,34 @@ function loadGame() {
   const raw = localStorage.getItem('farmcafe_v3');
   if (!raw) return;
   let d;
-  try { d = JSON.parse(raw); } catch(e) { showNotif('❌ 저장 데이터가 손상됐어요. 새 게임을 시작해주세요.'); return; }
+  try { 
+    d = JSON.parse(raw); 
+  } catch(e) { 
+    showNotif('❌ 저장 데이터가 손상됐어요.'); 
+    return; 
+  }
 
-  // 기본 필드 덮어쓰기
+  // 1. 기본 필드 복사
   Object.assign(G, d);
 
-  // 직렬화 복원
+  // 2. Set 객체 및 특수 객체 강제 복원 (이 부분이 중요합니다)
   G.triggeredEvents = new Set(Array.isArray(d.triggeredEvents) ? d.triggeredEvents : []);
+  
+  // 3. 누락될 수 있는 배열/객체 초기화
   G.triggeredContests = Array.isArray(d.triggeredContests) ? d.triggeredContests : [];
   G.contestHistory    = Array.isArray(d.contestHistory)    ? d.contestHistory    : [];
   G.quests            = Array.isArray(d.quests)            ? d.quests            : [];
   G.achievements      = Array.isArray(d.achievements)      ? d.achievements      : [];
-
-  // contest 내 타이머 필드 초기화
-  if (G.contest) {
-    G.contest._judgeSpawnTimer = null;
-    G.contest._judgeQueue      = G.contest._judgeQueue || [];
-  }
-
-  // 필수 객체 안전 초기화
+  
   if (!G.staff)          G.staff          = {};
-  if (!G.boosters)       G.boosters       = {};
-  if (!G.staffLevels)    G.staffLevels    = {};
-  if (!G.encyclopedia)   G.encyclopedia   = {};
-  if (!G.harvestedCrops) G.harvestedCrops = {};
-  if (!G.regulars)       G.regulars       = {};
   if (!G.inventory)      G.inventory      = {};
-  if (!G.menuSoldCount)  G.menuSoldCount  = {};
-  if (!G.plots || !Array.isArray(G.plots)) G.plots = Array(8).fill(null).map(()=>({crop:null,plantedAt:null,growTime:null,stage:'empty'}));
+  if (!G.plots)          G.plots = Array(8).fill(null).map(()=>({crop:null,plantedAt:null,growTime:null,stage:'empty'}));
 
+  // 4. UI 및 시스템 재시작
   closeModal('saveModal');
-  boot();
-  addLog(`💾 불러오기 완료! (${d.savedAt||''})`);
-  if (d.savedAt) { G._lastSavedTime = Date.now(); updateSaveStatus(true); }
+  boot(); 
+  
+  addLog(`💾 불러오기 완료! (${d.savedAt || ''})`);
 }
 function exportSave() {
   const d={...G,triggeredEvents:[...G.triggeredEvents],savedAt:new Date().toLocaleString()};
