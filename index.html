@@ -1989,34 +1989,28 @@ function loadGame() {
   const raw = localStorage.getItem('farmcafe_v3');
   if (!raw) return;
   let d;
-  try { 
-    d = JSON.parse(raw); 
-  } catch(e) { 
-    showNotif('❌ 저장 데이터가 손상됐어요.'); 
-    return; 
-  }
+  try { d = JSON.parse(raw); } catch(e) { showNotif('❌ 데이터 오류'); return; }
 
-  // 1. 기본 필드 복사
+  // 데이터 덮어쓰기
   Object.assign(G, d);
 
-  // 2. Set 객체 및 특수 객체 강제 복원 (이 부분이 중요합니다)
+  // 핵심 수정: 배열로 들어온 데이터를 다시 Set 객체로 변환 (중요!)
   G.triggeredEvents = new Set(Array.isArray(d.triggeredEvents) ? d.triggeredEvents : []);
   
-  // 3. 누락될 수 있는 배열/객체 초기화
+  // 기타 배열 데이터 안전하게 초기화
   G.triggeredContests = Array.isArray(d.triggeredContests) ? d.triggeredContests : [];
-  G.contestHistory    = Array.isArray(d.contestHistory)    ? d.contestHistory    : [];
-  G.quests            = Array.isArray(d.quests)            ? d.quests            : [];
-  G.achievements      = Array.isArray(d.achievements)      ? d.achievements      : [];
-  
-  if (!G.staff)          G.staff          = {};
-  if (!G.inventory)      G.inventory      = {};
-  if (!G.plots)          G.plots = Array(8).fill(null).map(()=>({crop:null,plantedAt:null,growTime:null,stage:'empty'}));
+  G.contestHistory = Array.isArray(d.contestHistory) ? d.contestHistory : [];
+  G.quests = Array.isArray(d.quests) ? d.quests : [];
 
-  // 4. UI 및 시스템 재시작
+  // contest 내부 타이머 관련 초기화
+  if (G.contest) {
+    G.contest._judgeSpawnTimer = null;
+    G.contest._judgeQueue = G.contest._judgeQueue || [];
+  }
+
   closeModal('saveModal');
-  boot(); 
-  
-  addLog(`💾 불러오기 완료! (${d.savedAt || ''})`);
+  boot(); // 게임 재시작
+  addLog(`💾 불러오기 성공! (${d.savedAt || ''})`);
 }
 function exportSave() {
   const d={...G,triggeredEvents:[...G.triggeredEvents],savedAt:new Date().toLocaleString()};
