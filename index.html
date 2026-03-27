@@ -692,7 +692,7 @@ const RECIPES = {
   winter_stew:  {emoji:'🫕',name:'겨울 비프 스튜', price:20000,stageReq:7, ingredients:{meat:2,potato:1,tomato:1,basil:1},learnCost:12000,season:'winter',reviews:['겨울 최고의 음식!','따뜻하고 든든해요!','집밥보다 맛있어요!']},
 
   // ── 콤보 메뉴 ──
-  combo_americano_cookie:{emoji:'🖤🍪',name:'아메리카노+쿠키', price:6000, stageReq:2, ingredients:{bean:2,wheat:1,sugar:1,egg:1}, learnCost:1000, season:null, isCombo:true, reviews:['가성비 최고!','커피랑 쿠키 찰떡~','자주 올게요!']},
+  combo_americano_cookie:{emoji:'🖤🍪',name:'아메리카노+쿠키', price:6000, stageReq:2, ingredients:{bean:2,wheat:1,sugar:1,egg:1}, learnCost:1500, season:null, isCombo:true, reviews:['가성비 최고!','커피랑 쿠키 찰떡~','자주 올게요!']},
   combo_latte_waffle:    {emoji:'☕🧇',name:'라떼+와플',        price:10500,stageReq:5, ingredients:{bean:1,milk:1,wheat:2,egg:1}, learnCost:4000, season:null, isCombo:true, reviews:['완벽한 조합!','브런치 느낌~','두 개 따로보다 저렴해요!']},
   combo_cake_latte:      {emoji:'🍰☕',name:'케이크+라떼',      price:12000,stageReq:5, ingredients:{wheat:1,strawb:2,cream:1,bean:1,milk:1}, learnCost:6000, season:null, isCombo:true, reviews:['세트로 시키길 잘했어요!','달콤해요~','인생 조합!']},
   combo_steak_wine:      {emoji:'🥩🍷',name:'스테이크+와인',    price:40000,stageReq:7, ingredients:{meat:2,basil:1,mushroom:1,bean:1}, learnCost:15000,season:null, isCombo:true, reviews:['완벽한 디너!','고급스러워요~','특별한 날에 딱!']},
@@ -703,23 +703,23 @@ const RECIPES = {
 };
 
 const UPGRADES = {
-  fertilizer:  {name:'비료 시스템',     emoji:'🌿',desc:'작물 성장 30% 단축',          cost:50000,  stageReq:0},
-  display:      {name:'예쁜 진열대',    emoji:'🖼', desc:'손님 만족도 +10%',           cost:150000,  stageReq:1},
-  espresso_m:   {name:'에스프레소 머신',emoji:'⚙️',desc:'커피류 재료 필요량 1개 절감',  cost:300000,  stageReq:4},
-  loyalty:      {name:'단골 카드',      emoji:'🃏',desc:'단골 손님 방문 빈도 +20%',    cost:100000,  stageReq:3},
-  premium_mat:  {name:'프리미엄 식재료',emoji:'✨',desc:'메뉴 판매가 +15%',            cost:100000,  stageReq:5},
-  auto_harvest: {name:'자동 수확기',    emoji:'🚜',desc:'익은 작물 자동 수확',          cost:100000,  stageReq:2},
-  pro_kitchen:  {name:'전문 주방',      emoji:'🍳',desc:'조리 메뉴 판매가 +10%',       cost:200000,  stageReq:6},
-  wine_cellar:  {name:'와인 셀러',      emoji:'🍷',desc:'파인다이닝 메뉴 가격 +20%',   cost:250000, stageReq:8},
+  fertilizer:  {name:'비료 시스템',     emoji:'🌿',desc:'작물 성장 30% 단축',          cost:50,000,  stageReq:0},
+  display:      {name:'예쁜 진열대',    emoji:'🖼', desc:'손님 만족도 +10%',           cost:150,000,  stageReq:1},
+  espresso_m:   {name:'에스프레소 머신',emoji:'⚙️',desc:'커피류 재료 필요량 1개 절감',  cost:300,000,  stageReq:4},
+  loyalty:      {name:'단골 카드',      emoji:'🃏',desc:'단골 손님 방문 빈도 +20%',    cost:100,000,  stageReq:3},
+  premium_mat:  {name:'프리미엄 식재료',emoji:'✨',desc:'메뉴 판매가 +15%',            cost:100,000,  stageReq:5},
+  auto_harvest: {name:'자동 수확기',    emoji:'🚜',desc:'익은 작물 자동 수확',          cost:100,000,  stageReq:2},
+  pro_kitchen:  {name:'전문 주방',      emoji:'🍳',desc:'조리 메뉴 판매가 +10%',       cost:200,000,  stageReq:6},
+  wine_cellar:  {name:'와인 셀러',      emoji:'🍷',desc:'파인다이닝 메뉴 가격 +20%',   cost:250,000, stageReq:8},
 };
 
 const STAFF_DEFS = {
-  parttime: {name:'아르바이트생', emoji:'👧',role:'barista',  desc:'손님 1명 자동 서빙',             hireCost:15000,  dailyCost:30000,  stageReq:1},
-  farmer_w: {name:'농장 일꾼',   emoji:'👨‍🌾',role:'farmer',   desc:'빈 밭에 자동으로 씨앗 심고 수확', hireCost:20000,  dailyCost:40000,  stageReq:0},
-  barista:  {name:'바리스타',    emoji:'☕',role:'barista',   desc:'손님 자동 서빙 (빠름)',           hireCost:25000,  dailyCost:45000, stageReq:4},
-  manager:  {name:'재료 관리자', emoji:'🧑‍💼',role:'manager',  desc:'부족한 재료 자동 파악 & 심기',    hireCost:30000,  dailyCost:50000, stageReq:3},
-  head_chef:{name:'수석 셰프',   emoji:'👨‍🍳',role:'barista',  desc:'메뉴 판매가 +10% & 자동 서빙',   hireCost:50000, dailyCost:55000, stageReq:6},
-  sommelier:{name:'소믈리에',    emoji:'🍷',role:'barista',   desc:'파인다이닝 손님 만족도 +30%',     hireCost:70000, dailyCost:60000, stageReq:8},
+  parttime: {name:'아르바이트생', emoji:'👧',role:'barista',  desc:'손님 1명 자동 서빙',             hireCost:15,000,  dailyCost:30,000,  stageReq:1},
+  farmer_w: {name:'농장 일꾼',   emoji:'👨‍🌾',role:'farmer',   desc:'빈 밭에 자동으로 씨앗 심고 수확', hireCost:20,000,  dailyCost:40,000,  stageReq:0},
+  barista:  {name:'바리스타',    emoji:'☕',role:'barista',   desc:'손님 자동 서빙 (빠름)',           hireCost:25,000,  dailyCost:45,000, stageReq:4},
+  manager:  {name:'재료 관리자', emoji:'🧑‍💼',role:'manager',  desc:'부족한 재료 자동 파악 & 심기',    hireCost:30,000,  dailyCost:50,000, stageReq:3},
+  head_chef:{name:'수석 셰프',   emoji:'👨‍🍳',role:'barista',  desc:'메뉴 판매가 +10% & 자동 서빙',   hireCost:50,000, dailyCost:55,000, stageReq:6},
+  sommelier:{name:'소믈리에',    emoji:'🍷',role:'barista',   desc:'파인다이닝 손님 만족도 +30%',     hireCost:70,000, dailyCost:60,000, stageReq:8},
 };
 
 const STAGE_DATA = [
@@ -2353,11 +2353,11 @@ function renderBooster() {
 
   // 단기 부스터
   const boosters = [
-    {key:'bean',   emoji:'☕', name:'특별 원두',    desc:'1일간 커피 메뉴 수익 2배',     cost:30000, stageReq:4, active:beanActive,   endDay:G.boosters.bean?.endDay},
-    {key:'ads',    emoji:'📢', name:'SNS 광고',     desc:'1일간 손님 스폰 속도 2배',     cost:20000, stageReq:1, active:adsActive,    endDay:G.boosters.ads?.endDay},
-    {key:'popup',  emoji:'🎪', name:'팝업 이벤트',  desc:'즉시 손님 6명 소환',           cost:15000, stageReq:2, active:false,        endDay:null},
-    {key:'lucky',  emoji:'🍀', name:'럭키 박스',    desc:'랜덤 보상 (돈/명성/재료)',     cost:10000, stageReq:1, active:false,        endDay:null},
-    {key:'staffB', emoji:'🎁', name:'직원 보너스',  desc:'1일간 서빙 속도 2배',          cost:25000, stageReq:1, active:staffBActive, endDay:G.boosters.staffB?.endDay},
+    {key:'bean',   emoji:'☕', name:'특별 원두',    desc:'1일간 커피 메뉴 수익 2배',     cost:30,000, stageReq:4, active:beanActive,   endDay:G.boosters.bean?.endDay},
+    {key:'ads',    emoji:'📢', name:'SNS 광고',     desc:'1일간 손님 스폰 속도 2배',     cost:20,000, stageReq:1, active:adsActive,    endDay:G.boosters.ads?.endDay},
+    {key:'popup',  emoji:'🎪', name:'팝업 이벤트',  desc:'즉시 손님 6명 소환',           cost:15,000, stageReq:2, active:false,        endDay:null},
+    {key:'lucky',  emoji:'🍀', name:'럭키 박스',    desc:'랜덤 보상 (돈/명성/재료)',     cost:10,000, stageReq:1, active:false,        endDay:null},
+    {key:'staffB', emoji:'🎁', name:'직원 보너스',  desc:'1일간 서빙 속도 2배',          cost:25,000, stageReq:1, active:staffBActive, endDay:G.boosters.staffB?.endDay},
   ];
 
   // 직원 교육
