@@ -403,7 +403,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
           <div style="height:5px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden;margin-bottom:8px;">
             <div id="mob-progress-fill" style="height:100%;background:linear-gradient(90deg,#5A8A3C,#F4C430);border-radius:3px;transition:width 0.6s;width:0%;"></div>
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;">👥 방문 손님 <span id="mob-cust-count"></span></div><button onclick="serveAll()" style="background:var(--grass);color:white;border:none;border-radius:7px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-weight:600;">모두서빙</button></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;">👥 방문 손님 <span id="mob-cust-count"></span></div><button onclick="serveAll()" class="serve-all-btn" style="background:var(--grass);color:white;border:none;border-radius:7px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-weight:600;">모두서빙</button></div>
           <div id="mob-cust-list"><div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div></div>
         </div>
       </div>
@@ -460,7 +460,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
             </div>
             <!-- 방문 손님 -->
             <div id="section-customers">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div class="panel-title">👥 방문 손님 <span id="custCount" style="font-size:11px;color:var(--latte);font-weight:400;"></span></div><button class="btn btn-green btn-sm" onclick="serveAll()" id="serveAllBtn" style="font-size:11px;padding:3px 8px;">모두서빙</button></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div class="panel-title">👥 방문 손님 <span id="custCount" style="font-size:11px;color:var(--latte);font-weight:400;"></span></div><button class="btn btn-green btn-sm" onclick="serveAll()" id="serveAllBtn" class="serve-all-btn" style="font-size:11px;padding:3px 8px;">모두서빙</button></div>
               <div id="customerList"></div>
             </div>
             <!-- 메뉴판 (레시피 통합) -->
@@ -488,7 +488,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
           <div style="height:5px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden;margin-bottom:8px;">
             <div id="mob-progress-fill-manage" style="height:100%;background:linear-gradient(90deg,#5A8A3C,#F4C430);border-radius:3px;transition:width 0.6s;width:0%;"></div>
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;">👥 방문 손님 <span id="mob-cust-count-manage"></span></div><button onclick="serveAll()" style="background:var(--grass);color:white;border:none;border-radius:7px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-weight:600;">모두서빙</button></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="font-size:11px;color:rgba(255,248,240,0.65);font-weight:700;">👥 방문 손님 <span id="mob-cust-count-manage"></span></div><button onclick="serveAll()" class="serve-all-btn" style="background:var(--grass);color:white;border:none;border-radius:7px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-weight:600;">모두서빙</button></div>
           <div id="mob-cust-list-manage"><div style="font-size:12px;color:rgba(255,248,240,0.45);text-align:center;">손님을 기다리는 중...</div></div>
         </div>
       </div>
@@ -1423,11 +1423,11 @@ function updatePatBars() {
 }
 
 function updateServeAllBtn() {
-  const btn = document.getElementById('serveAllBtn');
-  if (!btn) return;
   const has = G.cafeOpen && G.customers.length > 0;
-  btn.disabled = !has;
-  btn.style.opacity = has ? '1' : '0.4';
+  document.querySelectorAll('.serve-all-btn').forEach(btn => {
+    btn.disabled = !has;
+    btn.style.opacity = has ? '1' : '0.4';
+  });
 }
 
 function serveAll() {
@@ -2751,6 +2751,7 @@ setInterval(function() {
     var l2 = document.getElementById('mob-cust-list-manage'); if (l2) l2.innerHTML = html;
   }
   updateMobEventBanners();
+  updateServeAllBtn();
 }, 1000);
 </script>
 
