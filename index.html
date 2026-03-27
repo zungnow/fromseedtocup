@@ -1880,14 +1880,31 @@ function addLog(msg) {
 // 알림 스택 관리
 const _notifStack = [];
 const NOTIF_GAP = 48;
+const NOTIF_MARGIN = 8;
+
+// 헤더 높이를 CSS 변수로 실시간 추적
+(function() {
+  function updateHeaderHeight() {
+    var h = document.querySelector('header');
+    if (h) {
+      document.documentElement.style.setProperty('--notif-top', (h.offsetHeight + NOTIF_MARGIN) + 'px');
+    }
+  }
+  document.addEventListener('DOMContentLoaded', updateHeaderHeight);
+  window.addEventListener('resize', updateHeaderHeight);
+  if (document.readyState !== 'loading') updateHeaderHeight();
+  setTimeout(function() {
+    var h = document.querySelector('header');
+    if (h && window.ResizeObserver) {
+      new ResizeObserver(updateHeaderHeight).observe(h);
+    }
+    updateHeaderHeight();
+  }, 100);
+})();
 
 function _getNotifTopStart() {
-  const header = document.querySelector('header');
-  if (header) {
-    const rect = header.getBoundingClientRect();
-    return rect.bottom + 8;
-  }
-  return 70;
+  var val = getComputedStyle(document.documentElement).getPropertyValue('--notif-top');
+  return parseInt(val) || 70;
 }
 
 function _updateNotifPositions() {
@@ -2408,6 +2425,12 @@ function mobTab(t) {
   if (c) c.classList.add('tab-show');
   if (b) b.classList.add('on');
   window.scrollTo(0, 0);
+  // 탭 전환 후 알림 위치 재계산
+  requestAnimationFrame(function() {
+    var h = document.querySelector("header");
+    if (h) document.documentElement.style.setProperty("--notif-top", (h.offsetHeight + 8) + "px");
+    _updateNotifPositions();
+  });
 }
 
 // ── 모바일 방문손님 + 단계 미니패널 업데이트 (1초마다) ──
