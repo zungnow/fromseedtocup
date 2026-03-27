@@ -787,7 +787,6 @@ let G = {
   harvestedCrops:{},
   regulars:{},
   totalMoneyEarned:0,
-  emergencyOrdersToday:0,
 };
 
 // ══════════════════════════════════════════
@@ -886,7 +885,6 @@ function tick() {
   if (G.dayTimer>=90) {
     G.dayTimer=0; G.day++;
     G.seasonDay++;
-    G.emergencyOrdersToday = 0;
     // Pay daily staff wages
     let wages=0;
     Object.keys(G.staff).forEach(sid=>{
@@ -2023,7 +2021,6 @@ function renderFarm() {
 
 
 // ── 긴급 주문 ──
-// 핵심 소모 재료 (단계별로 해금)
 const EMERGENCY_ITEMS = [
   {key:'wheat',  stageReq:0},
   {key:'sugar',  stageReq:0},
@@ -2040,15 +2037,45 @@ const EMERGENCY_ITEMS = [
   {key:'cream',  stageReq:7},
   {key:'truffle',stageReq:7},
 ];
-const EMERGENCY_MAX_PER_DAY = 3;
+const EMERGENCY_MAX = 3;
+const EMERGENCY_WINDOW_MS = 24 * 60 * 60 * 1000; // 24시간
 const EMERGENCY_PRICE_MULT = 3;
 const EMERGENCY_QTY = 5;
 
+function getEmergencyLog() {
+  try {
+    const raw = localStorage.getItem('emergencyLog');
+    const log = raw ? JSON.parse(raw) : [];
+    const now = Date.now();
+    // 24시간 지난 항목 제거
+    return log.filter(t => now - t < EMERGENCY_WINDOW_MS);
+  } catch(e) { return []; }
+}
+
+function saveEmergencyLog(log) {
+  try { localStorage.setItem('emergencyLog', JSON.stringify(log)); } catch(e) {}
+}
+
+function getEmergencyRemaining() {
+  return Math.max(0, EMERGENCY_MAX - getEmergencyLog().length);
+}
+
 function openEmergencyModal() {
   const available = EMERGENCY_ITEMS.filter(e => e.stageReq <= G.stage);
-  const remaining = EMERGENCY_MAX_PER_DAY - (G.emergencyOrdersToday || 0);
+  const remaining = getEmergencyRemaining();
+  const log = getEmergencyLog();
+  // 다음 충전까지 남은 시간
+  let nextRefill = '';
+  if (log.length > 0 && remaining < EMERGENCY_MAX) {
+    const oldest = Math.min(...log);
+    const ms = EMERGENCY_WINDOW_MS - (Date.now() - oldest);
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    nextRefill = `<div style="font-size:10px;color:var(--latte);margin-top:3px;">다음 충전: ${h}시간 ${m}분 후</div>`;
+  }
   let html = `<div style="font-size:12px;color:var(--latte);margin-bottom:10px;">
-    오늘 남은 주문 횟수: <b style="color:${remaining>0?'var(--grass)':'#c0392b'}">${remaining}회</b> / ${EMERGENCY_MAX_PER_DAY}회
+    남은 횟수: <b style="color:${remaining>0?'var(--grass)':'#c0392b'}">${remaining}회</b> / ${EMERGENCY_MAX}회 (24시간 기준)
+    ${nextRefill}
     <div style="font-size:11px;margin-top:3px;opacity:0.7;">재료 ${EMERGENCY_QTY}개 · 시장가 ${EMERGENCY_PRICE_MULT}배</div>
   </div>`;
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
@@ -2058,11 +2085,12 @@ function openEmergencyModal() {
     const basePrice = crop ? Math.round(crop.cost / crop.yield) : 500;
     const price = basePrice * EMERGENCY_PRICE_MULT * EMERGENCY_QTY;
     const canAfford = G.money >= price;
-    html += `<button onclick="emergencyOrder('${e.key}')" 
-      style="background:${canAfford?'rgba(59,31,15,0.08)':'rgba(0,0,0,0.03)'};border:1.5px solid ${canAfford?'rgba(212,160,23,0.4)':'rgba(200,149,108,0.2)'};
-      border-radius:10px;padding:8px 6px;cursor:${canAfford&&remaining>0?'pointer':'not-allowed'};opacity:${canAfford&&remaining>0?1:0.45};
+    const canOrder = canAfford && remaining > 0;
+    html += `<button onclick="emergencyOrder('${e.key}')"
+      style="background:${canOrder?'rgba(59,31,15,0.08)':'rgba(0,0,0,0.03)'};border:1.5px solid ${canOrder?'rgba(212,160,23,0.4)':'rgba(200,149,108,0.2)'};
+      border-radius:10px;padding:8px 6px;cursor:${canOrder?'pointer':'not-allowed'};opacity:${canOrder?1:0.45};
       font-family:'Gowun Dodum',sans-serif;text-align:center;"
-      ${(!canAfford||remaining<=0)?'disabled':''}>
+      ${!canOrder?'disabled':''}>
       <div style="font-size:18px;">${item.emoji}</div>
       <div style="font-size:11px;font-weight:700;color:var(--espresso);">${item.name} ×${EMERGENCY_QTY}</div>
       <div style="font-size:10px;color:#c0392b;margin-top:2px;">💰 ${price.toLocaleString()}원</div>
@@ -2074,8 +2102,8 @@ function openEmergencyModal() {
 }
 
 function emergencyOrder(itemKey) {
-  const remaining = EMERGENCY_MAX_PER_DAY - (G.emergencyOrdersToday || 0);
-  if (remaining <= 0) { showNotif('⛔ 오늘 긴급 주문 횟수를 모두 사용했어요!'); return; }
+  const remaining = getEmergencyRemaining();
+  if (remaining <= 0) { showNotif('⛔ 24시간 내 긴급 주문 횟수를 모두 사용했어요!'); return; }
   const item = ITEMS[itemKey];
   const crop = Object.values(CROPS).find(c => c.gives === itemKey);
   const basePrice = crop ? Math.round(crop.cost / crop.yield) : 500;
@@ -2083,13 +2111,15 @@ function emergencyOrder(itemKey) {
   if (G.money < price) { showNotif('💰 돈이 부족해요!'); return; }
   G.money -= price;
   G.inventory[itemKey] = (G.inventory[itemKey] || 0) + EMERGENCY_QTY;
-  G.emergencyOrdersToday = (G.emergencyOrdersToday || 0) + 1;
+  const log = getEmergencyLog();
+  log.push(Date.now());
+  saveEmergencyLog(log);
   addLog(`🚚 긴급주문: ${item.emoji} ${item.name} ×${EMERGENCY_QTY} (-${price.toLocaleString()}원)`);
   showNotif(`🚚 ${item.emoji} ${item.name} ×${EMERGENCY_QTY} 도착!`);
   closeModal('emergencyModal');
   renderInventory();
-  renderUI();
 }
+
 
 function renderInventory() {
   const el = document.getElementById('inventoryInline');
@@ -2097,7 +2127,7 @@ function renderInventory() {
   // 긴급주문 뱃지 업데이트
   const badge = document.getElementById('emergencyBadge');
   if (badge) {
-    const rem = EMERGENCY_MAX_PER_DAY - (G.emergencyOrdersToday||0);
+    const rem = getEmergencyRemaining();
     badge.textContent = rem + '회 남음';
     badge.style.opacity = rem > 0 ? '1' : '0.5';
   }
