@@ -329,7 +329,19 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
   </div>
 </div>
 
-<div class="modal-overlay" id="storyModal">
+<div class="modal-overlay" id="renameModal">
+  <div class="modal">
+    <div class="modal-title">✏️ 브랜드 이름 변경</div>
+    <div class="modal-body">
+      <p style="text-align:center;color:var(--latte);font-size:13px;margin-bottom:14px;">새로운 브랜드 이름을 입력하세요<br><span style="font-size:11px;">💰 50,000원이 필요해요</span></p>
+      <input class="input-field" id="renameInput" placeholder="새 브랜드 이름" maxlength="20">
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="confirmRename()">✨ 변경하기</button>
+      <button class="btn btn-secondary" onclick="closeModal('renameModal')">취소</button>
+    </div>
+  </div>
+</div>
   <div class="modal">
     <div class="modal-title" id="storyModalTitle">📖 이야기</div>
     <div class="modal-body" id="storyModalBody"></div>
@@ -365,7 +377,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
       <!-- 모바일 전용: 카페 오픈 후 방문손님 미니패널 -->
       <div id="mob-cust-panel" style="display:none;">
         <div style="background:linear-gradient(135deg,var(--espresso),#5C3A1E);border-radius:12px;padding:10px 12px;">
-          <!-- 이벤트 배너 영역 -->
+          <!-- 이벤트 배너 -->
           <div id="mob-event-banner-farm"></div>
           <!-- 단계 + 진행도 -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
@@ -446,7 +458,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
       <!-- 모바일: 방문손님 미니패널 (관리탭에도 표시) -->
       <div id="mob-cust-panel-manage" style="display:none;">
         <div style="background:linear-gradient(135deg,var(--espresso),#5C3A1E);border-radius:12px;padding:10px 12px;">
-          <!-- 이벤트 배너 영역 -->
+          <!-- 이벤트 배너 -->
           <div id="mob-event-banner-manage"></div>
           <!-- 단계 + 진행도 -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
@@ -682,13 +694,10 @@ let G = {
   reviews:[],
   triggeredEvents:new Set(),
   activeStory:null,
-  // 새 시스템
-  weather:null,          // 현재 날씨 이벤트 {id, emoji, name, endDay}
-  rival:{active:false, level:0, lastStealDay:0}, // 경쟁 가게
-  trendMenu:null,        // 이번 시즌 유행 메뉴 key
-  trendSeason:-1,        // 트렌드가 설정된 seasonIndex
-  quests:[],             // 활성 퀘스트 [{id,desc,target,current,reward,done}]
-  questDay:0,            // 마지막 퀘스트 발급일
+  weather:null,
+  rival:{active:false, level:0, lastStealDay:0},
+  trendMenu:null, trendSeason:-1,
+  quests:[], questDay:0,
 };
 
 // ══════════════════════════════════════════
@@ -742,7 +751,7 @@ function resetSpawnTimer(customRate) {
   clearInterval(spawnTimer);
   if (!G.cafeOpen) return;
   const base=[null,14000,10000,7000,5000,3500];
-  let rate=customRate || base[G.stage]||8000;
+  let rate=customRate||base[G.stage]||8000;
   if (!customRate && hasStaff('loyalty')) rate*=0.8;
   spawnTimer=setInterval(spawnCustomer,rate);
 }
@@ -1176,57 +1185,43 @@ function runStaffActions() {
 // ══════════════════════════════════════════
 function spawnCustomer() {
   if (G.paused||!G.cafeOpen||G.customers.length>=6) return;
-
   // 날씨 손님 수 제한
   if (G.weather) {
-    const wLimit = {blizzard:3, rain:4, heatwave:6, festival:6}[G.weather.id];
-    if (wLimit && G.customers.length >= wLimit) return;
-    // 폭설/장마엔 스폰 확률 감소
-    if ((G.weather.id==='blizzard' && Math.random()<0.5) ||
-        (G.weather.id==='rain' && Math.random()<0.3)) return;
+    const wLimit={blizzard:3,rain:4,heatwave:6,festival:6}[G.weather.id];
+    if (wLimit && G.customers.length>=wLimit) return;
+    if ((G.weather.id==='blizzard'&&Math.random()<0.5)||(G.weather.id==='rain'&&Math.random()<0.3)) return;
   }
-
-  const disabled = G.disabledMenus || [];
+  const disabled=G.disabledMenus||[];
   const avail=Object.keys(RECIPES).filter(k=>{
     const r=RECIPES[k];
     if (r.stageReq>G.stage||!G.learnedRecipes.includes(k)) return false;
-    if (r.season && r.season!==SEASONS[G.seasonIndex].id) return false;
+    if (r.season&&r.season!==SEASONS[G.seasonIndex].id) return false;
     if (disabled.includes(k)) return false;
-    // 폭염엔 따뜻한 메뉴 제외 (커피콩 기반 핫 음료)
-    if (G.weather?.id==='heatwave' && ['latte','americano','autumn_latte','winter_choco'].includes(k)) return false;
+    if (G.weather?.id==='heatwave'&&['latte','americano','autumn_latte','winter_choco'].includes(k)) return false;
     return true;
   });
   const fallback=Object.keys(RECIPES).filter(k=>RECIPES[k].stageReq<=G.stage&&G.learnedRecipes.includes(k)&&!RECIPES[k].season&&!disabled.includes(k));
   let pool=avail.length>0?avail:fallback;
   if (!pool.length) return;
-
-  // 트렌드 메뉴 — 3배 확률 부여
-  if (G.trendMenu && pool.includes(G.trendMenu)) {
-    pool = [...pool, G.trendMenu, G.trendMenu]; // 가중치 추가
-  }
+  // 트렌드 메뉴 가중치
+  if (G.trendMenu&&pool.includes(G.trendMenu)) pool=[...pool,G.trendMenu,G.trendMenu];
 
   const orderKey=pool[Math.floor(Math.random()*pool.length)];
   const pool2=pool.filter(k=>k!==orderKey&&!RECIPES[k].isCombo&&!RECIPES[k].isGift);
-  const orderKey2=(Math.random()<0.25 && pool2.length>0 && !RECIPES[orderKey].isCombo && !RECIPES[orderKey].isGift)
-    ? pool2[Math.floor(Math.random()*pool2.length)] : null;
+  const orderKey2=(Math.random()<0.25&&pool2.length>0&&!RECIPES[orderKey].isCombo&&!RECIPES[orderKey].isGift)
+    ?pool2[Math.floor(Math.random()*pool2.length)]:null;
 
   let custType='normal';
-  const roll=Math.random();
-  let cum=0;
-  for (const [tid,td] of Object.entries(SPECIAL_TYPES)) {
-    cum+=td.spawnChance;
-    if (roll<cum) { custType=tid; break; }
-  }
+  const roll=Math.random(); let cum=0;
+  for (const [tid,td] of Object.entries(SPECIAL_TYPES)) { cum+=td.spawnChance; if (roll<cum){custType=tid;break;} }
 
   const typeData=SPECIAL_TYPES[custType];
-  // 장마엔 인내심 +20 (실내 체류 증가)
-  const weatherPatBonus = G.weather?.id==='rain' ? 20 : 0;
+  const weatherPatBonus=G.weather?.id==='rain'?20:0;
   const cust={
     id:Date.now()+Math.random(),
     name:CUST_NAMES[Math.floor(Math.random()*CUST_NAMES.length)],
     emoji:typeData?typeData.emoji:CUST_EMOJIS[Math.floor(Math.random()*CUST_EMOJIS.length)],
-    order:orderKey,
-    order2:orderKey2,
+    order:orderKey, order2:orderKey2,
     patience:Math.min(100,100+(typeData?.patBonus||0)+weatherPatBonus),
     type:custType,
   };
@@ -1318,31 +1313,26 @@ function serveCustomer(custId, isAuto, staffName) {
   if (G.customers.length===0) showCustEmpty();
   document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
 
-  // 트렌드 메뉴 명성 보너스
-  if (G.trendMenu && (cust.order===G.trendMenu || cust.order2===G.trendMenu)) {
-    const bonus = Math.round(newSat * 3);
-    G.reputation += bonus;
-    addLog(`🔥 유행 메뉴! 명성 +${bonus} 보너스`);
+  // 트렌드 보너스
+  if (G.trendMenu && (cust.order===G.trendMenu||cust.order2===G.trendMenu)) {
+    const bonus=Math.round(newSat*3); G.reputation+=bonus;
+    addLog(`🔥 유행 메뉴! 명성 +${bonus}`);
   }
-
   // 퀘스트 진행
-  if (G.quests) {
-    G.quests.forEach(q=>{
-      if (q.done) return;
-      if (q.type==='serve_menu' && (cust.order===q.target||cust.order2===q.target)) q.current++;
-      if (q.type==='serve_vip' && cust.type==='vip') q.current++;
-      if (q.type==='earn_money') q.current+=price;
-      if (q.type==='serve_count') q.current++;
-      if (!q.done && q.current>=q.goal) {
-        q.done=true;
-        if (q.reward.money) G.money+=q.reward.money;
-        if (q.reward.rep) G.reputation+=q.reward.rep;
-        showNotif(`🎯 퀘스트 완료! ${q.desc} → ${q.rewardDesc}`);
-        addLog(`🎯 퀘스트 달성: ${q.desc}`);
-      }
-    });
-  }
-
+  (G.quests||[]).forEach(q=>{
+    if (q.done) return;
+    if (q.type==='serve_menu'&&(cust.order===q.target||cust.order2===q.target)) q.current++;
+    if (q.type==='serve_vip'&&cust.type==='vip') q.current++;
+    if (q.type==='earn_money') q.current+=price;
+    if (q.type==='serve_count') q.current++;
+    if (!q.done&&q.current>=q.goal) {
+      q.done=true;
+      if (q.reward.money) G.money+=q.reward.money;
+      if (q.reward.rep) G.reputation+=q.reward.rep;
+      showNotif(`🎯 퀘스트 완료! ${q.desc} → ${q.rewardDesc}`);
+      addLog(`🎯 퀘스트 달성: ${q.desc}`);
+    }
+  });
   const who=isAuto?`[${staffName}] `:'';
   addLog(`✅ ${who}${cust.name}님 서빙! +${price}원`);
   renderInventory(); renderReviews(); updateHeader(); updateSatisfaction(); updateProgressBar();
@@ -1387,15 +1377,12 @@ function hireStaff(key) {
 // ══════════════════════════════════════════
 function randomEvent() {
   if (!G.cafeOpen) {
-    // 카페 오픈 전 소소한 이벤트만
     const evts=[
       ()=>{G.money+=5000; addLog('📰 지역 신문 소개! +5,000원');},
       ()=>{G.inventory.sugar=(G.inventory.sugar||0)+10; addLog('🍬 설탕 공급업체 사은품! +10');},
       ()=>{G.inventory.milk=(G.inventory.milk||0)+8; addLog('🥛 유제품 협찬! +8');},
     ];
-    evts[Math.floor(Math.random()*evts.length)]();
-    renderInventory();
-    return;
+    evts[Math.floor(Math.random()*evts.length)](); renderInventory(); return;
   }
   const evts=[
     ()=>{G.money+=15000; addLog('📰 지역 신문 소개! +15,000원');},
@@ -1403,148 +1390,108 @@ function randomEvent() {
     ()=>{G.inventory.sugar=(G.inventory.sugar||0)+30; addLog('🍬 설탕 공급업체 사은품! +30');},
     ()=>{G.inventory.milk=(G.inventory.milk||0)+20; addLog('🥛 유제품 협찬! +20');},
     ()=>{const bonus=Math.floor(Math.random()*10000)+5000; G.money+=bonus; addLog(`🍀 행운의 날! +${bonus}원`);},
-    // 돌발: 재료 품절
     ()=>{
-      const items = Object.keys(G.inventory).filter(k=>G.inventory[k]>0);
-      if (items.length===0) return;
-      const item = items[Math.floor(Math.random()*items.length)];
-      const was = G.inventory[item];
-      G.inventory[item] = was >= 20 ? was - 20 : 0;
-      addLog(`🚨 ${ITEMS[item]?.emoji||''} ${ITEMS[item]?.name||item} 품절 사태! -${was>=20?20:was}개`);
+      const items=Object.keys(G.inventory).filter(k=>G.inventory[k]>0);
+      if (!items.length) return;
+      const item=items[Math.floor(Math.random()*items.length)];
+      const was=G.inventory[item];
+      G.inventory[item]=was>=20?was-20:0;
+      addLog(`🚨 ${ITEMS[item]?.emoji||''} ${ITEMS[item]?.name||item} 품절! -${was>=20?20:was}개`);
       showNotif(`🚨 재료 품절! ${ITEMS[item]?.name||item} 줄었어요`);
       renderInventory();
     },
-    // 돌발: 손님 폭주
     ()=>{
-      if (G.cafeOpen && G.stage >= 2) {
-        addLog('🔥 갑작스러운 손님 폭주!');
-        showNotif('🔥 손님이 갑자기 몰려와요!');
-        resetSpawnTimer(1500);
-        setTimeout(()=>resetSpawnTimer(), 30000);
+      if (G.stage>=2) {
+        addLog('🔥 갑작스러운 손님 폭주!'); showNotif('🔥 손님이 갑자기 몰려와요!');
+        resetSpawnTimer(1500); setTimeout(()=>resetSpawnTimer(), 30000);
       }
     },
   ];
-  evts[Math.floor(Math.random()*evts.length)]();
-  renderInventory();
+  evts[Math.floor(Math.random()*evts.length)](); renderInventory();
+}
+
+// ══════════════════════════════════════════
+//  이름 변경
+// ══════════════════════════════════════════
+function confirmRename() {
+  const v = document.getElementById('renameInput').value.trim();
+  if (!v) { showNotif('이름을 입력해주세요!'); return; }
+  if (G.money < 50000) { showNotif('💰 돈이 부족해요! (50,000원 필요)'); return; }
+  G.money -= 50000;
+  G.brandName = v;
+  document.getElementById('brandNameDisplay').textContent = v;
+  closeModal('renameModal');
+  addLog(`✏️ 브랜드 이름이 "${v}"로 변경됐어요!`);
+  showNotif(`✨ "${v}" 으로 새 출발!`);
+  updateHeader();
 }
 
 // ══════════════════════════════════════════
 //  날씨 이벤트
 // ══════════════════════════════════════════
 const WEATHER_EVENTS = [
-  {id:'blizzard', emoji:'❄️', name:'폭설', desc:'손님이 절반으로 줄었어요! 따뜻한 음료가 잘 팔려요.', duration:3},
-  {id:'rain',     emoji:'🌧️', name:'장마', desc:'비가 내려요. 손님이 줄었지만 오래 머물어요!', duration:2},
-  {id:'heatwave', emoji:'☀️', name:'폭염', desc:'엄청 더워요! 차가운 음료 주문이 폭발해요.', duration:2},
-  {id:'festival', emoji:'🎉', name:'동네 축제', desc:'근처에 축제가 열렸어요! 손님이 폭주해요!', duration:2},
-  {id:'rush',     emoji:'🔥', name:'손님 폭주', desc:'갑자기 손님이 몰려왔어요!', duration:1},
+  {id:'blizzard',emoji:'❄️', name:'폭설',     desc:'손님이 절반으로! 따뜻한 음료가 잘 팔려요.', duration:3},
+  {id:'rain',    emoji:'🌧️',name:'장마',     desc:'손님이 줄었지만 오래 머물어요!',            duration:2},
+  {id:'heatwave',emoji:'☀️', name:'폭염',     desc:'차가운 음료 주문이 폭발해요!',              duration:2},
+  {id:'festival',emoji:'🎉', name:'동네 축제',desc:'손님이 폭주해요!',                          duration:2},
+  {id:'rush',    emoji:'🔥', name:'손님 폭주',desc:'갑자기 손님이 몰려왔어요!',                 duration:1},
 ];
 
 function checkWeatherEvent() {
-  // 날씨 종료 체크
   if (G.weather && G.day > G.weather.endDay) {
     addLog(`${G.weather.emoji} ${G.weather.name} 이벤트 종료`);
-    G.weather = null;
-    resetSpawnTimer();
-    updateWeatherBanner();
-    return;
+    G.weather=null; resetSpawnTimer(); updateAllBanners(); return;
   }
-  // 새 날씨 발생 (3% 확률, 날씨 없을 때만)
-  if (!G.weather && Math.random() < 0.003 && G.stage >= 1) {
-    const w = WEATHER_EVENTS[Math.floor(Math.random()*WEATHER_EVENTS.length)];
-    G.weather = {id:w.id, emoji:w.emoji, name:w.name, endDay:G.day+w.duration};
+  if (!G.weather && Math.random()<0.003 && G.stage>=1) {
+    const w=WEATHER_EVENTS[Math.floor(Math.random()*WEATHER_EVENTS.length)];
+    G.weather={id:w.id,emoji:w.emoji,name:w.name,endDay:G.day+w.duration};
     addLog(`${w.emoji} ${w.name} 발생! ${w.desc}`);
     showNotif(`${w.emoji} ${w.name}! ${w.desc}`);
-    // 축제/폭주엔 스폰 빠르게
     if (w.id==='festival'||w.id==='rush') resetSpawnTimer(2000);
-    updateWeatherBanner();
+    updateAllBanners();
   }
 }
 
-function updateWeatherBanner() {
-  // 카페탭
+// 카페탭 + 모바일 패널 배너 모두 업데이트
+function updateAllBanners() {
   const area = document.getElementById('storyBannerArea');
   if (area) {
-    area.querySelectorAll('.weather-banner').forEach(el=>el.remove());
+    area.querySelectorAll('.weather-banner,.trend-banner,.rival-banner').forEach(el=>el.remove());
+    if (G.rival?.active) {
+      const d=document.createElement('div'); d.className='rival-banner';
+      d.style.cssText='background:linear-gradient(135deg,#2c3e50,#4a4a4a);color:white;border-radius:10px;padding:7px 12px;font-size:12px;margin-bottom:4px;';
+      d.innerHTML=`🏪 <strong>경쟁 가게 활성</strong> <span style="font-size:10px;opacity:0.7;">(Lv.${G.rival.level} — 손님을 뺏길 수 있어요)</span>`;
+      area.prepend(d);
+    }
+    if (G.trendMenu && RECIPES[G.trendMenu]) {
+      const r=RECIPES[G.trendMenu];
+      const d=document.createElement('div'); d.className='trend-banner';
+      d.style.cssText='background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;border-radius:10px;padding:7px 12px;font-size:12px;margin-bottom:4px;';
+      d.innerHTML=`🔥 <strong>트렌드</strong>: ${r.emoji} ${r.name} <span style="font-size:10px;opacity:0.8;">(명성 보너스!)</span>`;
+      area.prepend(d);
+    }
     if (G.weather) {
-      const d = document.createElement('div');
-      d.className='weather-banner';
+      const d=document.createElement('div'); d.className='weather-banner';
       d.style.cssText='background:linear-gradient(135deg,#2980b9,#1a5276);color:white;border-radius:10px;padding:8px 12px;font-size:12px;margin-bottom:4px;';
       d.innerHTML=`<span style="font-size:16px;">${G.weather.emoji}</span> <strong>${G.weather.name}</strong> 진행 중 <span style="font-size:10px;opacity:0.7;">Day ${G.day} → ${G.weather.endDay}</span>`;
       area.prepend(d);
     }
   }
-  // 모바일 미니패널 (농장/관리탭)
   updateMobEventBanners();
 }
 
 function updateMobEventBanners() {
   ['mob-event-banner-farm','mob-event-banner-manage'].forEach(id=>{
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.innerHTML = '';
-    // 날씨 배너
-    if (G.weather) {
-      el.innerHTML += `<div style="background:rgba(41,128,185,0.5);border-radius:7px;padding:5px 8px;font-size:11px;color:white;margin-bottom:5px;">
-        ${G.weather.emoji} <strong>${G.weather.name}</strong> 진행 중
-        <span style="font-size:9px;opacity:0.7;"> ~Day ${G.weather.endDay}</span>
-      </div>`;
+    const el=document.getElementById(id); if (!el) return;
+    el.innerHTML='';
+    if (G.weather) el.innerHTML+=`<div style="background:rgba(41,128,185,0.5);border-radius:7px;padding:5px 8px;font-size:11px;color:white;margin-bottom:5px;">${G.weather.emoji} <strong>${G.weather.name}</strong> ~Day ${G.weather.endDay}</div>`;
+    if (G.quests?.length) {
+      const active=G.quests.filter(q=>!q.done);
+      if (active.length) el.innerHTML+='<div style="background:rgba(108,52,131,0.5);border-radius:7px;padding:5px 8px;font-size:10px;color:white;margin-bottom:5px;"><div style="font-weight:700;margin-bottom:3px;">🎯 퀘스트</div>'+active.map(q=>{const pct=Math.min(100,Math.round(q.current/q.goal*100));return`<div>${q.desc} (${q.current}/${q.goal})<div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:2px;"><div style="height:100%;width:${pct}%;background:#F4C430;border-radius:2px;"></div></div></div>`;}).join('')+'</div>';
     }
-    // 퀘스트
-    if (G.quests && G.quests.length > 0) {
-      const active = G.quests.filter(q=>!q.done);
-      if (active.length > 0) {
-        el.innerHTML += '<div style="background:rgba(108,52,131,0.5);border-radius:7px;padding:5px 8px;font-size:10px;color:white;margin-bottom:5px;">' +
-          '<div style="font-weight:700;margin-bottom:3px;">🎯 퀘스트</div>' +
-          active.map(q=>{
-            const pct=Math.min(100,Math.round((q.current/q.goal)*100));
-            return `<div>${q.desc} <span style="opacity:0.7;">(${q.current}/${q.goal})</span>
-              <div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:2px;">
-                <div style="height:100%;width:${pct}%;background:#F4C430;border-radius:2px;"></div>
-              </div></div>`;
-          }).join('') + '</div>';
-      }
-    }
-    // 트렌드
-    if (G.trendMenu && RECIPES[G.trendMenu]) {
-      const r = RECIPES[G.trendMenu];
-      el.innerHTML += `<div style="background:rgba(192,57,43,0.5);border-radius:7px;padding:5px 8px;font-size:10px;color:white;margin-bottom:5px;">
-        🔥 트렌드: ${r.emoji} ${r.name} (명성 보너스!)
-      </div>`;
-    }
-    // 경쟁 가게
-    if (G.rival?.active) {
-      el.innerHTML += `<div style="background:rgba(0,0,0,0.25);border-radius:7px;padding:5px 8px;font-size:10px;color:rgba(255,248,240,0.7);margin-bottom:5px;">
-        🏪 경쟁 가게 활성 (Lv.${G.rival.level})
-      </div>`;
-    }
+    if (G.trendMenu && RECIPES[G.trendMenu]) el.innerHTML+=`<div style="background:rgba(192,57,43,0.5);border-radius:7px;padding:5px 8px;font-size:10px;color:white;margin-bottom:5px;">🔥 트렌드: ${RECIPES[G.trendMenu].emoji} ${RECIPES[G.trendMenu].name}</div>`;
+    if (G.rival?.active) el.innerHTML+=`<div style="background:rgba(0,0,0,0.25);border-radius:7px;padding:5px 8px;font-size:10px;color:rgba(255,248,240,0.7);margin-bottom:5px;">🏪 경쟁 가게 활성 (Lv.${G.rival.level})</div>`;
   });
-}
-
-function renderQuestPanel() {
-  const area = document.getElementById('storyBannerArea');
-  if (area) {
-    area.querySelectorAll('.quest-panel').forEach(el=>el.remove());
-    if (G.quests && G.quests.length > 0) {
-      const active = G.quests.filter(q=>!q.done);
-      if (active.length > 0) {
-        const div = document.createElement('div');
-        div.className='quest-panel';
-        div.style.cssText='background:linear-gradient(135deg,#6c3483,#8e44ad);color:white;border-radius:10px;padding:8px 12px;font-size:11px;margin-bottom:4px;';
-        div.innerHTML='<div style="font-weight:700;margin-bottom:4px;">🎯 오늘의 퀘스트</div>'+
-          active.map(q=>{
-            const pct=Math.min(100,Math.round((q.current/q.goal)*100));
-            return `<div style="margin-bottom:3px;">${q.desc} <span style="opacity:0.7;">(${q.current}/${q.goal})</span>
-              <div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:2px;">
-                <div style="height:100%;width:${pct}%;background:#F4C430;border-radius:2px;"></div>
-              </div>
-              <span style="font-size:9px;opacity:0.7;">보상: ${q.rewardDesc}</span></div>`;
-          }).join('');
-        area.appendChild(div);
-      }
-    }
-  }
-  // 모바일 미니패널도 동기화
-  updateMobEventBanners();
 }
 
 // ══════════════════════════════════════════
@@ -1552,25 +1499,22 @@ function renderQuestPanel() {
 // ══════════════════════════════════════════
 function checkRivalSteal() {
   if (!G.rival) G.rival={active:false,level:0,lastStealDay:0};
-  // 3단계 이후 경쟁 가게 활성화
-  if (!G.rival.active && G.stage >= 3) {
-    G.rival.active = true;
-    G.rival.level = 1;
+  if (!G.rival.active && G.stage>=3) {
+    G.rival.active=true; G.rival.level=1;
     addLog('🏪 맞은편에 경쟁 가게가 오픈했어요!');
     showNotif('🏪 경쟁 가게 등장! 손님을 뺏길 수 있어요!');
+    updateAllBanners();
   }
   if (!G.rival.active) return;
-  // 단계 오를수록 경쟁 강화
-  G.rival.level = Math.min(5, Math.floor(G.stage / 2));
-  // 하루에 한 번 손님 뺏기 시도
-  if (G.day - G.rival.lastStealDay >= 1 && Math.random() < 0.04 * G.rival.level) {
-    G.rival.lastStealDay = G.day;
-    if (G.customers.length > 0) {
-      const idx = Math.floor(Math.random()*G.customers.length);
-      const stolen = G.customers[idx];
-      G.customers.splice(idx, 1);
+  G.rival.level=Math.min(5,Math.floor(G.stage/2));
+  if (G.day-G.rival.lastStealDay>=1 && Math.random()<0.04*G.rival.level) {
+    G.rival.lastStealDay=G.day;
+    if (G.customers.length>0) {
+      const idx=Math.floor(Math.random()*G.customers.length);
+      const stolen=G.customers[idx];
+      G.customers.splice(idx,1);
       document.querySelector(`[data-cid="${stolen.id}"]`)?.remove();
-      if (G.customers.length === 0) showCustEmpty();
+      if (G.customers.length===0) showCustEmpty();
       document.getElementById('custCount').textContent=`(${G.customers.length}명)`;
       addLog(`🏪 경쟁 가게가 ${stolen.name}님을 데려갔어요!`);
       showNotif('🏪 경쟁 가게에 손님을 뺏겼어요!');
@@ -1579,58 +1523,63 @@ function checkRivalSteal() {
 }
 
 // ══════════════════════════════════════════
-//  돌발 이벤트
+//  퀘스트
 // ══════════════════════════════════════════
 function checkDailyQuest() {
-  if (!G.cafeOpen || G.stage < 1) return;
-  // 3일마다 새 퀘스트 발급
-  if (G.day - G.questDay < 3) return;
-  if (!G.quests) G.quests = [];
-  // 완료된 퀘스트 정리
-  G.quests = G.quests.filter(q=>!q.done);
-  if (G.quests.length >= 2) return;
-  G.questDay = G.day;
-
-  // 퀘스트 풀
-  const learnedNonSpecial = G.learnedRecipes.filter(k=>RECIPES[k]&&RECIPES[k].stageReq<=G.stage&&!RECIPES[k].isCombo&&!RECIPES[k].isGift);
-  const questPool = [
-    learnedNonSpecial.length>0 ? {
-      type:'serve_menu', target:learnedNonSpecial[Math.floor(Math.random()*learnedNonSpecial.length)],
-      goal:3, current:0, done:false,
-      get desc(){ return `${RECIPES[this.target]?.emoji||''} ${RECIPES[this.target]?.name||''} 3개 팔기`; },
-      reward:{money:10000}, rewardDesc:'💰 +10,000원'
-    } : null,
-    {type:'serve_count', goal:5, current:0, done:false, desc:'손님 5명 서빙', reward:{rep:30}, rewardDesc:'⭐ 명성 +30'},
-    {type:'serve_vip', goal:1, current:0, done:false, desc:'VIP 손님 1명 서빙', reward:{money:8000}, rewardDesc:'💰 +8,000원'},
-    {type:'earn_money', goal:20000, current:0, done:false, desc:'💰 20,000원 벌기', reward:{rep:50}, rewardDesc:'⭐ 명성 +50'},
+  if (!G.cafeOpen||G.stage<1) return;
+  if (G.day-G.questDay<3) return;
+  if (!G.quests) G.quests=[];
+  G.quests=G.quests.filter(q=>!q.done);
+  if (G.quests.length>=2) return;
+  G.questDay=G.day;
+  const learned=G.learnedRecipes.filter(k=>RECIPES[k]&&RECIPES[k].stageReq<=G.stage&&!RECIPES[k].isCombo&&!RECIPES[k].isGift);
+  const pool=[
+    learned.length>0?{type:'serve_menu',target:learned[Math.floor(Math.random()*learned.length)],goal:3,current:0,done:false,get desc(){return `${RECIPES[this.target]?.emoji||''} ${RECIPES[this.target]?.name||''} 3개 팔기`;},reward:{money:10000},rewardDesc:'💰 +10,000원'}:null,
+    {type:'serve_count',goal:5,current:0,done:false,desc:'손님 5명 서빙',reward:{rep:30},rewardDesc:'⭐ 명성 +30'},
+    {type:'serve_vip',goal:1,current:0,done:false,desc:'VIP 손님 1명 서빙',reward:{money:8000},rewardDesc:'💰 +8,000원'},
+    {type:'earn_money',goal:20000,current:0,done:false,desc:'💰 20,000원 벌기',reward:{rep:50},rewardDesc:'⭐ 명성 +50'},
   ].filter(Boolean);
-
-  const q = questPool[Math.floor(Math.random()*questPool.length)];
+  const q=pool[Math.floor(Math.random()*pool.length)];
   G.quests.push(q);
   addLog(`🎯 새 퀘스트: ${q.desc}`);
   renderQuestPanel();
 }
 
-function checkQuests() {
-  if (G.quests && G.quests.length > 0) { renderQuestPanel(); updateMobEventBanners(); }
+function checkQuests() { if (G.quests?.length) renderQuestPanel(); }
+
+function renderQuestPanel() {
+  const area=document.getElementById('storyBannerArea');
+  if (area) {
+    area.querySelectorAll('.quest-panel').forEach(el=>el.remove());
+    const active=(G.quests||[]).filter(q=>!q.done);
+    if (active.length) {
+      const div=document.createElement('div'); div.className='quest-panel';
+      div.style.cssText='background:linear-gradient(135deg,#6c3483,#8e44ad);color:white;border-radius:10px;padding:8px 12px;font-size:11px;margin-bottom:4px;';
+      div.innerHTML='<div style="font-weight:700;margin-bottom:4px;">🎯 오늘의 퀘스트</div>'+active.map(q=>{
+        const pct=Math.min(100,Math.round(q.current/q.goal*100));
+        return`<div style="margin-bottom:3px;">${q.desc} <span style="opacity:0.7;">(${q.current}/${q.goal})</span><div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:2px;"><div style="height:100%;width:${pct}%;background:#F4C430;border-radius:2px;"></div></div><span style="font-size:9px;opacity:0.7;">보상: ${q.rewardDesc}</span></div>`;
+      }).join('');
+      area.appendChild(div);
+    }
+  }
+  updateMobEventBanners();
 }
 
 // ══════════════════════════════════════════
-//  트렌드 변화
+//  트렌드
 // ══════════════════════════════════════════
 function checkTrend() {
   if (!G.cafeOpen) return;
-  // 매 2계절마다 트렌드 변경
-  if (G.trendSeason === G.seasonIndex) return;
-  if ((G.seasonIndex % 2 !== 0) && G.trendMenu) return;
-  const candidates = G.learnedRecipes.filter(k=>RECIPES[k]&&RECIPES[k].stageReq<=G.stage&&!RECIPES[k].isCombo&&!RECIPES[k].isGift&&k!==G.trendMenu);
-  if (candidates.length === 0) return;
-  G.trendSeason = G.seasonIndex;
-  G.trendMenu = candidates[Math.floor(Math.random()*candidates.length)];
-  const r = RECIPES[G.trendMenu];
+  if (G.trendSeason===G.seasonIndex) return;
+  if ((G.seasonIndex%2!==0)&&G.trendMenu) return;
+  const cands=G.learnedRecipes.filter(k=>RECIPES[k]&&RECIPES[k].stageReq<=G.stage&&!RECIPES[k].isCombo&&!RECIPES[k].isGift&&k!==G.trendMenu);
+  if (!cands.length) return;
+  G.trendSeason=G.seasonIndex;
+  G.trendMenu=cands[Math.floor(Math.random()*cands.length)];
+  const r=RECIPES[G.trendMenu];
   addLog(`🔥 요즘 유행: ${r.emoji} ${r.name}! 주문이 늘어요`);
-  showNotif(`🔥 트렌드 메뉴: ${r.emoji} ${r.name} (명성 보너스!)`);
-  renderMenu(); // 트렌드 뱃지 표시
+  showNotif(`🔥 트렌드 메뉴: ${r.emoji} ${r.name}`);
+  renderMenu(); updateAllBanners();
 }
 
 // ══════════════════════════════════════════
@@ -1670,6 +1619,8 @@ function openSaveModal() {
     <div style="display:flex;flex-direction:column;gap:8px;">
       <button class="btn btn-primary" onclick="saveGame()" style="width:100%">💾 지금 저장 (브라우저)</button>
       ${has?`<button class="btn btn-green" onclick="loadGame()" style="width:100%">📂 저장 불러오기</button>`:''}
+      <hr style="border:none;border-top:1px dashed rgba(200,149,108,0.3);margin:2px 0">
+      <button class="btn btn-purple" onclick="closeModal('saveModal');showModal('renameModal');document.getElementById('renameInput').value=''" style="width:100%">✏️ 브랜드 이름 변경 (💰50,000원)</button>
       <hr style="border:none;border-top:1px dashed rgba(200,149,108,0.3);margin:2px 0">
       <button class="btn btn-secondary" onclick="exportSave()" style="width:100%">📥 파일로 내보내기</button>
       <button class="btn btn-secondary" onclick="importSave()" style="width:100%">📤 파일에서 불러오기</button>
@@ -2013,8 +1964,6 @@ setInterval(function() {
     var c2 = document.getElementById('mob-cust-count-manage'); if (c2) c2.textContent = countText;
     var l2 = document.getElementById('mob-cust-list-manage'); if (l2) l2.innerHTML = html;
   }
-
-  // 이벤트 배너 동기화 (날씨/퀘스트/트렌드/경쟁)
   updateMobEventBanners();
 }, 1000);
 </script>
