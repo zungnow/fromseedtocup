@@ -182,9 +182,9 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 .log-entry:not(:first-child){opacity:0.5;}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(59,31,15,0.65);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.modal-overlay{position:fixed;inset:0;z-index:1100;background:rgba(59,31,15,0.65);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity 0.25s;padding-bottom:env(safe-area-inset-bottom);}
 .modal-overlay.show{opacity:1;pointer-events:all;}
-.modal{background:var(--cream);border-radius:18px;padding:24px;width:90%;max-width:560px;box-shadow:0 16px 50px rgba(59,31,15,0.28);border:2px solid rgba(200,149,108,0.25);transform:scale(0.92) translateY(14px);transition:transform 0.25s;}
+.modal{background:var(--cream);border-radius:18px;padding:24px;width:90%;max-width:560px;max-height:calc(100vh - 80px);overflow-y:auto;box-shadow:0 16px 50px rgba(59,31,15,0.28);border:2px solid rgba(200,149,108,0.25);transform:scale(0.92) translateY(14px);transition:transform 0.25s;}
 .modal-overlay.show .modal{transform:scale(1) translateY(0);}
 .modal-title{font-family:'Nanum Myeongjo',serif;font-size:18px;font-weight:800;color:var(--espresso);text-align:center;margin-bottom:14px;}
 .modal-body{margin-bottom:16px;}.modal-btns{display:flex;gap:8px;justify-content:center;}
@@ -202,14 +202,28 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 @keyframes nOut{to{opacity:0;transform:translateX(20px)}}
 
 /* STAGE ANNOUNCE */
-.stage-announce{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(59,31,15,0.75);}
+.stage-announce{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;background:rgba(59,31,15,0.75);padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom));}
 .sa-box{background:linear-gradient(135deg,var(--espresso),#5C3A1E);color:var(--cream);border-radius:22px;padding:36px 56px;text-align:center; display:flex; flex-direction:column; align-items:center; border:3px solid var(--gold);box-shadow:0 0 50px rgba(212,160,23,0.4);animation:saIn 0.4s cubic-bezier(.34,1.56,.64,1);}
 @keyframes saIn{from{transform:scale(0.6)}to{transform:scale(1)}}
 .sa-emoji{font-size:64px;}.sa-title{font-family:'Jua',sans-serif;font-size:28px;color:var(--gold);margin:8px 0 4px;}.sa-sub{font-size:14px;opacity:0.8;}
 
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(200,149,108,0.4);border-radius:3px}
 
-/* ── 소득 미니 차트 ── */
+/* ── 출석 보너스 룰렛 ── */
+.roulette-wrap{position:relative;overflow:hidden;border-radius:12px;border:2px solid rgba(212,160,23,0.3);background:rgba(107,66,38,0.04);}
+.roulette-track{display:flex;gap:0;padding:10px 0;will-change:transform;}
+.roulette-item{width:80px;min-width:80px;max-width:80px;height:84px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:2px solid rgba(200,149,108,0.2);background:rgba(107,66,38,0.06);flex-shrink:0;box-sizing:border-box;margin:0 4px;}
+.roulette-item.highlight{border-color:var(--gold);background:rgba(212,160,23,0.15);}
+.roulette-item.winner{border-color:var(--gold);background:linear-gradient(135deg,rgba(212,160,23,0.2),rgba(244,196,48,0.15));box-shadow:0 0 16px rgba(212,160,23,0.5);animation:winnerPop 0.5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes winnerPop{0%{transform:scale(0.85)}60%{transform:scale(1.15)}100%{transform:scale(1.08)}}
+.roulette-emoji{font-size:26px;line-height:1;}
+.roulette-label{font-size:10px;font-weight:700;color:var(--espresso);white-space:nowrap;}
+.roulette-value{font-size:10px;color:var(--gold);font-weight:700;white-space:nowrap;}
+.streak-badge{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#e67e22,#f39c12);color:white;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;margin-bottom:10px;}
+
+/* ── 출석 버튼 글로우 (미수령 시) ── */
+@keyframes bonusGlow{0%,100%{box-shadow:0 0 0 0 rgba(230,126,34,0)}50%{box-shadow:0 0 8px 3px rgba(230,126,34,0.5)}}
+#dailyBonusBtn.available{animation:bonusGlow 1.8s infinite;}
 #income-sparkline{display:flex;align-items:flex-end;gap:2px;height:32px;padding:0 2px;}
 .spark-bar{width:8px;border-radius:2px 2px 0 0;background:linear-gradient(var(--grass),var(--sun));min-height:3px;transition:height 0.3s;}
 
@@ -224,7 +238,8 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
 .patience-text{font-size:9px;font-weight:700;text-align:right;margin-top:1px;}
 
 /* ── 달성 알림 배너 ── */
-.achieve-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--sun));color:var(--espresso);border-radius:12px;padding:10px 20px;font-size:13px;font-family:'Jua',sans-serif;box-shadow:0 4px 20px rgba(212,160,23,0.4);z-index:250;animation:achieveIn 0.4s cubic-bezier(.34,1.56,.64,1),achieveOut 0.3s ease 3.5s forwards;white-space:nowrap;}
+.achieve-toast{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--sun));color:var(--espresso);border-radius:12px;padding:10px 20px;font-size:13px;font-family:'Jua',sans-serif;box-shadow:0 4px 20px rgba(212,160,23,0.4);z-index:250;animation:achieveIn 0.4s cubic-bezier(.34,1.56,.64,1),achieveOut 0.3s ease 3.5s forwards;white-space:nowrap;}
+@media(min-width:769px){.achieve-toast{bottom:24px;}}
 @keyframes achieveIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes achieveOut{to{opacity:0;transform:translateX(-50%) translateY(20px)}}
 
@@ -443,6 +458,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
       <span id="save-status">저장 안 됨</span>
     </div>
     <div class="header-btns">
+      <button class="btn btn-sm" id="dailyBonusBtn" onclick="openDailyBonus()" style="background:linear-gradient(135deg,#e67e22,#f39c12);color:white;font-size:11px;position:relative;">🎁 출석<span id="dailyBonusDot" style="display:none;position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#e74c3c;border-radius:50%;border:1.5px solid white;"></span></button>
       <button class="btn btn-gold btn-sm" onclick="openSaveModal()">💾 저장</button>
       <button class="btn btn-secondary btn-sm" id="muteBtn" onclick="toggleMute()">🔊</button>
       <button class="btn btn-secondary btn-sm" onclick="togglePause()">⏸ <span id="pauseLabel">일시정지</span></button>
@@ -492,6 +508,7 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
       </div>
       <div class="panel">
         <div class="panel-title">📢 알림</div>
+        <div id="contest-banner-farm-desktop"></div>
         <div id="logEntries" style="display:flex;flex-direction:column;gap:3px;"></div>
       </div>
       <div class="panel">
@@ -568,13 +585,14 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
         </div>
       </div>
       <div class="panel">
+        <div id="contest-banner-manage-desktop"></div>
         <div class="tab-bar">
-          <button class="tab-btn active" onclick="switchTab('staff')">👥 직원</button>
-          <button class="tab-btn" onclick="switchTab('upgrades')">🔧 설정</button>
-          <button class="tab-btn" onclick="switchTab('booster')">⚡ 버프</button>
-          <button class="tab-btn" onclick="switchTab('achieve')">🏅 업적</button>
-          <button class="tab-btn" onclick="switchTab('encyclo')">📖 도감</button>
-          <button class="tab-btn" onclick="switchTab('stats')">📊 통계</button>
+          <button class="tab-btn active" onclick="switchTab('staff')">👥<br>직원</button>
+          <button class="tab-btn" onclick="switchTab('upgrades')">🔧<br>설정</button>
+          <button class="tab-btn" onclick="switchTab('booster')">⚡<br>버프</button>
+          <button class="tab-btn" onclick="switchTab('achieve')">🏅<br>업적</button>
+          <button class="tab-btn" onclick="switchTab('encyclo')">📖<br>도감</button>
+          <button class="tab-btn" onclick="switchTab('stats')">📊<br>통계</button>
         </div>
         <div class="tab-pane active" id="tab-staff"></div>
         <div class="tab-pane" id="tab-upgrades"></div>
@@ -603,11 +621,12 @@ header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex
     <button class="mbt" id="mbt-manage" onclick="mobTab('manage')">
       <span class="mbt-i">📋</span><span class="mbt-l">관리</span>
     </button>
+    <button class="mbt" id="mbt-daily" onclick="openDailyBonus()" style="position:relative;">
+      <span class="mbt-i">🎁</span><span class="mbt-l">출석</span>
+      <span id="dailyBonusDotMob" style="display:none;position:absolute;top:4px;right:10px;width:8px;height:8px;background:#e74c3c;border-radius:50%;border:1.5px solid white;"></span>
+    </button>
     <button class="mbt" id="mbt-pause" onclick="togglePause()">
       <span class="mbt-i" id="mob-pause-icon">⏸</span><span class="mbt-l" id="mob-pause-label">일시정지</span>
-    </button>
-    <button class="mbt" id="mbt-mute" onclick="toggleMute()">
-      <span class="mbt-i" id="mob-mute-icon">🔊</span><span class="mbt-l">소리</span>
     </button>
     <button class="mbt" id="mbt-save" onclick="openSaveModal()">
       <span class="mbt-i">💾</span><span class="mbt-l">저장</span>
@@ -957,6 +976,7 @@ function boot() {
   startTimers();
   addLog(`🌱 ${G.brandName}의 이야기가 시작됩니다!`);
   renderAutoHarvestBtn();
+  initDailyBonus();
 }
 
 function startTimers() {
@@ -1062,15 +1082,15 @@ function tick() {
 
   checkCafeEligibility();
   checkStageUp();
-  checkStoryEvents();
-  if (Math.random()<0.003) randomEvent();
+  if (!_eventBusy) checkStoryEvents();
+  if (!_eventBusy && Math.random()<0.003) randomEvent();
   if (G.cafeOpen) {
     checkWeatherEvent();
     checkRivalSteal();
     checkQuests();
     checkTrend();
     checkDailyQuest();
-    checkContestTrigger();
+    if (!_eventBusy) checkContestTrigger();
     tickContest();
   }
   updateHeader();
@@ -1188,21 +1208,24 @@ function toggleMenu(key) {
 }
 
 function showStageAnnounce(stageIdx, customTitle, customSub) {
-  const el=document.createElement('div'); el.className='stage-announce';
-  let emoji,title,sub;
-  if (stageIdx!==null && stageIdx!==undefined) {
-    const sd=STAGE_DATA[stageIdx];
-    emoji=sd.building; title=sd.name+' 달성!'; sub=sd.desc;
-  } else {
-    emoji='🎉'; title=customTitle; sub=customSub;
-  }
-  el.innerHTML=`<div class="sa-box">
-    <div class="sa-emoji">${emoji}</div>
-    <div class="sa-title">${title}</div>
-    <div class="sa-sub">${sub}</div>
-    <button class="btn btn-gold" style="margin-top:18px; display:block; margin:18px auto 0;" onclick="this.closest('.stage-announce').remove()">계속하기 🚀</button>
-  </div>`;
-  document.body.appendChild(el);
+  queueEvent(() => {
+    // 기존에 떠 있는 stage-announce 는 제거하지 않고 큐로 관리
+    const el=document.createElement('div'); el.className='stage-announce';
+    let emoji,title,sub;
+    if (stageIdx!==null && stageIdx!==undefined) {
+      const sd=STAGE_DATA[stageIdx];
+      emoji=sd.building; title=sd.name+' 달성!'; sub=sd.desc;
+    } else {
+      emoji='🎉'; title=customTitle; sub=customSub;
+    }
+    el.innerHTML=`<div class="sa-box">
+      <div class="sa-emoji">${emoji}</div>
+      <div class="sa-title">${title}</div>
+      <div class="sa-sub">${sub}</div>
+      <button class="btn btn-gold" style="margin-top:18px; display:block; margin:18px auto 0;" onclick="this.closest('.stage-announce').remove();_eventDone();">계속하기 🚀</button>
+    </div>`;
+    document.body.appendChild(el);
+  });
 }
 
 // ══════════════════════════════════════════
@@ -1210,8 +1233,9 @@ function showStageAnnounce(stageIdx, customTitle, customSub) {
 // ══════════════════════════════════════════
 function checkStoryEvents() {
   if (!G.cafeOpen) return;
-  // ↓ 이 한 줄 추가!
+  // 이미 다른 이벤트/모달이 표시 중이면 스토리 이벤트 건너뜀
   if (document.getElementById('storyModal').classList.contains('show')) return;
+  if (_eventBusy) return;
   // Random rainy day event (low probability)
   if (Math.random()<0.001 && !G.triggeredEvents.has('rainy_day_recent')) {
     G.triggeredEvents.add('rainy_day_recent');
@@ -1231,13 +1255,15 @@ function checkStoryEvents() {
 
 function triggerStoryEvent(ev) {
   if (!ev) return;
-  document.getElementById('storyModalTitle').textContent=ev.title;
-  document.getElementById('storyModalBody').innerHTML=`<p style="font-size:13px;line-height:1.7;color:var(--text);">${ev.text}</p>`;
-  document.getElementById('storyModalBtns').innerHTML=ev.choices.map((c,i)=>
-    `<button class="btn btn-primary" onclick="resolveStory(${i})" style="flex:1">${c.label}</button>`
-  ).join('');
-  G.activeStory=ev;
-  showModal('storyModal');
+  queueEvent(() => {
+    document.getElementById('storyModalTitle').textContent=ev.title;
+    document.getElementById('storyModalBody').innerHTML=`<p style="font-size:13px;line-height:1.7;color:var(--text);">${ev.text}</p>`;
+    document.getElementById('storyModalBtns').innerHTML=ev.choices.map((c,i)=>
+      `<button class="btn btn-primary" onclick="resolveStory(${i})" style="flex:1">${c.label}</button>`
+    ).join('');
+    G.activeStory=ev;
+    showModal('storyModal');
+  });
 }
 
 function resolveStory(choiceIdx) {
@@ -1877,14 +1903,16 @@ function updateAllBanners() {
 function updateMobEventBanners() {
   ['mob-event-banner-farm','mob-event-banner-manage'].forEach(id=>{
     const el=document.getElementById(id); if (!el) return;
-    el.innerHTML='';
-    if (G.weather) el.innerHTML+=`<div style="background:rgba(41,128,185,0.5);border-radius:7px;padding:5px 8px;font-size:11px;color:white;margin-bottom:5px;">${G.weather.emoji} <strong>${G.weather.name}</strong> ~Day ${G.weather.endDay}</div>`;
+    // 대회 배너(.contest-banner)는 updateContestBanner()가 단독 관리 — 건드리지 않고 나머지만 제거
+    Array.from(el.children).filter(c=>!c.classList.contains('contest-banner')).forEach(c=>c.remove());
+    const appendBanner = html => el.insertAdjacentHTML('beforeend', html);
+    if (G.weather) appendBanner(`<div style="background:rgba(41,128,185,0.5);border-radius:7px;padding:5px 8px;font-size:11px;color:white;margin-bottom:5px;">${G.weather.emoji} <strong>${G.weather.name}</strong> ~Day ${G.weather.endDay}</div>`);
     if (G.quests?.length) {
       const active=G.quests.filter(q=>!q.done);
-      if (active.length) el.innerHTML+='<div style="background:rgba(108,52,131,0.5);border-radius:7px;padding:5px 8px;font-size:10px;color:white;margin-bottom:5px;"><div style="font-weight:700;margin-bottom:3px;">🎯 퀘스트</div>'+active.map(q=>{const pct=Math.min(100,Math.round(q.current/q.goal*100));return`<div>${q.desc} (${q.current}/${q.goal})<div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:2px;"><div style="height:100%;width:${pct}%;background:#F4C430;border-radius:2px;"></div></div></div>`;}).join('')+'</div>';
+      if (active.length) appendBanner('<div style="background:rgba(108,52,131,0.5);border-radius:7px;padding:5px 8px;font-size:10px;color:white;margin-bottom:5px;"><div style="font-weight:700;margin-bottom:3px;">🎯 퀘스트</div>'+active.map(q=>{const pct=Math.min(100,Math.round(q.current/q.goal*100));return`<div>${q.desc} (${q.current}/${q.goal})<div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:2px;"><div style="height:100%;width:${pct}%;background:#F4C430;border-radius:2px;"></div></div></div>`;}).join('')+'</div>');
     }
-    if (G.trendMenu && RECIPES[G.trendMenu]) el.innerHTML+=`<div style="background:rgba(192,57,43,0.5);border-radius:7px;padding:5px 8px;font-size:10px;color:white;margin-bottom:5px;">🔥 트렌드: ${RECIPES[G.trendMenu].emoji} ${RECIPES[G.trendMenu].name}</div>`;
-    if (G.rival?.active) el.innerHTML+=`<div style="background:rgba(0,0,0,0.25);border-radius:7px;padding:5px 8px;font-size:10px;color:rgba(255,248,240,0.7);margin-bottom:5px;">🏪 경쟁 가게 활성 (Lv.${G.rival.level})</div>`;
+    if (G.trendMenu && RECIPES[G.trendMenu]) appendBanner(`<div style="background:rgba(192,57,43,0.5);border-radius:7px;padding:5px 8px;font-size:10px;color:white;margin-bottom:5px;">🔥 트렌드: ${RECIPES[G.trendMenu].emoji} ${RECIPES[G.trendMenu].name}</div>`);
+    if (G.rival?.active) appendBanner(`<div style="background:rgba(0,0,0,0.25);border-radius:7px;padding:5px 8px;font-size:10px;color:rgba(255,248,240,0.7);margin-bottom:5px;">🏪 경쟁 가게 활성 (Lv.${G.rival.level})</div>`);
   });
 }
 
@@ -2255,8 +2283,40 @@ function showNotif(msg) {
     _updateNotifPositions();
   }, 2600);
 }
-function showModal(id){document.getElementById(id).classList.add('show');}
-function closeModal(id){document.getElementById(id).classList.remove('show');}
+// ══════════════════════════════════════════
+//  이벤트 큐 시스템 — 모달/스테이지 알림을 한 번에 하나씩
+// ══════════════════════════════════════════
+const _eventQueue = [];
+let _eventBusy = false;
+
+// 큐에 이벤트 추가
+function queueEvent(fn) {
+  _eventQueue.push(fn);
+  _flushEventQueue();
+}
+
+// 큐 소비
+function _flushEventQueue() {
+  if (_eventBusy) return;
+  if (_eventQueue.length === 0) return;
+  _eventBusy = true;
+  const fn = _eventQueue.shift();
+  fn();
+}
+
+// 이벤트가 끝났음을 큐에 알림 (모달 닫힐 때, 스테이지 announce 닫힐 때 호출)
+function _eventDone() {
+  _eventBusy = false;
+  setTimeout(_flushEventQueue, 350); // 닫히는 애니메이션 후 다음 실행
+}
+
+function showModal(id) {
+  document.getElementById(id).classList.add('show');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  _eventDone(); // 모달 닫히면 다음 큐 이벤트 실행
+}
 function updateTimeDisplay() {
   const m=Math.floor(G.secondsPlayed/60).toString().padStart(2,'0');
   const s=(G.secondsPlayed%60).toString().padStart(2,'0');
@@ -2647,19 +2707,38 @@ function renderRecipes() {
 }
 
 function renderStaff() {
+  if (!G.staffLevels) G.staffLevels = {};
   document.getElementById('tab-staff').innerHTML=Object.entries(STAFF_DEFS).map(([k,s])=>{
     const hired=!!G.staff[k];
     const stageLocked=s.stageReq>G.stage||!G.cafeOpen;
+    const lv = G.staffLevels[k] || 1;
+    const upgCost = lv * 20000;
+    const canUpg = hired && lv < 3 && G.money >= upgCost;
+    const lvStars = hired ? '⭐'.repeat(lv) + '☆'.repeat(3-lv) : '';
+    const lvDesc = lv===1 ? '' : lv===2 ? ' (효율 +30%)' : ' (효율 +60%)';
     return `<div class="staff-row ${hired?'hired':''}">
       <div class="staff-head">
         <span class="staff-icon">${s.emoji}</span>
-        <span class="staff-name">${s.name}</span>
-        ${hired?`<span style="color:var(--grass);font-size:11px;">✓ 재직중</span>`:
-          stageLocked?`<span style="color:var(--latte);font-size:11px;">🔒</span>`:
-          `<button class="btn btn-green btn-sm" onclick="hireStaff('${k}')">💰${s.hireCost}</button>`}
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:5px;">
+            <span class="staff-name">${s.name}</span>
+            ${hired?`<span style="font-size:11px;letter-spacing:1px;">${lvStars}</span>`:''}
+          </div>
+          ${hired?`<div style="font-size:10px;color:var(--latte);">Lv.${lv}${lvDesc} · 일급 ${s.dailyCost.toLocaleString()}원</div>`:''}
+        </div>
+        ${hired ? '' : stageLocked
+          ? `<span style="color:var(--latte);font-size:11px;">🔒 Lv.${s.stageReq}</span>`
+          : `<button class="btn btn-green btn-sm" onclick="hireStaff('${k}')">고용 💰${s.hireCost.toLocaleString()}</button>`}
       </div>
       <div class="staff-desc">${s.desc}</div>
-      ${hired?`<div class="staff-status">일급: ${s.dailyCost}원/day</div>`:''}
+      ${hired ? `<div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;gap:6px;">
+        <span style="color:var(--grass);font-size:11px;">✓ 재직중</span>
+        ${lv < 3
+          ? `<button class="btn btn-gold btn-sm" ${canUpg?'':'disabled'} onclick="trainStaff('${k}')" style="font-size:11px;">
+              🎓 Lv.${lv+1} 교육 💰${upgCost.toLocaleString()}원
+            </button>`
+          : `<span style="font-size:11px;color:var(--gold);">🏆 최고 레벨!</span>`}
+      </div>` : ''}
     </div>`;
   }).join('');
 }
@@ -2722,6 +2801,7 @@ function renderBooster() {
     return {key:k, s, lv, upgCost, canUpg};
   });
 
+  // 직원 교육 섹션 제거 (관리-직원 탭과 중복)
   document.getElementById('tab-booster').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding-bottom:3px;border-bottom:1px dashed rgba(200,149,108,0.3);">
       <div style="font-size:11px;font-weight:700;color:var(--espresso);">⚡ 단기 부스터</div>
@@ -2745,20 +2825,6 @@ function renderBooster() {
         }
       </div>`;
     }).join('')}
-    ${staffTraining.length > 0 ? `
-    <div style="font-size:11px;font-weight:700;color:var(--espresso);margin:8px 0 4px;padding-bottom:3px;border-bottom:1px dashed rgba(200,149,108,0.3);">🎓 직원 교육</div>
-    ${staffTraining.map(({key,s,lv,upgCost,canUpg})=>`
-      <div style="display:flex;align-items:center;gap:7px;background:rgba(107,66,38,0.06);border-radius:9px;padding:7px 9px;font-size:12px;margin-bottom:3px;">
-        <span style="font-size:18px;">${s.emoji}</span>
-        <div style="flex:1;">
-          <div style="font-weight:700;font-size:11px;">${s.name} <span style="font-size:10px;color:var(--gold);">Lv.${lv}</span></div>
-          <div style="font-size:9px;color:var(--latte);">${lv===1?'기본':lv===2?'능력치 +20%':'최강화 +40%'}</div>
-        </div>
-        ${canUpg
-          ? `<button class="btn btn-sm" style="background:var(--espresso);color:white;font-size:10px;" onclick="trainStaff('${key}')" ${G.money>=upgCost?'':'disabled'}>💰${upgCost.toLocaleString()}</button>`
-          : `<span style="font-size:10px;color:var(--gold);">MAX</span>`
-        }
-      </div>`).join('')}` : `<div style="font-size:11px;color:var(--latte);text-align:center;margin-top:8px;">직원을 고용하면 교육할 수 있어요!</div>`}
   `;
 }
 
@@ -2817,6 +2883,7 @@ function trainStaff(key) {
   addLog(`🎓 ${s.emoji} ${s.name} Lv.${lv+1} 달성!`);
   updateHeader();
   renderBooster();
+  renderStaff(); // 직원 탭도 즉시 갱신
 }
 
 // ══════════════════════════════════════════
@@ -2827,7 +2894,7 @@ const ACHIEVEMENTS = [
   {id:'serve_10',      emoji:'👨‍🍳', name:'열정 사장',       desc:'손님 10명 서빙',                    check:()=>G.totalServed>=10},
   {id:'serve_100',     emoji:'🏅', name:'백전노장',          desc:'손님 100명 서빙',                   check:()=>G.totalServed>=100},
   {id:'serve_500',     emoji:'🏆', name:'전설의 서빙왕',     desc:'손님 500명 서빙',                   check:()=>G.totalServed>=500},
-  {id:'money_100k',    emoji:'💰', name:'백만장자의 꿈',     desc:'10만원 보유',                       check:()=>G.money>=100000},
+  {id:'money_100k',    emoji:'💰', name:'백만장자의 꿈',     desc:'50만원 보유',                       check:()=>G.money>=500000},
   {id:'money_1m',      emoji:'💎', name:'백만장자!',          desc:'100만원 보유',                      check:()=>G.money>=1000000},
   {id:'money_10m',     emoji:'👑', name:'재벌 사장님',        desc:'1000만원 보유',                     check:()=>G.money>=10000000},
   {id:'earned_1m',     emoji:'🤑', name:'누적 백만',          desc:'누적 수익 100만원',                 check:()=>G.totalMoneyEarned>=1000000},
@@ -3026,30 +3093,30 @@ const CONTESTS = [
     emoji: '🏆', name: '지역 카페 챔피언십',
     triggerStage: 5, forceTrigger: true,
     announceDays: 2,
-    desc: '지역 최고 카페를 가리는 챔피언십! 심사 기준은 메뉴 다양성, 손님 만족도, 서비스예요.',
+    desc: '지역 최고 카페를 가리는 챔피언십! 심사위원 4명이 짧은 시간 안에 연속으로 방문해요. 재료 준비 필수!',
     prepChoices: [
       { label: '🍽️ 시그니처 메뉴 집중 연습', desc: '본선 메뉴 점수 +20%', key: 'menu_drill', cost: 0 },
-      { label: '🖼️ 카페 인테리어 투자', desc: '인테리어 점수 +30%', key: 'interior', cost: 30000 },
+      { label: '🖼️ 카페 인테리어 투자', desc: '인테리어 점수 +30%', key: 'interior', cost: 40000 },
       { label: '📣 단골 손님 홍보 동원', desc: '심사위원 호감도 +15%', key: 'promo', cost: 0 },
     ],
-    dayRule: '심사위원 3명이 특별 손님으로 방문해요. 모두 서빙하면 보너스!',
-    judgeCount: 3,
-    judgePatience: 40,   // 인내심 빠르게 감소
-    judgeOrders: null,   // null = 현재 배운 메뉴 중 랜덤
+    dayRule: '심사위원 4명이 방문! 인내심이 30%로 낮아요 — 재료 부족하면 즉시 탈락 위기. 모두 서빙하면 보너스!',
+    judgeCount: 4,
+    judgePatience: 28,   // ↑ 더 까다롭게
+    judgeOrders: null,
     evaluate(ctx) {
       const { servedJudges, prepKeys } = ctx;
       const bonusMult = 1
         + (prepKeys.includes('menu_drill') ? 0.20 : 0)
         + (prepKeys.includes('interior')   ? 0.30 : 0)
         + (prepKeys.includes('promo')      ? 0.15 : 0);
-      if (servedJudges >= 3) {
-        return { rank:'🥇 1위', rep: Math.round(500*bonusMult), money: Math.round(50000*bonusMult), badge:'🏆', msg:'완벽한 서비스로 챔피언십 우승!', title:'카페 챔피언' };
+      if (servedJudges >= 4) {
+        return { rank:'🥇 1위', rep: Math.round(600*bonusMult), money: Math.round(70000*bonusMult), badge:'🏆', msg:'완벽한 서비스! 챔피언십 우승!', title:'카페 챔피언' };
+      } else if (servedJudges === 3) {
+        return { rank:'🥈 2위', rep: Math.round(250*bonusMult), money: 20000, msg:'아슬아슬하게 2위! 한 명만 더 서빙했더라면...' };
       } else if (servedJudges === 2) {
-        return { rank:'🥈 2위', rep: Math.round(250*bonusMult), money: 20000, msg:'아쉽게 2위! 다음엔 꼭 1위를!' };
-      } else if (servedJudges === 1) {
-        return { rank:'🥉 3위', rep: 80, money: 0, msg:'3위 입상! 분발해요~' };
+        return { rank:'🥉 3위', rep: 80, money: 0, msg:'3위 입상. 재료 관리가 아쉬웠어요.' };
       } else {
-        return { rank:'😞 탈락', rep: -30, money: 0, msg:'다음 기회에 다시 도전해봐요...' };
+        return { rank:'😞 탈락', rep: -50, money: 0, msg:'심사위원을 기다리게 했어요. 재료·속도를 점검하세요!' };
       }
     },
   },
@@ -3061,15 +3128,15 @@ const CONTESTS = [
     triggerStage: 4, forceTrigger: false,
     requireRecipes: ['latte','americano','strawb_latte','peach_tea'],
     announceDays: 2,
-    desc: '전국 바리스타 경연! 라떼·아메리카노·딸기라떼를 순서대로 완벽하게 서빙하면 퍼펙트 루틴 달성!',
+    desc: '전국 바리스타 경연! 아메리카노→라떼→딸기라떼 순서로 정확히 서빙해야 해요. 순서가 틀리면 퍼펙트 초기화!',
     prepChoices: [
-      { label: '☕ 특별 원두 구매', desc: '커피 품질 점수 대폭 상승', key: 'bean_buy', cost: 20000 },
+      { label: '☕ 특별 원두 구매', desc: '커피 품질 점수 대폭 상승', key: 'bean_buy', cost: 25000 },
       { label: '🎓 직원 특훈 (직원 필요)', desc: '서빙 속도 2배로 당일 가동', key: 'staff_train', cost: 0, requireStaff: true },
       { label: '📝 레시피 연구 (무료)', desc: '커피 신메뉴 1개 무료 습득', key: 'recipe_study', cost: 0 },
     ],
-    dayRule: '심사위원이 아메리카노 → 라떼 → 딸기라떼 순서로 주문해요. 순서대로 3연속 서빙하면 퍼펙트!',
+    dayRule: '심사위원 3명이 아메리카노→라떼→딸기라떼 순서로 주문해요. 인내심 20% — 빠른 서빙 필수! 순서 틀리면 퍼펙트 취소.',
     judgeCount: 3,
-    judgePatience: 35,
+    judgePatience: 22,   // ↑ 더 빡빡하게
     judgeOrders: ['americano','latte','strawb_latte'],
     evaluate(ctx) {
       const { servedJudges, prepKeys, perfectCombo } = ctx;
@@ -3079,9 +3146,9 @@ const CONTESTS = [
       } else if (perfectCombo) {
         return { rank:'🥇 금상', rep: 400, money: 30000, badge:'🥇', msg:'퍼펙트 루틴 달성! 뛰어난 기량이에요!' };
       } else if (servedJudges >= 2) {
-        return { rank:'🥈 은상', rep: 150, money: 0, msg:'아쉽게 은상. 순서만 맞췄다면...' };
+        return { rank:'🥈 은상', rep: 120, money: 0, msg:'아쉽게 은상. 순서와 속도를 더 연습해봐요.' };
       } else {
-        return { rank:'🎖️ 참가상', rep: 30, money: 0, msg:'참가에 의의를! 다음엔 순서를 기억해요.' };
+        return { rank:'🎖️ 참가상', rep: 20, money: 0, msg:'참가에 의의를! 인내심이 다 닳기 전에 서빙해야 해요.' };
       }
     },
   },
@@ -3093,26 +3160,26 @@ const CONTESTS = [
     triggerStage: 5, forceTrigger: false,
     requireRecipes: ['strawb_cake','macaron'],
     announceDays: 2,
-    desc: '시청 주최 디저트 페스티벌 부스 참가! 당일 디저트 메뉴 수익이 1.5배, 손님이 3배로 몰려와요!',
+    desc: '시청 주최 디저트 페스티벌! 손님이 4배로 몰려오지만 재료가 금방 떨어져요. 사전 재배가 핵심!',
     prepChoices: [
       { label: '🍓 딸기 대량 재배', desc: '씨앗 2개 자동 심기 (재료 확보)', key: 'grow_strawb', cost: 0 },
-      { label: '🎁 예쁜 포장 투자', desc: '손님 만족도 +0.5 (당일)', key: 'packaging', cost: 10000 },
+      { label: '🎁 예쁜 포장 투자', desc: '손님 만족도 +0.5 (당일)', key: 'packaging', cost: 15000 },
       { label: '📱 SNS 홍보', desc: '블로거 손님 출현율 3배 (무료)', key: 'sns', cost: 0 },
     ],
-    dayRule: '하루 동안 손님 3배! 디저트(케이크·마카롱·와플·크레페) 서빙 수익 1.5배. 당일 총 수익으로 순위가 결정돼요.',
-    judgeCount: 0,   // 개인 심사위원 없음 — 수익 기반
+    dayRule: '하루 동안 손님 4배! 디저트 수익 1.5배. 목표: 250,000원 — 재료 소진되면 서빙 불가.',
+    judgeCount: 0,
     judgePatience: 60,
     judgeOrders: null,
     evaluate(ctx) {
       const { festRevenue } = ctx;
-      if (festRevenue >= 200000) {
-        return { rank:'🥇 인기 부스상', rep: 600, money: 0, badge:'🎪', msg:`페스티벌 최고 인기 부스! 수익 ${festRevenue.toLocaleString()}원!`, title:'디저트 페스티벌 MVP' };
+      if (festRevenue >= 300000) {
+        return { rank:'🥇 인기 부스상', rep: 700, money: 0, badge:'🎪', msg:`페스티벌 최고 인기 부스! 수익 ${festRevenue.toLocaleString()}원!`, title:'디저트 페스티벌 MVP' };
+      } else if (festRevenue >= 200000) {
+        return { rank:'🥈 우수상', rep: 350, money: 0, msg:`훌륭해요! 수익 ${festRevenue.toLocaleString()}원 달성!` };
       } else if (festRevenue >= 100000) {
-        return { rank:'🥈 우수상', rep: 300, money: 0, msg:`훌륭해요! 수익 ${festRevenue.toLocaleString()}원 달성!` };
-      } else if (festRevenue >= 50000) {
-        return { rank:'🥉 참가상', rep: 100, money: 0, msg:`참가 완료! 수익 ${festRevenue.toLocaleString()}원.` };
+        return { rank:'🥉 참가상', rep: 100, money: 0, msg:`참가 완료! 수익 ${festRevenue.toLocaleString()}원. 재료를 더 준비했다면...` };
       } else {
-        return { rank:'😅 아쉬운 결과', rep: 0, money: -5000, msg:`부스 철수 비용 5,000원... 다음엔 더 잘할 수 있어요!` };
+        return { rank:'😅 아쉬운 결과', rep: -20, money: -10000, msg:`부스 철수 비용 10,000원... 재료 사전 준비가 필수예요!` };
       }
     },
   },
@@ -3124,27 +3191,27 @@ const CONTESTS = [
     triggerStage: 7, forceTrigger: false,
     requireRep: 8000,
     announceDays: 2,
-    desc: '전국 50인의 미식가를 초대한 프라이빗 시식회! 최고의 메뉴로 그들을 감동시키세요.',
+    desc: '전국 50인의 미식가를 초대한 프라이빗 시식회! 인내심이 극도로 짧아요 — 15초 안에 서빙하지 못하면 퇴장!',
     prepChoices: [
-      { label: '✨ 프리미엄 식재료 긴급 구매', desc: '고급 메뉴 점수 +40%', key: 'premium_ingr', cost: 50000 },
+      { label: '✨ 프리미엄 식재료 긴급 구매', desc: '고급 메뉴 점수 +40%', key: 'premium_ingr', cost: 60000 },
       { label: '👨‍🍳 수석 셰프 특별 지시 (직원 필요)', desc: '서빙 실수 없음 보장', key: 'chef_direct', cost: 0, requireStaff: true },
       { label: '📋 메뉴 구성 연구 (무료)', desc: '보유 최고가 메뉴 자동 선택', key: 'menu_study', cost: 0 },
     ],
-    dayRule: '미식가 10명 연속 방문! 고급 메뉴(스테이크·리조또·트러플)를 주문해요. 인내심이 빠르게 닳으니 서두르세요.',
+    dayRule: '미식가 10명 연속 방문! 인내심 15% — 즉시 서빙 필수. 만족도 4.5 이상이어야 미슐랭 달성 가능.',
     judgeCount: 10,
-    judgePatience: 25,
+    judgePatience: 18,   // ↑ 극도로 빡빡
     judgeOrders: ['steak','mushroom_risotto','truffle_pasta','prime_steak'],
     evaluate(ctx) {
       const { servedJudges, finalSat, prepKeys } = ctx;
       const bonusMult = prepKeys.includes('premium_ingr') ? 1.4 : 1.0;
       if (servedJudges >= 10 && finalSat >= 4.5) {
-        return { rank:'⭐ 미슐랭 추천', rep: Math.round(2000*bonusMult), money: 200000, badge:'⭐', msg:'만점 서비스! 미슐랭 가이드 추천 등재!', title:'미슐랭 스타 셰프' };
-      } else if (servedJudges >= 8) {
-        return { rank:'🥇 호평', rep: Math.round(800*bonusMult), money: 80000, msg:`${servedJudges}명 서빙 성공! 미식가들이 감탄했어요.` };
-      } else if (servedJudges >= 5) {
-        return { rank:'🥈 보통', rep: 300, money: 0, msg:`${servedJudges}명 서빙. 더 많이 서빙할 수 있었는데...` };
+        return { rank:'⭐ 미슐랭 추천', rep: Math.round(2500*bonusMult), money: 250000, badge:'⭐', msg:'완벽! 미슐랭 가이드 추천 등재!', title:'미슐랭 스타 셰프' };
+      } else if (servedJudges >= 10) {
+        return { rank:'🥇 호평', rep: Math.round(1000*bonusMult), money: 100000, msg:`전원 서빙 성공! 만족도 ${finalSat.toFixed(1)} — 4.5 이상이었다면 미슐랭이었는데!` };
+      } else if (servedJudges >= 7) {
+        return { rank:'🥈 보통', rep: 300, money: 0, msg:`${servedJudges}/10명 서빙. 인내심이 짧으니 재료를 미리 채워두세요.` };
       } else {
-        return { rank:'😞 혹평', rep: -100, money: 0, msg:'기대에 못 미쳤어요. 재료와 스피드를 다시 점검해봐요.' };
+        return { rank:'😞 혹평', rep: -150, money: 0, msg:'기대에 크게 못 미쳤어요. 고급 재료·스피드·만족도 모두 점검 필요!' };
       }
     },
   },
@@ -3156,26 +3223,26 @@ const CONTESTS = [
     triggerStage: 5, forceTrigger: false,
     requireSeason: 'winter',
     announceDays: 1,
-    desc: '마을 크리스마스 마켓에 카페 부스 운영! 겨울 한정 메뉴가 있으면 특별 점수를 받아요.',
+    desc: '마을 크리스마스 마켓 부스! 손님이 4배로 몰리지만 겨울 메뉴가 없으면 수익이 반 토막 나요.',
     prepChoices: [
       { label: '☃️ 겨울 메뉴 집중 준비', desc: '핫초코·비프 스튜 수익 2배', key: 'winter_menu', cost: 0 },
-      { label: '🎄 부스 장식 투자', desc: '손님 만족도 +1 (당일만)', key: 'decor', cost: 20000 },
-      { label: '🎁 무료 시식 행사', desc: '손님 3배, 수익 70%', key: 'free_taste', cost: 0 },
+      { label: '🎄 부스 장식 투자', desc: '손님 만족도 +1 (당일만)', key: 'decor', cost: 25000 },
+      { label: '🎁 무료 시식 행사', desc: '손님 5배, 수익 65%', key: 'free_taste', cost: 0 },
     ],
-    dayRule: '겨울 전용 손님이 몰려와요! 당일 서빙 수로 순위 결정.',
+    dayRule: '겨울 손님 4배 폭주! 목표: 30명 서빙. 겨울 메뉴 미보유 시 수익 -30% 패널티.',
     judgeCount: 0,
-    judgePatience: 60,
+    judgePatience: 55,
     judgeOrders: null,
     evaluate(ctx) {
       const { xmasServed } = ctx;
-      if (xmasServed >= 20) {
-        return { rank:'🥇 마켓 MVP', rep: 1000, money: 150000, badge:'🎄', msg:`${xmasServed}명 서빙! 올해 크리스마스 마켓의 주인공!`, title:'크리스마스 스타' };
-      } else if (xmasServed >= 12) {
-        return { rank:'🥈 인기 부스', rep: 400, money: 50000, msg:`${xmasServed}명 서빙! 따뜻하고 인기 많은 부스였어요.` };
-      } else if (xmasServed >= 6) {
-        return { rank:'🥉 참가상', rep: 120, money: 0, msg:`${xmasServed}명 서빙. 내년엔 더 열심히!` };
+      if (xmasServed >= 30) {
+        return { rank:'🥇 마켓 MVP', rep: 1200, money: 180000, badge:'🎄', msg:`${xmasServed}명 서빙! 크리스마스 마켓의 전설!`, title:'크리스마스 스타' };
+      } else if (xmasServed >= 20) {
+        return { rank:'🥈 인기 부스', rep: 500, money: 60000, msg:`${xmasServed}명 서빙! 따뜻한 인기 부스였어요.` };
+      } else if (xmasServed >= 10) {
+        return { rank:'🥉 참가상', rep: 120, money: 0, msg:`${xmasServed}명 서빙. 겨울 메뉴가 더 있었다면!` };
       } else {
-        return { rank:'😅 조용한 부스', rep: 20, money: 0, msg:'손님이 별로 없었네요... 겨울 메뉴를 더 준비해봐요.' };
+        return { rank:'😅 조용한 부스', rep: 0, money: -10000, msg:'손님이 거의 없었어요... 겨울 메뉴 준비가 필수예요.' };
       }
     },
   },
@@ -3227,10 +3294,11 @@ function launchContestAnnounce(contestDef) {
     xmasServed: 0,
     finalSat: G.satisfaction,
   };
-  showContestAnnounceModal(contestDef);
   addLog(`🏆 [대회 공지] ${contestDef.name} — ${contestDef.announceDays}일 후 개최!`);
   showNotif(`🏆 ${contestDef.name} 개최 공지!`);
   updateContestBanner();
+  // 모달은 큐를 통해 하나씩
+  queueEvent(() => showContestAnnounceModal(contestDef));
 }
 
 // ── 매 tick 대회 진행 ──
@@ -3244,10 +3312,10 @@ function tickContest() {
   // announce → prep 전환
   if (c.phase === 'announce' && G.day >= c.startDay) {
     c.phase = 'prep';
-    showContestPrepModal(def);
     addLog(`🏆 [대회] ${def.name} 준비 기간 시작! 준비 선택지를 골라주세요.`);
     showNotif(`🏆 ${def.name} 준비 시작! 카페탭을 확인하세요`);
     updateContestBanner();
+    queueEvent(() => showContestPrepModal(def));
     return;
   }
 
@@ -3489,7 +3557,7 @@ function finishContest(def) {
   G.contestHistory.unshift({ name: def.name, emoji: def.emoji, rank: result.rank, day: G.day });
 
   addLog(`🏆 [대회 결과] ${def.name}: ${result.rank}`);
-  showContestResultModal(def, result);
+  queueEvent(() => showContestResultModal(def, result));
   updateContestBanner();
   updateHeader();
   checkAchievements();
@@ -3497,33 +3565,72 @@ function finishContest(def) {
 
 // ── 대회 배너 ──
 function updateContestBanner() {
+  // 대회 배너 HTML 생성 (공통)
+  function makeContestBannerEl() {
+    if (!G.contest || G.contest.phase === 'result') return null;
+    const def = getContestDef(); if (!def) return null;
+    const c = G.contest;
+
+    const phaseLabel = {
+      announce: `📢 D-${c.startDay - G.day} 공지`,
+      prep:     '📋 준비 기간',
+      day:      '🔥 대회 당일!',
+    }[c.phase] || '';
+
+    let extra = '';
+    if (c.phase === 'day' && def.judgeCount > 0) extra = ` (${c.servedJudges}/${def.judgeCount}명 서빙)`;
+    if (c.phase === 'day' && def.judgeCount === 0) extra = ` (수익: ${(c.festRevenue||0).toLocaleString()}원)`;
+
+    const d = document.createElement('div');
+    d.className = 'contest-banner';
+    d.style.cssText = 'background:linear-gradient(135deg,#c0392b,#8e44ad);color:white;border-radius:10px;padding:8px 12px;font-size:12px;margin-bottom:4px;cursor:pointer;';
+    d.innerHTML = `${def.emoji} <strong>[대회] ${def.name}</strong> <span style="font-size:10px;opacity:0.8;">${phaseLabel}${extra}</span>`;
+    d.onclick = () => {
+      if (c.phase === 'prep') showContestPrepModal(def);
+      else showContestAnnounceModal(def);
+    };
+    return d;
+  }
+
+  // ① 카페탭 storyBannerArea
   const area = document.getElementById('storyBannerArea');
-  if (!area) return;
-  area.querySelectorAll('.contest-banner').forEach(el => el.remove());
+  if (area) {
+    area.querySelectorAll('.contest-banner').forEach(el => el.remove());
+    const el = makeContestBannerEl();
+    if (el) area.prepend(el);
+  }
 
-  if (!G.contest || G.contest.phase === 'result') return;
-  const def = getContestDef(); if (!def) return;
-  const c = G.contest;
+  // ② 메인탭 모바일 이벤트 배너
+  const farmBanner = document.getElementById('mob-event-banner-farm');
+  if (farmBanner) {
+    farmBanner.querySelectorAll('.contest-banner').forEach(el => el.remove());
+    const el = makeContestBannerEl();
+    if (el) { el.style.marginBottom = '5px'; farmBanner.prepend(el); }
+  }
 
-  const phaseLabel = {
-    announce: `📢 D-${c.startDay - G.day} 공지`,
-    prep:     '📋 준비 기간',
-    day:      '🔥 대회 당일!',
-  }[c.phase] || '';
+  // ③ 관리탭 모바일 이벤트 배너
+  const manageBanner = document.getElementById('mob-event-banner-manage');
+  if (manageBanner) {
+    manageBanner.querySelectorAll('.contest-banner').forEach(el => el.remove());
+    const el = makeContestBannerEl();
+    if (el) { el.style.marginBottom = '5px'; manageBanner.prepend(el); }
+  }
 
-  let extra = '';
-  if (c.phase === 'day' && def.judgeCount > 0) extra = ` (${c.servedJudges}/${def.judgeCount}명 서빙)`;
-  if (c.phase === 'day' && def.judgeCount === 0) extra = ` (수익: ${(c.festRevenue||0).toLocaleString()}원)`;
+  // ④ 데스크탑 메인탭(좌측) 알림 패널
+  const logPanel = document.getElementById('contest-banner-farm-desktop');
+  if (logPanel) {
+    logPanel.querySelectorAll('.contest-banner').forEach(el => el.remove());
+    const el = makeContestBannerEl();
+    if (el) logPanel.prepend(el);
+  }
 
-  const d = document.createElement('div');
-  d.className = 'contest-banner';
-  d.style.cssText = 'background:linear-gradient(135deg,#c0392b,#8e44ad);color:white;border-radius:10px;padding:8px 12px;font-size:12px;margin-bottom:4px;cursor:pointer;';
-  d.innerHTML = `${def.emoji} <strong>[대회] ${def.name}</strong> <span style="font-size:10px;opacity:0.8;">${phaseLabel}${extra}</span>`;
-  d.onclick = () => {
-    if (c.phase === 'prep') showContestPrepModal(def);
-    else showContestAnnounceModal(def);
-  };
-  area.prepend(d);
+  // ⑤ 데스크탑 관리탭(우측) 패널
+  const managePanel = document.getElementById('contest-banner-manage-desktop');
+  if (managePanel) {
+    managePanel.querySelectorAll('.contest-banner').forEach(el => el.remove());
+    const el = makeContestBannerEl();
+    if (el) managePanel.prepend(el);
+  }
 }
 
 // ── 모달: 공지 ──
@@ -3792,6 +3899,236 @@ function renderReviews() {
       <div class="rv-text">${r.text}</div>
       <div class="rv-name">— ${r.name}</div>
     </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+//  🎁 매일 출석 보너스 (룰렛형)
+// ══════════════════════════════════════════
+
+const DAILY_BONUS_POOL = [
+  // 돈 보상
+  { emoji:'💰', label:'용돈',        value:'+5,000원',   type:'money',  amount:5000,   weight:25 },
+  { emoji:'💵', label:'보너스',      value:'+15,000원',  type:'money',  amount:15000,  weight:18 },
+  { emoji:'💴', label:'횡재',        value:'+30,000원',  type:'money',  amount:30000,  weight:10 },
+  { emoji:'💎', label:'대박!',       value:'+80,000원',  type:'money',  amount:80000,  weight:4  },
+  { emoji:'👑', label:'잭팟!!!',     value:'+200,000원', type:'money',  amount:200000, weight:1  },
+  // 명성 보상
+  { emoji:'⭐', label:'소문',        value:'+20 명성',   type:'rep',    amount:20,     weight:22 },
+  { emoji:'🌟', label:'입소문',      value:'+60 명성',   type:'rep',    amount:60,     weight:12 },
+  { emoji:'✨', label:'화제!',       value:'+150 명성',  type:'rep',    amount:150,    weight:6  },
+  { emoji:'🏆', label:'전설',        value:'+400 명성',  type:'rep',    amount:400,    weight:2  },
+];
+
+// 가중치 기반 랜덤 선택
+function weightedRandom(pool) {
+  const total = pool.reduce((s, x) => s + x.weight, 0);
+  let r = Math.random() * total;
+  for (const x of pool) { r -= x.weight; if (r <= 0) return x; }
+  return pool[pool.length - 1];
+}
+
+// 오늘 날짜 키
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+// 미수령 여부 체크
+function isDailyBonusAvailable() {
+  try {
+    const data = JSON.parse(localStorage.getItem('daily_bonus') || '{}');
+    return data.date !== todayKey();
+  } catch(e) { return true; }
+}
+
+// 연속 출석일 수
+function getDailyStreak() {
+  try {
+    const data = JSON.parse(localStorage.getItem('daily_bonus') || '{}');
+    if (!data.date) return 0;
+    const last = new Date(data.date);
+    const today = new Date(todayKey());
+    const diff = (today - last) / 86400000;
+    return diff === 1 ? (data.streak || 1) : 0;
+  } catch(e) { return 0; }
+}
+
+function saveDailyBonus(streak) {
+  localStorage.setItem('daily_bonus', JSON.stringify({ date: todayKey(), streak }));
+}
+
+// 출석 버튼 상태 갱신
+function updateDailyBonusBtn() {
+  const avail = isDailyBonusAvailable();
+  const btn = document.getElementById('dailyBonusBtn');
+  const dot  = document.getElementById('dailyBonusDot');
+  const dotM = document.getElementById('dailyBonusDotMob');
+  if (btn) btn.classList.toggle('available', avail);
+  if (dot)  dot.style.display  = avail ? 'block' : 'none';
+  if (dotM) dotM.style.display = avail ? 'block' : 'none';
+}
+
+// 룰렛 오픈
+function openDailyBonus() {
+  const body = document.getElementById('dailyBonusBody');
+  const btns = document.getElementById('dailyBonusBtns');
+  const avail = isDailyBonusAvailable();
+  const streak = getDailyStreak() + (avail ? 1 : 0);
+
+  if (!avail) {
+    // 이미 수령
+    const data = JSON.parse(localStorage.getItem('daily_bonus') || '{}');
+    body.innerHTML = `
+      <div class="streak-badge">🔥 ${data.streak || 1}일 연속 출석!</div>
+      <div style="font-size:40px;margin:12px 0;">✅</div>
+      <div style="font-size:14px;font-weight:700;color:var(--espresso);margin-bottom:6px;">오늘 이미 수령했어요!</div>
+      <div style="font-size:12px;color:var(--latte);">자정이 지나면 새 보너스가 준비돼요 🌙</div>`;
+    btns.innerHTML = `<button class="btn btn-secondary" onclick="closeModal('dailyBonusModal')">닫기</button>`;
+    showModal('dailyBonusModal');
+    return;
+  }
+
+  // 룰렛 아이템 생성 (12개 — 가중치 섞어서)
+  const displayItems = [];
+  for (let i = 0; i < 12; i++) displayItems.push(weightedRandom(DAILY_BONUS_POOL));
+  // 당첨 아이템 — 연속 출석 보너스 적용
+  const winner = weightedRandom(
+    streak >= 7 ? DAILY_BONUS_POOL.map(x => ({...x, weight: x.weight * (x.amount >= 80000 || x.amount >= 400 ? 4 : 1)})) :
+    streak >= 3 ? DAILY_BONUS_POOL.map(x => ({...x, weight: x.weight * (x.amount >= 15000 || x.amount >= 60 ? 2 : 1)})) :
+    DAILY_BONUS_POOL
+  );
+  const winnerIdx = 8; // 가운데쯤
+  displayItems[winnerIdx] = winner;
+
+  // 스트릭 메시지
+  const streakMsg = streak >= 7 ? `🔥 7일 연속! 희귀 보상 확률 UP!` :
+                   streak >= 3 ? `🔥 ${streak}일 연속! 좋은 보상 확률 UP!` :
+                   streak >= 2 ? `🔥 ${streak}일 연속 출석!` : `오늘도 방문해줘서 고마워요! 🌱`;
+
+  body.innerHTML = `
+    <div class="streak-badge">🔥 ${streak}일 연속 출석</div>
+    <div style="font-size:12px;color:var(--latte);margin-bottom:12px;">${streakMsg}</div>
+    <div class="roulette-wrap">
+      <div id="rouletteTrack" class="roulette-track">
+        ${displayItems.map((item, i) => `
+          <div class="roulette-item${i===winnerIdx?' winner':''}" id="ri-${i}">
+            <div class="roulette-emoji">${item.emoji}</div>
+            <div class="roulette-label">${item.label}</div>
+            <div class="roulette-value">${item.value}</div>
+          </div>`).join('')}
+      </div>
+      <div style="position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:88px;border:2.5px solid var(--gold);border-radius:12px;pointer-events:none;box-shadow:0 0 12px rgba(212,160,23,0.4);"></div>
+    </div>
+    <div id="rouletteResult" style="margin-top:14px;min-height:48px;"></div>`;
+
+  btns.innerHTML = `<button class="btn btn-gold" id="spinBtn" onclick="spinRoulette(${winnerIdx})">🎰 돌리기!</button>`;
+  showModal('dailyBonusModal');
+}
+
+function spinRoulette(winnerIdx) {
+  const spinBtn = document.getElementById('spinBtn');
+  if (!spinBtn || spinBtn.disabled) return;
+  spinBtn.disabled = true;
+  spinBtn.textContent = '🎰 돌리는 중...';
+
+  const track = document.getElementById('rouletteTrack');
+  // 실제 아이템 너비 + 마진을 DOM에서 측정 (고정값 대신)
+  const firstItem = track.children[0];
+  let ITEM_W = 88;
+  if (firstItem) {
+    const cs = window.getComputedStyle(firstItem);
+    ITEM_W = firstItem.offsetWidth
+           + parseFloat(cs.marginLeft  || 0)
+           + parseFloat(cs.marginRight || 0);
+  }
+  const wrapW  = track.parentElement.clientWidth;
+  const targetPos = winnerIdx * ITEM_W - (wrapW / 2) + ITEM_W / 2;
+
+  let pos = 0;
+  let speed = 24;
+  let frame = 0;
+
+  // 하이라이트 순환
+  let hlIdx = 0;
+  const hlInterval = setInterval(() => {
+    track.querySelectorAll('.roulette-item').forEach(el => el.classList.remove('highlight'));
+    const el = track.children[hlIdx % track.children.length];
+    if (el) el.classList.add('highlight');
+    hlIdx++;
+  }, 75);
+
+  const scrollInterval = setInterval(() => {
+    frame++;
+    if (frame > 28) speed = Math.max(0.8, speed - 1.4);
+    pos += speed;
+    track.style.transform = `translateX(-${pos}px)`;
+
+    if (speed <= 0.8 && pos >= targetPos) {
+      clearInterval(scrollInterval);
+      clearInterval(hlInterval);
+      track.style.transform = `translateX(-${targetPos}px)`;
+      track.querySelectorAll('.roulette-item').forEach(el => el.classList.remove('highlight'));
+      showBonusResult(winnerIdx);
+    }
+  }, 16);
+}
+
+function showBonusResult(winnerIdx) {
+  const track = document.getElementById('rouletteTrack');
+  const winnerEl = track.children[winnerIdx];
+  if (winnerEl) winnerEl.classList.add('winner');
+
+  // 당첨 아이템 파악
+  const emoji = winnerEl.querySelector('.roulette-emoji').textContent;
+  const label = winnerEl.querySelector('.roulette-label').textContent;
+  const valueText = winnerEl.querySelector('.roulette-value').textContent;
+
+  // 보상 지급
+  const matchedItem = DAILY_BONUS_POOL.find(x => x.emoji === emoji && x.label === label);
+  if (matchedItem) {
+    if (matchedItem.type === 'money') G.money += matchedItem.amount;
+    if (matchedItem.type === 'rep')   G.reputation += matchedItem.amount;
+    updateHeader();
+    checkAchievements();
+    audio.init(); audio.playSfx('money');
+    floatText(`${emoji} ${valueText}`, window.innerWidth/2 - 40, window.innerHeight/3, '#D4A017');
+  }
+
+  // 저장
+  const streak = getDailyStreak() + 1;
+  saveDailyBonus(streak);
+  updateDailyBonusBtn();
+
+  const resultEl = document.getElementById('rouletteResult');
+  if (resultEl) {
+    resultEl.innerHTML = `
+      <div style="font-size:28px;margin-bottom:4px;">${emoji}</div>
+      <div style="font-family:'Jua',sans-serif;font-size:18px;color:var(--gold);">${valueText} 획득!</div>
+      <div style="font-size:11px;color:var(--latte);margin-top:4px;">내일 또 출석하면 보상이 더 좋아져요! 🌟</div>`;
+  }
+
+  const btns = document.getElementById('dailyBonusBtns');
+  if (btns) btns.innerHTML = `<button class="btn btn-gold" onclick="closeModal('dailyBonusModal')">감사해요! 🎉</button>`;
+
+  addLog(`🎁 출석 보너스: ${emoji} ${valueText} 획득!`);
+  showNotif(`🎁 출석 보너스 ${valueText}!`);
+}
+
+// 게임 부팅 후 출석 버튼 상태 초기화 + 자동 팝업
+function initDailyBonus() {
+  updateDailyBonusBtn();
+  // 미수령이면 3초 후 큐를 통해 자동 팝업 (다른 이벤트와 충돌 방지)
+  if (isDailyBonusAvailable()) {
+    setTimeout(() => {
+      queueEvent(() => {
+        if (!document.querySelector('.modal-overlay.show')) {
+          openDailyBonus();
+        } else {
+          _eventDone(); // 이미 다른 모달이 있으면 그냥 건너뜀
+        }
+      });
+    }, 3000);
+  }
 }
 
 // ══════════════════════════════════════════
@@ -4092,6 +4429,15 @@ setInterval(function() {
 
 <!-- 날씨 이펙트 오버레이 -->
 <div id="weather-overlay"></div>
+
+<!-- 출석 보너스 모달 -->
+<div id="dailyBonusModal" class="modal-overlay">
+  <div class="modal" style="max-width:340px;text-align:center;">
+    <div class="modal-title">🎁 오늘의 출석 보너스!</div>
+    <div class="modal-body" id="dailyBonusBody"></div>
+    <div class="modal-btns" id="dailyBonusBtns"></div>
+  </div>
+</div>
 
 <!-- 긴급 주문 모달 -->
 <div id="emergencyModal" class="modal-overlay">
