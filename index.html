@@ -1464,13 +1464,12 @@ function confirmRename() {
 // ══════════════════════════════════════════
 //  날씨 이벤트
 // ══════════════════════════════════════════
-const WEATHER_EVENTS = [
-  {id:'blizzard',emoji:'❄️', name:'폭설',     desc:'손님이 절반으로! 따뜻한 음료가 잘 팔려요.', duration:3},
-  {id:'rain',    emoji:'🌧️',name:'장마',     desc:'손님이 줄었지만 오래 머물어요!',            duration:2},
-  {id:'heatwave',emoji:'☀️', name:'폭염',     desc:'차가운 음료 주문이 폭발해요!',              duration:2},
-  {id:'festival',emoji:'🎉', name:'동네 축제',desc:'손님이 폭주해요!',                          duration:2},
-  {id:'rush',    emoji:'🔥', name:'손님 폭주',desc:'갑자기 손님이 몰려왔어요!',                 duration:1},
-];
+const SEASON_WEATHER = {
+  spring: ['rain','festival'],
+  summer: ['heatwave','festival','rush'],
+  autumn: ['rain','festival'],
+  winter: ['blizzard','rush'],
+};
 
 function checkWeatherEvent() {
   if (G.weather && G.day > G.weather.endDay) {
@@ -1478,7 +1477,9 @@ function checkWeatherEvent() {
     G.weather=null; resetSpawnTimer(); updateAllBanners(); return;
   }
   if (!G.weather && Math.random()<0.003 && G.stage>=1) {
-    const w=WEATHER_EVENTS[Math.floor(Math.random()*WEATHER_EVENTS.length)];
+    const seasonId = SEASONS[G.seasonIndex].id;
+    const pool = SEASON_WEATHER[seasonId].map(id => WEATHER_EVENTS.find(e=>e.id===id));
+    const w = pool[Math.floor(Math.random()*pool.length)];
     G.weather={id:w.id,emoji:w.emoji,name:w.name,endDay:G.day+w.duration};
     addLog(`${w.emoji} ${w.name} 발생! ${w.desc}`);
     showNotif(`${w.emoji} ${w.name}! ${w.desc}`);
@@ -1607,7 +1608,18 @@ function checkTrend() {
   if (!G.cafeOpen) return;
   if (G.trendSeason===G.seasonIndex) return;
   if ((G.seasonIndex%2!==0)&&G.trendMenu) return;
-  const cands=G.learnedRecipes.filter(k=>RECIPES[k]&&RECIPES[k].stageReq<=G.stage&&!RECIPES[k].isCombo&&!RECIPES[k].isGift&&k!==G.trendMenu);
+  const seasonId = SEASONS[G.seasonIndex].id;
+  let cands = G.learnedRecipes.filter(k =>
+  RECIPES[k] && RECIPES[k].stageReq<=G.stage && !RECIPES[k].isCombo && !RECIPES[k].isGift
+  && k!==G.trendMenu && RECIPES[k].season===null  // 계절 한정 제외
+);
+// 계절 분위기에 맞는 메뉴 가중치 부여
+const seasonHints = {
+  spring: ['strawb','peach','cream'],   // 재료 키워드
+  summer: ['peach','bean','tomato'],
+  autumn: ['mushroom','potato','bean'],
+  winter: ['milk','meat','sugar'],
+};
   if (!cands.length) return;
   G.trendSeason=G.seasonIndex;
   G.trendMenu=cands[Math.floor(Math.random()*cands.length)];
