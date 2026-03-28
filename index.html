@@ -549,8 +549,11 @@ body.theme-luxury .mob-progress-bar{background:linear-gradient(90deg,#b8860b,#FF
       <button class="btn btn-sm" onclick="openShareCard()" style="background:linear-gradient(135deg,#e056fd,#8e44ad);color:white;font-size:11px;" title="내 가게 공유">📸 공유</button>
       <button class="btn btn-secondary btn-sm" id="muteBtn" onclick="toggleMute()">🔊</button>
       <button class="btn btn-secondary btn-sm" onclick="togglePause()">⏸ <span id="pauseLabel">일시정지</span></button>
-       </div>
-      </header>
+      <button class="btn btn-sm" onclick="showHotkeyHelp()" style="background:rgba(107,66,38,0.12);color:var(--soil);font-size:11px;" title="단축키 도움말">⌨️</button>
+    </div>
+    <!-- 수익 스파크라인 (데스크탑 전용) -->
+    <div id="income-sparkline" style="align-items:flex-end;gap:2px;height:32px;display:flex;margin-left:4px;" title="최근 수익 추이"></div>
+  </header>
 
   <div id="game-main">
     <!-- LEFT -->
@@ -604,9 +607,9 @@ body.theme-luxury .mob-progress-bar{background:linear-gradient(90deg,#b8860b,#FF
           <div class="season-bar-bg"><div class="season-bar-fill" id="seasonBar" style="width:0%"></div></div>
           <span id="seasonDay" style="font-size:10px;white-space:nowrap;">Day 1/10</span>
         </div>
-        <div id="farm-grid"></div>
         <!-- 인라인 창고 -->
-        <div id="inventoryInline" style="display:flex;flex-wrap:wrap;gap:6px;padding-top:4px;"></div>
+        <div id="inventoryInline" style="display:flex;flex-wrap:wrap;gap:6px;padding-bottom:6px;"></div>
+        <div id="farm-grid"></div>
         <div style="font-size:11px;color:var(--latte);text-align:center;">빈 밭 클릭 → 씨앗 선택 &nbsp;|&nbsp; 🌟반짝이는 밭 → 즉시 수확!</div>
       </div>
       <div class="panel">
@@ -852,14 +855,7 @@ function openShareCard() {
   const satStars = '🩵'.repeat(satFull) + (satHalf?'💙':'') + '🤍'.repeat(Math.max(0,5-satFull-(satHalf?1:0)));
 
   // 테마별 카드 배경
-  const themeBgs = {
-    theme_cozy:   'linear-gradient(145deg,#3B1A08,#7B4A2A)',
-    theme_modern: 'linear-gradient(145deg,#0d1b2a,#1a3a5c)',
-    theme_nature: 'linear-gradient(145deg,#0a2e1a,#1a5c34)',
-    theme_luxury: 'linear-gradient(145deg,#1a1000,#4a3200)',
-  };
-  const cardBg = themeBgs[interior.theme] || 'linear-gradient(145deg,#2C1A0E,#5C3A1E)';
-  document.getElementById('shareCard').style.background = cardBg;
+  document.getElementById('shareCard').style.background = '#111111';
 
   // 헤더
   document.getElementById('sc-brand-icon').textContent = stage.building;
@@ -2384,40 +2380,112 @@ function checkWeatherEvent() {
 }
 
 // 카페탭 + 모바일 패널 배너 모두 업데이트
-function updateAllBanners() {
+// ══════════════════════════════════════════
+//  배너 통합 렌더링 — 카페탭·메인·관리탭 동일하게
+// ══════════════════════════════════════════
+function syncAllBanners() {
+  if (!G.cafeOpen) return;
+
+  // ── 배너 HTML 생성 (공통) ──
+  function makeBannerHTML(dark) {
+    // dark=true: 모바일 어두운 패널용, false: 카페탭 밝은 패널용
+    const α = dark ? '0.7' : '1';
+    let html = '';
+
+    // 폐업 위기
+    if (G.crisisActive) {
+      html += `<div style="background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;border-radius:10px;padding:8px 12px;font-size:11px;margin-bottom:4px;animation:contestPulse 1.5s infinite;">
+        🚨 <strong>폐업 위기!</strong> 만족도를 2.5 이상으로 올려주세요 <span style="font-size:10px;opacity:0.8;">(${G.crisisDaysLeft}일 남음)</span>
+      </div>`;
+    }
+
+    // 날씨
+    if (G.weather) {
+      html += `<div style="background:linear-gradient(135deg,#2980b9,#1a5276);color:white;border-radius:10px;padding:8px 12px;font-size:11px;margin-bottom:4px;">
+        <span style="font-size:16px;">${G.weather.emoji}</span> <strong>${G.weather.name}</strong> 진행 중
+        <span style="font-size:10px;opacity:0.7;">Day ${G.day} → ${G.weather.endDay}</span>
+      </div>`;
+    }
+
+    // 납품 주문
+    const activeSupply = (G.supplyOrders||[]).filter(o=>!o.done);
+    if (activeSupply.length) {
+      html += `<div style="background:linear-gradient(135deg,#1a5276,#2e86c1);color:white;border-radius:10px;padding:8px 12px;font-size:11px;margin-bottom:4px;">
+        <div style="font-weight:700;margin-bottom:5px;">📦 납품 주문</div>` +
+        activeSupply.map(o => {
+          const have = G.inventory[o.item]||0;
+          const canFill = have >= o.qty;
+          const daysLeft = o.failDay - G.day;
+          return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;background:rgba(255,255,255,0.1);border-radius:7px;padding:4px 7px;">
+            <span style="font-size:16px;">${o.emoji}</span>
+            <div style="flex:1;">
+              <div style="font-weight:600;">${o.name} <span style="font-size:9px;opacity:0.7;">(${daysLeft}일 남음)</span></div>
+              <div style="font-size:9px;opacity:0.8;">${ITEMS[o.item]?.name} ${have}/${o.qty}개 · +${o.reward.toLocaleString()}원 +${o.rep}명성</div>
+            </div>
+            <button onclick="fulfillSupplyOrder('${o.id}')" ${canFill?'':'disabled'}
+              style="background:${canFill?'#27ae60':'rgba(255,255,255,0.2)'};color:white;border:none;border-radius:6px;padding:3px 8px;font-size:10px;cursor:${canFill?'pointer':'not-allowed'};font-family:'Gowun Dodum',sans-serif;font-weight:600;white-space:nowrap;">
+              ${canFill?'납품하기':'재료부족'}
+            </button>
+          </div>`;
+        }).join('') + '</div>';
+    }
+
+    // 퀘스트
+    const activeQ = (G.quests||[]).filter(q=>!q.done);
+    if (activeQ.length) {
+      html += `<div style="background:linear-gradient(135deg,#6c3483,#8e44ad);color:white;border-radius:10px;padding:8px 12px;font-size:11px;margin-bottom:4px;">
+        <div style="font-weight:700;margin-bottom:4px;">🎯 오늘의 퀘스트</div>` +
+        activeQ.map(q => {
+          const pct = Math.min(100, Math.round(q.current/q.goal*100));
+          return `<div style="margin-bottom:3px;">${q.desc} <span style="opacity:0.7;">(${q.current}/${q.goal})</span>
+            <div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:2px;">
+              <div style="height:100%;width:${pct}%;background:#F4C430;border-radius:2px;"></div>
+            </div>
+            <span style="font-size:9px;opacity:0.7;">보상: ${q.rewardDesc}</span>
+          </div>`;
+        }).join('') + '</div>';
+    }
+
+    // 트렌드
+    if (G.trendMenu && RECIPES[G.trendMenu]) {
+      const r = RECIPES[G.trendMenu];
+      html += `<div style="background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;border-radius:10px;padding:7px 12px;font-size:11px;margin-bottom:4px;">
+        🔥 <strong>트렌드</strong>: ${r.emoji} ${r.name} <span style="font-size:10px;opacity:0.8;">(명성 보너스!)</span>
+      </div>`;
+    }
+
+    // 경쟁 가게
+    if (G.rival?.active) {
+      html += `<div style="background:linear-gradient(135deg,#2c3e50,#4a4a4a);color:white;border-radius:10px;padding:7px 12px;font-size:11px;margin-bottom:4px;">
+        🏪 <strong>경쟁 가게 활성</strong> <span style="font-size:10px;opacity:0.7;">(Lv.${G.rival.level} — 손님을 뺏길 수 있어요)</span>
+      </div>`;
+    }
+
+    return html;
+  }
+
+  // ── 카페탭 storyBannerArea ──
   const area = document.getElementById('storyBannerArea');
   if (area) {
-    area.querySelectorAll('.weather-banner,.trend-banner,.rival-banner,.contest-banner,.crisis-banner-el').forEach(el=>el.remove());
-    // 폐업 위기 배너 (최우선)
-    if (G.crisisActive) {
-      const d=document.createElement('div'); d.className='crisis-banner-el';
-      d.style.cssText='background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;border-radius:10px;padding:8px 12px;font-size:12px;margin-bottom:4px;animation:contestPulse 1.5s infinite;';
-      d.innerHTML=`🚨 <strong>폐업 위기!</strong> 만족도를 2.5 이상으로 올려주세요 <span style="font-size:10px;opacity:0.8;">(${G.crisisDaysLeft}일 남음)</span>`;
-      area.prepend(d);
-    }
-    if (G.rival?.active) {
-      const d=document.createElement('div'); d.className='rival-banner';
-      d.style.cssText='background:linear-gradient(135deg,#2c3e50,#4a4a4a);color:white;border-radius:10px;padding:7px 12px;font-size:12px;margin-bottom:4px;';
-      d.innerHTML=`🏪 <strong>경쟁 가게 활성</strong> <span style="font-size:10px;opacity:0.7;">(Lv.${G.rival.level} — 손님을 뺏길 수 있어요)</span>`;
-      area.prepend(d);
-    }
-    if (G.trendMenu && RECIPES[G.trendMenu]) {
-      const r=RECIPES[G.trendMenu];
-      const d=document.createElement('div'); d.className='trend-banner';
-      d.style.cssText='background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;border-radius:10px;padding:7px 12px;font-size:12px;margin-bottom:4px;';
-      d.innerHTML=`🔥 <strong>트렌드</strong>: ${r.emoji} ${r.name} <span style="font-size:10px;opacity:0.8;">(명성 보너스!)</span>`;
-      area.prepend(d);
-    }
-    if (G.weather) {
-      const d=document.createElement('div'); d.className='weather-banner';
-      d.style.cssText='background:linear-gradient(135deg,#2980b9,#1a5276);color:white;border-radius:10px;padding:8px 12px;font-size:12px;margin-bottom:4px;';
-      d.innerHTML=`<span style="font-size:16px;">${G.weather.emoji}</span> <strong>${G.weather.name}</strong> 진행 중 <span style="font-size:10px;opacity:0.7;">Day ${G.day} → ${G.weather.endDay}</span>`;
-      area.prepend(d);
-    }
+    // 대회 배너는 updateContestBanner()가 관리하므로 보존
+    Array.from(area.children)
+      .filter(el => !el.classList.contains('contest-banner'))
+      .forEach(el => el.remove());
+    area.insertAdjacentHTML('afterbegin', makeBannerHTML(false));
   }
-  updateMobEventBanners();
+
+  // ── 모바일 배너 영역 ──
+  ['mob-story-banner-farm', 'mob-story-banner-manage'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = makeBannerHTML(true);
+  });
+
+  // 대회 배너 동기화
   if (typeof updateContestBanner === 'function') updateContestBanner();
-  renderSupplyOrders();
+}
+
+function updateAllBanners() {
+  syncAllBanners();
 }
 
 function updateMobEventBanners() {
@@ -2470,10 +2538,28 @@ const RIVAL_EVENTS = [
       {label:'📣 SNS 홍보로 맞불',    effect(){ G.rival._defBonus=(G.rival._defBonus||0)+0.3; G.reputation+=80;  showNotif('📣 SNS로 맞불 작전! 명성 +80'); addLog('📣 경쟁: SNS 홍보로 대응'); } },
       {label:'⭐ 품질로 정면 승부',    effect(){ G.rival._defBonus=(G.rival._defBonus||0)+0.5; G.satisfaction=Math.min(5,G.satisfaction+0.4); showNotif('⭐ 품질 UP! 만족도 +0.4'); addLog('⭐ 경쟁: 품질로 대응'); } },
     ]},
-  { id:'poach_staff', title:'🤝 경쟁 가게가 직원을 스카우트!', text:'경쟁 가게가 우리 직원에게 스카우트 제의를 했어요. 어떻게 대응할까요?',
+  { id:'poach_staff', title:'🤝 경쟁 가게가 직원을 스카우트!',
+    text:'경쟁 가게가 우리 직원에게 스카우트 제의를 했어요. 어떻게 대응할까요?',
     choices:[
-      {label:'💰 급여 인상 (30,000원)',effect(){ if(G.money>=30000){G.money-=30000; G.rival._staffLost=false; showNotif('💰 급여 인상! 직원 잔류 확정'); addLog('💰 경쟁: 급여 인상으로 직원 방어');}else{showNotif('돈이 부족해요!');} } },
-      {label:'🎓 성장 기회로 설득',    effect(){ if(Math.random()<0.65){G.rival._staffLost=false; showNotif('🎓 직원이 남기로 했어요!'); addLog('🎓 경쟁: 설득 성공');}else{showNotif('😢 설득 실패... 직원이 이직했어요'); addLog('😢 경쟁: 직원 이직'); } } },
+      {label:'💰 급여 인상 (30,000원)', effect(){
+        if(G.money>=30000){
+          G.money-=30000;
+          showNotif('💰 급여 인상! 직원 잔류 확정');
+          addLog('💰 경쟁: 급여 인상으로 직원 방어');
+        } else {
+          showNotif('💰 돈이 부족해요! 직원이 흔들리고 있어요...');
+          // 돈 없으면 35% 확률로 이직
+          if(Math.random()<0.35) _fireRandomStaff('💸 급여 인상 못 해줬더니');
+        }
+      }},
+      {label:'🎓 성장 기회로 설득', effect(){
+        if(Math.random()<0.65){
+          showNotif('🎓 직원이 남기로 했어요!');
+          addLog('🎓 경쟁: 설득 성공');
+        } else {
+          _fireRandomStaff('😢 설득 실패로');
+        }
+      }},
     ]},
   { id:'negative_review', title:'😡 악성 리뷰 공격!', text:'경쟁 가게 팬이 우리 가게에 악성 리뷰를 남겼어요. 명성이 흔들려요!',
     choices:[
@@ -2481,6 +2567,29 @@ const RIVAL_EVENTS = [
       {label:'💬 단골 리뷰로 방어',    effect(){ const regularsCount=Object.values(G.regulars||{}).filter(r=>r.visits>=5).length; const bonus=regularsCount*20; G.reputation+=bonus; showNotif(`🥰 단골 ${regularsCount}명이 응원! +${bonus} 명성`); addLog(`🥰 경쟁: 단골 리뷰 방어 +${bonus}`); } },
     ]},
 ];
+
+// 경쟁 가게 스카우트로 직원 실제 이탈
+function _fireRandomStaff(reason) {
+  const hiredKeys = Object.keys(G.staff || {});
+  if (!hiredKeys.length) {
+    showNotif('😮‍💨 다행히 고용된 직원이 없어서 피해를 면했어요');
+    addLog('😮‍💨 경쟁: 직원 없어서 스카우트 무효');
+    return;
+  }
+  // 가장 레벨 낮은 직원이 먼저 이직
+  const target = hiredKeys.sort((a,b) =>
+    (G.staffLevels?.[a]||1) - (G.staffLevels?.[b]||1)
+  )[0];
+  const s = STAFF_DEFS[target];
+  delete G.staff[target];
+  if (G.staffFatigue) delete G.staffFatigue[target];
+  addLog(`😢 ${reason} ${s.emoji} ${s.name}이(가) 경쟁 가게로 이직했어요!`);
+  showNotif(`😢 ${s.name}이(가) 이직했어요! 다시 고용하세요`);
+  // 자동 서빙 타이머 리셋
+  resetStaffTimer();
+  updateHeader();
+  renderStaff();
+}
 
 function checkRivalSteal() {
   if (!G.rival) G.rival={active:false,level:0,lastStealDay:0,eventCooldown:0,_defBonus:0};
@@ -2677,32 +2786,7 @@ function checkSupplyOrderExpiry() {
 }
 
 function renderSupplyOrders() {
-  const area = document.getElementById('storyBannerArea');
-  if (!area) return;
-  area.querySelectorAll('.supply-panel').forEach(el=>el.remove());
-  const active = (G.supplyOrders||[]).filter(o=>!o.done);
-  if (!active.length) return;
-  const div = document.createElement('div');
-  div.className='supply-panel';
-  div.style.cssText='background:linear-gradient(135deg,#1a5276,#2e86c1);color:white;border-radius:10px;padding:8px 12px;font-size:11px;margin-bottom:4px;';
-  div.innerHTML='<div style="font-weight:700;margin-bottom:5px;">📦 납품 주문</div>'+
-    active.map(o=>{
-      const have=G.inventory[o.item]||0;
-      const canFill=have>=o.qty;
-      const daysLeft=o.failDay-G.day;
-      return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;background:rgba(255,255,255,0.1);border-radius:7px;padding:4px 7px;">
-        <span style="font-size:16px;">${o.emoji}</span>
-        <div style="flex:1;">
-          <div style="font-weight:600;">${o.name} <span style="font-size:9px;opacity:0.7;">(${daysLeft}일 남음)</span></div>
-          <div style="font-size:9px;opacity:0.8;">${ITEMS[o.item]?.name} ${have}/${o.qty}개 · +${o.reward.toLocaleString()}원 +${o.rep}명성</div>
-        </div>
-        <button onclick="fulfillSupplyOrder('${o.id}')" ${canFill?'':'disabled'}
-          style="background:${canFill?'#27ae60':'rgba(255,255,255,0.2)'};color:white;border:none;border-radius:6px;padding:3px 8px;font-size:10px;cursor:${canFill?'pointer':'not-allowed'};font-family:'Gowun Dodum',sans-serif;font-weight:600;white-space:nowrap;">
-          ${canFill?'납품하기':'재료부족'}
-        </button>
-      </div>`;
-    }).join('');
-  area.appendChild(div);
+  syncAllBanners();
 }
 
 // ══════════════════════════════════════════
@@ -2787,9 +2871,9 @@ function _getCrisisBannerHtml() {
 //  🏢 멀티 지점 시스템
 // ══════════════════════════════════════════
 const BRANCH_DEFS = [
-  { id:'branch1', name:'2호점', emoji:'🏠', unlockStage:7, cost:500000,  dailyIncome:100000, dailyRep:10,  desc:'동네에 2호점 오픈! 매일 수익+명성이 들어와요' },
-  { id:'branch2', name:'3호점', emoji:'🏪', unlockStage:8, cost:1000000, dailyIncome:300000, dailyRep:20,  desc:'상권에 3호점 오픈! 더 큰 수익을!' },
-  { id:'branch3', name:'4호점', emoji:'🏢', unlockStage:9, cost:2000000, dailyIncome:600000, dailyRep:40,  desc:'프랜차이즈 4호점! 전국 진출 완성!' },
+  { id:'branch1', name:'2호점', emoji:'🏠', unlockStage:7, cost:500000,  dailyIncome:15000, dailyRep:10,  desc:'동네에 2호점 오픈! 매일 수익+명성이 들어와요' },
+  { id:'branch2', name:'3호점', emoji:'🏪', unlockStage:8, cost:1000000, dailyIncome:30000, dailyRep:20,  desc:'상권에 3호점 오픈! 더 큰 수익을!' },
+  { id:'branch3', name:'4호점', emoji:'🏢', unlockStage:9, cost:2000000, dailyIncome:60000, dailyRep:40,  desc:'프랜차이즈 4호점! 전국 진출 완성!' },
 ];
 
 function openBranch(branchId) {
@@ -2972,21 +3056,7 @@ function checkDailyQuest() {
 function checkQuests() { if (G.quests?.length) renderQuestPanel(); }
 
 function renderQuestPanel() {
-  const area=document.getElementById('storyBannerArea');
-  if (area) {
-    area.querySelectorAll('.quest-panel').forEach(el=>el.remove());
-    const active=(G.quests||[]).filter(q=>!q.done);
-    if (active.length) {
-      const div=document.createElement('div'); div.className='quest-panel';
-      div.style.cssText='background:linear-gradient(135deg,#6c3483,#8e44ad);color:white;border-radius:10px;padding:8px 12px;font-size:11px;margin-bottom:4px;';
-      div.innerHTML='<div style="font-weight:700;margin-bottom:4px;">🎯 오늘의 퀘스트</div>'+active.map(q=>{
-        const pct=Math.min(100,Math.round(q.current/q.goal*100));
-        return`<div style="margin-bottom:3px;">${q.desc} <span style="opacity:0.7;">(${q.current}/${q.goal})</span><div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:2px;"><div style="height:100%;width:${pct}%;background:#F4C430;border-radius:2px;"></div></div><span style="font-size:9px;opacity:0.7;">보상: ${q.rewardDesc}</span></div>`;
-      }).join('');
-      area.appendChild(div);
-    }
-  }
-  updateMobEventBanners();
+  syncAllBanners();
 }
 
 // ══════════════════════════════════════════
@@ -5992,7 +6062,7 @@ setInterval(function() {
     el = document.getElementById(ids.listId);     if (el) el.innerHTML = custHTML;
     el = document.getElementById(ids.satStarsId); if (el) el.textContent = satStars;
     el = document.getElementById(ids.satValId);   if (el) el.textContent = sat.toFixed(1);
-    el = document.getElementById(ids.bannerAreaId); if (el) el.innerHTML = makeMobBannerHTML();
+    el = document.getElementById(ids.bannerAreaId); // syncAllBanners()가 채워줌
 
     // 모두서빙 버튼
     var btns = panel.querySelectorAll('.serve-all-btn');
@@ -6003,16 +6073,15 @@ setInterval(function() {
   });
 
   if (G.cafeOpen) renderMobIllustration();
-  updateMobEventBanners(); // 기존 mob-event-banner-* 도 동기화 유지
+  syncAllBanners();
 }, 1000);
 </script>
 
 <!-- 공유 카드 모달 -->
 <div id="shareModal" class="modal-overlay">
   <div class="modal" style="max-width:420px;padding:0;overflow:hidden;border-radius:20px;">
-    <div id="shareCard" style="background:linear-gradient(145deg,#2C1A0E,#5C3A1E);padding:28px 24px;position:relative;overflow:hidden;">
-      <!-- 배경 장식 -->
-      <div style="position:absolute;inset:0;opacity:0.07;font-size:120px;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden;">🏪</div>
+    <div id="shareCard" style="background:#111111;padding:28px 24px;position:relative;overflow:hidden;">
+
       <!-- 헤더 -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
         <div id="sc-brand-icon" style="font-size:36px;"></div>
