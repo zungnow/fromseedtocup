@@ -5043,7 +5043,16 @@ function updateContestBanner() {
     if (el) area.prepend(el);
   }
 
-  // ② 메인탭 모바일 이벤트 배너
+  // ② 모바일 메인/관리탭 손님 패널 배너 (mob-story-banner-*)
+  ['mob-story-banner-farm','mob-story-banner-manage'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.querySelectorAll('.contest-banner').forEach(e => e.remove());
+    const cb = makeContestBannerEl();
+    if (cb) { cb.style.marginBottom='4px'; el.prepend(cb); }
+  });
+
+  // ③ 메인탭 모바일 이벤트 배너 (기존 mob-event-banner-*)
   const farmBanner = document.getElementById('mob-event-banner-farm');
   if (farmBanner) {
     farmBanner.querySelectorAll('.contest-banner').forEach(el => el.remove());
@@ -5051,7 +5060,7 @@ function updateContestBanner() {
     if (el) { el.style.marginBottom = '5px'; farmBanner.prepend(el); }
   }
 
-  // ③ 관리탭 모바일 이벤트 배너
+  // ④ 관리탭 모바일 이벤트 배너
   const manageBanner = document.getElementById('mob-event-banner-manage');
   if (manageBanner) {
     manageBanner.querySelectorAll('.contest-banner').forEach(el => el.remove());
@@ -5059,7 +5068,7 @@ function updateContestBanner() {
     if (el) { el.style.marginBottom = '5px'; manageBanner.prepend(el); }
   }
 
-  // ④ 데스크탑 메인탭(좌측) 알림 패널
+  // ⑤ 데스크탑 메인탭(좌측) 알림 패널
   const logPanel = document.getElementById('contest-banner-farm-desktop');
   if (logPanel) {
     logPanel.querySelectorAll('.contest-banner').forEach(el => el.remove());
@@ -5067,7 +5076,7 @@ function updateContestBanner() {
     if (el) logPanel.prepend(el);
   }
 
-  // ⑤ 데스크탑 관리탭(우측) 패널
+  // ⑥ 데스크탑 관리탭(우측) 패널
   const managePanel = document.getElementById('contest-banner-manage-desktop');
   if (managePanel) {
     managePanel.querySelectorAll('.contest-banner').forEach(el => el.remove());
@@ -5975,14 +5984,17 @@ setInterval(function() {
       var pc = c.patience > 60 ? '#5A8A3C' : c.patience > 30 ? '#F4C430' : '#e74c3c';
       var td = SPECIAL_TYPES[c.type];
       var tag = td ? '<span style="font-size:9px;background:rgba(255,255,255,0.15);color:white;padding:1px 5px;border-radius:5px;margin-left:3px;">' + td.label + '</span>' : '';
-      // 단골 선호 메뉴 배지
+      // 단골 배지
       var reg = G.regulars && G.regulars[c.name];
+      var regVisits = reg ? (reg.visits||0) : 0;
+      var regBadge = regVisits >= 5 ? '<span style="font-size:9px;background:rgba(233,30,140,0.2);color:#e91e8c;padding:1px 4px;border-radius:4px;margin-left:2px;">🥰단골'+regVisits+'회</span>' : '';
+      // 선호 메뉴 배지
       var favMenu = reg && reg.favMenu && reg.visits >= 5 && RECIPES[reg.favMenu];
-      var favTag = (favMenu && reg.favMenu === c.order) ? '<span style="font-size:9px;background:rgba(212,160,23,0.3);color:#F4C430;padding:1px 4px;border-radius:4px;margin-left:2px;">' + favMenu.emoji + '단골</span>' : '';
+      var favBadge = (favMenu && reg.favMenu === c.order) ? '<span style="font-size:9px;background:rgba(212,160,23,0.2);color:#D4A017;padding:1px 4px;border-radius:4px;margin-left:2px;">' + favMenu.emoji + '단골</span>' : '';
       return '<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:8px;padding:6px 9px;margin-bottom:4px;">' +
         '<span style="font-size:20px;">' + c.emoji + '</span>' +
         '<div style="flex:1;min-width:0;">' +
-          '<div style="font-size:11px;font-weight:600;color:white;">' + c.name + tag + favTag + '</div>' +
+          '<div style="font-size:11px;font-weight:600;color:white;">' + c.name + tag + regBadge + favBadge + '</div>' +
           '<div style="font-size:10px;color:rgba(255,248,240,0.6);">' + (recipe.emoji||'') + ' ' + (recipe.name||'') + '</div>' +
           '<div style="height:3px;background:rgba(255,255,255,0.15);border-radius:2px;margin-top:3px;">' +
             '<div style="height:100%;width:' + c.patience + '%;background:' + pc + ';border-radius:2px;transition:width 0.8s;"></div>' +
