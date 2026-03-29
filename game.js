@@ -1081,11 +1081,13 @@ function showCropEncyclo() {
 
   // 단계별 그룹
   const groups = [
-    {label:'🌱 기본 작물', keys:['wheat','sugar_c','milk_c','strawb','peach','bean']},
-    {label:'🥚 2단계~', keys:['egg_c']},
-    {label:'🥔 4단계~', keys:['potato_c','tomato_c','mushroom_c']},
-    {label:'🥩 6단계~', keys:['meat_c','basil_c']},
-    {label:'⚫ 8단계~', keys:['truffle_c','cream_c']},
+    {label:'🌱 기본 작물 (0단계~)', keys:['wheat','sugar_c','egg_c']},
+    {label:'🥛 2단계~', keys:['milk_c','strawb','bean']},
+    {label:'🌶️ 3단계~', keys:['tomato_c','mushroom_c','meat_c']},
+    {label:'🍑 4단계~', keys:['peach']},
+    {label:'🍶 5단계~', keys:['cream_c']},
+    {label:'🥔 6단계~', keys:['potato_c','basil_c']},
+    {label:'⚫ 8단계~', keys:['truffle_c']},
   ];
 
   let html = `<div style="font-size:11px;color:var(--latte);margin-bottom:10px;">${season.emoji} ${season.name} — 추천 작물에 ✨ 표시</div>`;
