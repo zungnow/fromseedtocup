@@ -1,0 +1,465 @@
+:root{
+  --soil:#6B4226;--grass:#5A8A3C;--sun:#F4C430;
+  --cream:#FFF8F0;--latte:#C8956C;--espresso:#3B1F0F;
+  --gold:#D4A017;--text:#2C1A0E;
+  --panel:rgba(255,248,240,0.96);
+  --shadow:0 4px 20px rgba(59,31,15,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Gowun Dodum',sans-serif;color:var(--text);min-height:100vh;overflow-x:hidden;transition:background 3s ease;}
+#app{display:grid;grid-template-rows:auto 1fr;min-height:100vh;max-width:1400px;margin:0 auto;padding:10px;gap:8px;}
+
+/* HEADER */
+header{background:var(--panel);border-radius:16px;padding:10px 18px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);border:2px solid rgba(212,160,23,0.25);flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:8px;flex:1;min-width:160px;}
+.brand-icon{font-size:26px;}
+.brand-name{font-family:'Nanum Myeongjo',serif;font-size:20px;font-weight:800;color:var(--espresso);}
+.brand-sub{font-size:10px;color:var(--latte);}
+#season-badge{font-family:'Jua',sans-serif;font-size:12px;padding:5px 12px;border-radius:20px;white-space:nowrap;border:1.5px solid;transition:all 1s;}
+.stage-badge{background:linear-gradient(135deg,var(--gold),var(--sun));color:var(--espresso);font-family:'Jua',sans-serif;font-size:12px;padding:5px 12px;border-radius:20px;white-space:nowrap;}
+.stats-bar{display:flex;gap:12px;align-items:center;}
+.stat{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--espresso);}
+#game-time{font-family:'Jua',sans-serif;font-size:12px;color:var(--soil);background:rgba(107,66,38,0.1);padding:3px 9px;border-radius:8px;}
+.header-btns{display:flex;gap:7px;}
+
+/* BUTTONS */
+.btn{cursor:pointer;border:none;border-radius:10px;font-family:'Gowun Dodum',sans-serif;font-size:13px;font-weight:600;padding:7px 13px;transition:all 0.15s;display:flex;align-items:center;gap:4px;}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.06);}
+.btn:active{transform:none;}
+.btn-primary{background:var(--espresso);color:var(--cream);}
+.btn-secondary{background:var(--latte);color:white;}
+.btn-green{background:var(--grass);color:white;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--sun));color:var(--espresso);}
+.btn-purple{background:#8e44ad;color:white;}
+.btn-blue{background:#2980b9;color:white;}
+.btn-sm{padding:4px 9px;font-size:11px;border-radius:7px;}
+.btn-danger{background:#c0392b;color:white;}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+
+/* MAIN GRID */
+#game-main{display:grid;grid-template-columns:290px 1fr 285px;gap:8px;align-items:start;}
+.panel{background:var(--panel);border-radius:14px;padding:13px;box-shadow:var(--shadow);border:1.5px solid rgba(200,149,108,0.18);display:flex;flex-direction:column;gap:9px;}
+.panel-title{font-family:'Nanum Myeongjo',serif;font-size:14px;font-weight:700;color:var(--espresso);padding-bottom:7px;border-bottom:2px dashed rgba(200,149,108,0.28);display:flex;align-items:center;gap:5px;}
+
+/* SEASON STRIP */
+.season-strip{background:rgba(107,66,38,0.06);border-radius:8px;padding:6px 10px;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--soil);}
+.season-bar-bg{flex:1;height:5px;background:rgba(107,66,38,0.15);border-radius:3px;overflow:hidden;}
+.season-bar-fill{height:100%;border-radius:3px;transition:width 1s;}
+
+/* FARM */
+#farm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.plot{aspect-ratio:1;border-radius:9px;border:2px solid rgba(107,66,38,0.4);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;transition:all 0.15s;position:relative;overflow:hidden;user-select:none;}
+.plot:hover{transform:scale(1.06);border-color:var(--gold);}
+.plot.empty{background:linear-gradient(145deg,#A0785A,#8B6340);}
+.plot.growing{background:linear-gradient(145deg,#7FA66A,#5A8A3C);border-color:var(--grass);}
+.plot.ready{background:linear-gradient(145deg,#5A8A3C,#3D6B28);border-color:var(--sun);animation:pulse-plot 1.2s infinite;}
+.plot.staff-tending{border-color:#2980b9;box-shadow:0 0 8px rgba(41,128,185,0.4);}
+@keyframes pulse-plot{0%,100%{box-shadow:0 0 6px rgba(244,196,48,0.3)}50%{box-shadow:0 0 14px rgba(244,196,48,0.7)}}
+.plot-label{font-size:9px;color:rgba(255,255,255,0.85);margin-top:1px;}
+.plot-bar{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(255,255,255,0.15);}
+.plot-bar-fill{height:100%;background:var(--sun);transition:width 0.5s;}
+
+/* INVENTORY */
+.inv-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;}
+.inv-item{background:rgba(107,66,38,0.07);border-radius:7px;padding:6px 8px;display:flex;align-items:center;gap:5px;font-size:12px;}
+.inv-icon{font-size:16px;}.inv-name{flex:1;}.inv-qty{font-weight:700;background:rgba(244,196,48,0.2);padding:1px 5px;border-radius:5px;}
+.inv-qty.low{background:rgba(231,76,60,0.2);color:#c0392b;}
+
+/* CAFE LOCKED */
+#cafe-locked{background:var(--panel);border-radius:14px;padding:30px 20px;box-shadow:var(--shadow);border:1.5px solid rgba(200,149,108,0.18);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;}
+#cafe-locked .lock-icon{font-size:52px;}
+#cafe-locked h3{font-family:'Jua',sans-serif;font-size:18px;color:var(--espresso);}
+#cafe-locked p{font-size:12px;color:var(--latte);line-height:1.7;}
+#open-cafe-btn{background:linear-gradient(135deg,var(--espresso),#5C3A1E);color:var(--cream);border:2px solid var(--gold);border-radius:12px;padding:12px 24px;font-family:'Jua',sans-serif;font-size:16px;cursor:pointer;transition:all 0.2s;animation:glow 2s infinite;display:none;}
+#open-cafe-btn:hover{transform:scale(1.04);}
+@keyframes glow{0%,100%{box-shadow:0 4px 16px rgba(212,160,23,0.3)}50%{box-shadow:0 4px 24px rgba(212,160,23,0.6)}}
+
+/* CAFE OPEN */
+#cafe-open{background:var(--panel);border-radius:14px;box-shadow:var(--shadow);border:1.5px solid rgba(200,149,108,0.18);display:none;flex-direction:column;overflow:hidden;}
+.cafe-topbar{background:linear-gradient(135deg,var(--espresso),#5C3A1E);padding:11px 16px;display:flex;align-items:center;gap:10px;}
+.cafe-topbar-title{font-family:'Jua',sans-serif;font-size:15px;color:#FFF8F0;flex:1;}
+.cafe-topbar-desc{font-size:10px;color:rgba(255,248,240,0.6);margin-top:1px;}
+.sat-display{display:flex;align-items:center;gap:5px;}
+.sat-stars{font-size:14px;letter-spacing:1px;}.sat-val{font-family:'Jua',sans-serif;font-size:15px;color:var(--gold);}
+.cafe-body{padding:12px;display:flex;flex-direction:column;gap:11px;}
+.prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--soil);margin-bottom:3px;}
+.prog-bg{height:9px;background:rgba(107,66,38,0.13);border-radius:5px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--grass),var(--sun));border-radius:5px;transition:width 0.6s ease;}
+
+/* INVENTORY — 인라인 칩 형태 */
+.inv-chip{display:flex;align-items:center;gap:3px;background:rgba(107,66,38,0.09);border-radius:20px;padding:3px 8px;font-size:12px;}
+.inv-chip-icon{font-size:14px;}
+.inv-chip-qty{font-weight:700;color:var(--espresso);}
+.inv-chip-qty.low{color:#c0392b;}
+
+/* MENU CARD — 레시피 통합형 */
+.menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.menu-card{background:rgba(200,149,108,0.1);border:1.5px solid rgba(200,149,108,0.22);border-radius:10px;padding:9px 8px;text-align:center;cursor:default;transition:all 0.15s;}
+.menu-card.unlocked{border-color:rgba(212,160,23,0.4);}
+.menu-card.can-learn{border-color:var(--grass);cursor:pointer;background:rgba(90,138,60,0.07);}
+.menu-card.can-learn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(90,138,60,0.2);}
+.menu-card.locked{opacity:0.4;filter:grayscale(0.4);}
+.menu-card.seasonal{border-color:#5dade2;background:rgba(93,173,226,0.1);}
+.menu-icon{font-size:22px;}
+.menu-name{font-size:11px;font-weight:700;margin-top:2px;line-height:1.3;}
+.menu-price{font-size:10px;color:var(--grass);}
+.menu-ingr{font-size:9px;color:var(--latte);margin-top:2px;line-height:1.4;}
+.menu-action{font-size:10px;margin-top:4px;}
+.menu-learn-btn{background:var(--grass);color:white;border:none;border-radius:6px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-weight:600;}
+.menu-learn-btn:hover{filter:brightness(1.1);}
+
+/* CUSTOMERS */
+.cust-card{display:flex;align-items:center;gap:7px;border-radius:8px;padding:7px 9px;font-size:12px;margin-bottom:5px;background:rgba(107,66,38,0.07);}
+.cust-card.vip{background:rgba(155,89,182,0.1);border:1.5px solid rgba(155,89,182,0.3);}
+.cust-card.fussy{background:rgba(231,76,60,0.07);border:1.5px solid rgba(231,76,60,0.25);}
+.cust-card.blogger{background:rgba(52,152,219,0.08);border:1.5px solid rgba(52,152,219,0.25);}
+.cust-card.regular{background:rgba(90,138,60,0.08);border:1.5px solid rgba(90,138,60,0.25);}
+.cust-avatar{font-size:20px;flex-shrink:0;}.cust-info{flex:1;min-width:0;}.cust-name{font-weight:600;font-size:12px;display:flex;align-items:center;gap:4px;}.cust-order{color:var(--latte);font-size:10px;}
+.cust-tag{font-size:9px;padding:1px 4px;border-radius:4px;}
+.ctag-vip{background:rgba(155,89,182,0.2);color:#8e44ad;}
+.ctag-fussy{background:rgba(231,76,60,0.2);color:#c0392b;}
+.ctag-blogger{background:rgba(52,152,219,0.2);color:#2980b9;}
+.ctag-regular{background:rgba(90,138,60,0.2);color:var(--grass);}
+.cust-pat-bg{height:3px;background:rgba(107,66,38,0.15);border-radius:2px;margin-top:3px;}
+.cust-pat-fill{height:100%;border-radius:2px;transition:width 0.8s linear,background 0.8s;}
+.cust-empty{text-align:center;color:var(--latte);font-size:12px;padding:14px 0;}
+
+/* RIGHT PANEL TABS */
+.tab-bar{display:flex;gap:3px;}
+.tab-btn{flex:1;padding:5px 2px;font-size:11px;font-family:'Gowun Dodum',sans-serif;border:none;border-radius:7px;cursor:pointer;background:rgba(107,66,38,0.08);color:var(--soil);font-weight:600;transition:all 0.15s;}
+.tab-btn.active{background:var(--espresso);color:var(--cream);}
+.tab-pane{display:none;flex-direction:column;gap:5px;}.tab-pane.active{display:flex;}
+
+/* RECIPE ROWS */
+.recipe-row{background:rgba(107,66,38,0.07);border-radius:8px;padding:7px 9px;font-size:12px;cursor:pointer;transition:all 0.15s;border:1.5px solid transparent;}
+.recipe-row:hover:not(.r-locked):not(.r-learned){border-color:var(--latte);background:rgba(200,149,108,0.12);}
+.recipe-row.r-locked{opacity:0.38;cursor:not-allowed;}.recipe-row.r-learned{cursor:default;}
+.recipe-row.r-seasonal{border-color:#5dade2;}
+.rr-head{display:flex;align-items:center;gap:5px;}
+.rr-icon{font-size:18px;}.rr-name{font-weight:700;flex:1;}
+.rr-tag{font-size:10px;padding:1px 5px;border-radius:5px;}
+.t-learned{background:rgba(90,138,60,0.2);color:var(--grass);}
+.t-buy{background:rgba(212,160,23,0.2);color:#8B6A00;}
+.t-lock{background:rgba(107,66,38,0.15);color:var(--soil);}
+.t-seasonal{background:rgba(93,173,226,0.2);color:#2471a3;}
+.rr-ingr{font-size:10px;color:var(--latte);margin-top:2px;}
+
+/* UPGRADES */
+.upg-row{display:flex;align-items:center;gap:7px;background:rgba(107,66,38,0.07);border-radius:8px;padding:7px 9px;font-size:12px;}
+.upg-info{flex:1;}.upg-name{font-weight:700;font-size:12px;}.upg-desc{font-size:10px;color:var(--latte);}
+
+/* STAFF */
+.staff-row{background:rgba(107,66,38,0.07);border-radius:8px;padding:8px 10px;font-size:12px;border:1.5px solid transparent;}
+.staff-row.hired{border-color:rgba(90,138,60,0.3);background:rgba(90,138,60,0.06);}
+.staff-head{display:flex;align-items:center;gap:6px;}
+.staff-icon{font-size:20px;}.staff-name{font-weight:700;flex:1;}
+.staff-desc{font-size:10px;color:var(--latte);margin-top:2px;}
+.staff-status{font-size:10px;color:var(--grass);}
+
+/* REVIEWS */
+.review-list{display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto;}
+.review-row{background:rgba(107,66,38,0.06);border-radius:7px;padding:6px 9px;font-size:11px;border-left:3px solid var(--sun);}
+.review-row.rv-special{border-left-color:#9b59b6;}
+.rv-stars{font-size:11px;}.rv-text{margin-top:1px;}.rv-name{color:var(--latte);font-size:10px;margin-top:1px;}
+
+/* STORY EVENT BANNER */
+.story-banner{background:linear-gradient(135deg,#2c3e50,#3d566e);color:white;border-radius:10px;padding:10px 14px;font-size:12px;line-height:1.6;animation:slideInBanner 0.4s ease;}
+@keyframes slideInBanner{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.story-banner-title{font-family:'Jua',sans-serif;font-size:14px;color:#f39c12;margin-bottom:4px;}
+.story-banner-btns{display:flex;gap:6px;margin-top:8px;}
+
+/* FOOTER LOG — single column */
+.log-entry{font-size:11px;color:var(--soil);line-height:1.4;}
+.log-entry.log-old{opacity:0.5;}
+.log-entry.log-review{background:rgba(41,128,185,0.07);border-left:2px solid #2980b9;border-radius:4px;padding:4px 6px;display:flex;flex-wrap:wrap;align-items:center;gap:3px;}
+.log-entry.log-review.log-old{opacity:0.45;}
+.log-rv-badge{font-size:12px;flex-shrink:0;}
+.log-rv-stars{font-size:10px;flex-shrink:0;}
+.log-rv-text{font-size:11px;color:var(--espresso);font-style:italic;flex:1;min-width:0;}
+.log-rv-name{font-size:10px;color:var(--latte);flex-shrink:0;white-space:nowrap;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:1100;background:rgba(59,31,15,0.65);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity 0.25s;padding-bottom:env(safe-area-inset-bottom);}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:var(--cream);border-radius:18px;padding:24px;width:90%;max-width:560px;max-height:calc(100vh - 80px);overflow-y:auto;box-shadow:0 16px 50px rgba(59,31,15,0.28);border:2px solid rgba(200,149,108,0.25);transform:scale(0.92) translateY(14px);transition:transform 0.25s;}
+.modal-overlay.show .modal{transform:scale(1) translateY(0);}
+.modal-title{font-family:'Nanum Myeongjo',serif;font-size:18px;font-weight:800;color:var(--espresso);text-align:center;margin-bottom:14px;}
+.modal-body{margin-bottom:16px;}.modal-btns{display:flex;gap:8px;justify-content:center;}
+.input-field{width:100%;padding:9px 12px;border:2px solid rgba(200,149,108,0.3);border-radius:9px;font-size:15px;font-family:'Gowun Dodum',sans-serif;background:white;color:var(--text);outline:none;transition:border-color 0.2s;}
+.input-field:focus{border-color:var(--latte);}
+
+/* SEED PICKER */
+.seed-picker{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;}
+.seed-row{display:flex;align-items:center;gap:8px;background:rgba(107,66,38,0.07);border-radius:7px;padding:7px 10px;font-size:12px;}
+.seed-row-info{flex:1;}.seed-row-name{font-weight:600;}.seed-row-detail{font-size:10px;color:var(--latte);}
+
+/* NOTIF */
+.notif{position:fixed;right:16px;z-index:200;background:var(--espresso);color:var(--cream);padding:9px 14px;border-radius:10px;font-size:13px;font-family:'Gowun Dodum',sans-serif;box-shadow:0 4px 18px rgba(59,31,15,0.35);animation:nIn 0.25s ease,nOut 0.25s ease 2.3s forwards;max-width:280px;transition:top 0.2s ease;}
+@keyframes nIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes nOut{to{opacity:0;transform:translateX(20px)}}
+
+/* STAGE ANNOUNCE */
+.stage-announce{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;background:rgba(59,31,15,0.75);padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom));}
+
+/* ── 파티클 / 컨페티 ── */
+.confetti-piece{position:fixed;width:10px;height:10px;border-radius:2px;pointer-events:none;z-index:1300;animation:confettiFall linear forwards;}
+@keyframes confettiFall{0%{opacity:1;transform:translateY(-10px) rotate(0deg);}100%{opacity:0;transform:translateY(100vh) rotate(720deg);}}
+.star-burst{position:fixed;pointer-events:none;z-index:1300;font-size:28px;animation:starPop 0.8s cubic-bezier(.34,1.56,.64,1) forwards;}
+@keyframes starPop{0%{opacity:0;transform:scale(0) rotate(-30deg);}60%{opacity:1;transform:scale(1.4) rotate(10deg);}100%{opacity:0;transform:scale(0.8) rotate(0deg) translateY(-60px);}}
+
+/* ── 레벨업 박스 강화 ── */
+.sa-box{background:linear-gradient(135deg,var(--espresso),#5C3A1E);color:var(--cream);border-radius:22px;padding:36px 56px;text-align:center;display:flex;flex-direction:column;align-items:center;border:3px solid var(--gold);box-shadow:0 0 50px rgba(212,160,23,0.4);animation:saIn 0.4s cubic-bezier(.34,1.56,.64,1);}
+.sa-box.sa-final{background:linear-gradient(135deg,#1a0533,#6c1a8a);border-color:#e056fd;box-shadow:0 0 80px rgba(224,86,253,0.6);}
+.sa-box.sa-contest-win{background:linear-gradient(135deg,#0d2137,#1a6b3a);border-color:#FFD700;box-shadow:0 0 80px rgba(255,215,0,0.5);}
+@keyframes saIn{from{transform:scale(0.6)}to{transform:scale(1)}}
+.sa-emoji{font-size:64px;}
+.sa-title{font-family:'Jua',sans-serif;font-size:28px;color:var(--gold);margin:8px 0 4px;}
+.sa-sub{font-size:14px;opacity:0.8;}
+
+/* ── 레벨업 번쩍임 ── */
+.level-flash{position:fixed;inset:0;z-index:1250;pointer-events:none;animation:flashIn 0.5s ease forwards;}
+@keyframes flashIn{0%{background:rgba(255,215,0,0);} 20%{background:rgba(255,215,0,0.25);}100%{background:rgba(255,215,0,0);}}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(200,149,108,0.4);border-radius:3px}
+
+/* ── 출석 보너스 룰렛 ── */
+.roulette-wrap{position:relative;overflow:hidden;border-radius:12px;border:2px solid rgba(212,160,23,0.3);background:rgba(107,66,38,0.04);}
+.roulette-track{display:flex;gap:0;padding:10px 0;will-change:transform;}
+.roulette-item{width:80px;min-width:80px;max-width:80px;height:84px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:2px solid rgba(200,149,108,0.2);background:rgba(107,66,38,0.06);flex-shrink:0;box-sizing:border-box;margin:0 4px;}
+.roulette-item.highlight{border-color:var(--gold);background:rgba(212,160,23,0.15);}
+.roulette-item.winner{border-color:var(--gold);background:linear-gradient(135deg,rgba(212,160,23,0.2),rgba(244,196,48,0.15));box-shadow:0 0 16px rgba(212,160,23,0.5);animation:winnerPop 0.5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes winnerPop{0%{transform:scale(0.85)}60%{transform:scale(1.15)}100%{transform:scale(1.08)}}
+.roulette-emoji{font-size:26px;line-height:1;}
+.roulette-label{font-size:10px;font-weight:700;color:var(--espresso);white-space:nowrap;}
+.roulette-value{font-size:10px;color:var(--gold);font-weight:700;white-space:nowrap;}
+.streak-badge{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#e67e22,#f39c12);color:white;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;margin-bottom:10px;}
+
+/* ── 출석 버튼 글로우 (미수령 시) ── */
+@keyframes bonusGlow{0%,100%{box-shadow:0 0 0 0 rgba(230,126,34,0)}50%{box-shadow:0 0 8px 3px rgba(230,126,34,0.5)}}
+#dailyBonusBtn.available{animation:bonusGlow 1.8s infinite;}
+#income-sparkline{display:flex;align-items:flex-end;gap:2px;height:32px;padding:0 2px;}
+.spark-bar{width:8px;border-radius:2px 2px 0 0;background:linear-gradient(var(--grass),var(--sun));min-height:3px;transition:height 0.3s;}
+
+/* ── 핫키 툴팁 ── */
+.hotkey-badge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:rgba(59,31,15,0.12);border:1px solid rgba(59,31,15,0.2);border-radius:4px;font-size:9px;font-family:monospace;color:var(--soil);margin-left:3px;vertical-align:middle;}
+
+/* ── 재료 부족 경고 펄스 ── */
+@keyframes warn-pulse{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,0)}50%{box-shadow:0 0 0 4px rgba(231,76,60,0.4)}}
+.inv-chip.warn{animation:warn-pulse 1.5s infinite;}
+
+/* ── 손님 대기 시간 표시 개선 ── */
+.patience-text{font-size:9px;font-weight:700;text-align:right;margin-top:1px;}
+
+/* ── 달성 알림 배너 ── */
+.achieve-toast{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--sun));color:var(--espresso);border-radius:12px;padding:10px 20px;font-size:13px;font-family:'Jua',sans-serif;box-shadow:0 4px 20px rgba(212,160,23,0.4);z-index:250;animation:achieveIn 0.4s cubic-bezier(.34,1.56,.64,1),achieveOut 0.3s ease 3.5s forwards;white-space:nowrap;}
+@media(min-width:769px){.achieve-toast{bottom:24px;}}
+@keyframes achieveIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes achieveOut{to{opacity:0;transform:translateX(-50%) translateY(20px)}}
+
+/* ── 업그레이드 미리보기 ── */
+.upg-preview{font-size:10px;color:var(--grass);margin-top:3px;padding:3px 6px;background:rgba(90,138,60,0.1);border-radius:5px;border-left:2px solid var(--grass);}
+
+/* ── 날씨 이펙트 오버레이 ── */
+#weather-overlay{position:fixed;inset:0;pointer-events:none;z-index:10;overflow:hidden;}
+.snowflake,.raindrop{position:absolute;top:-20px;animation:fall linear infinite;pointer-events:none;font-size:12px;opacity:0.5;}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:0;}}
+
+/* ── 빠른 심기 버튼 강조 ── */
+.quick-plant-glow{animation:qpGlow 2s infinite;}
+@keyframes qpGlow{0%,100%{box-shadow:0 0 0 0 rgba(90,138,60,0)}50%{box-shadow:0 0 6px 2px rgba(90,138,60,0.4)}}
+
+/* ── 수익 플로팅 텍스트 ── */
+@keyframes floatUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-50px)}}
+.float-money{position:fixed;font-size:14px;font-weight:700;color:var(--gold);z-index:500;pointer-events:none;animation:floatUp 1.2s ease-out forwards;text-shadow:0 1px 3px rgba(0,0,0,0.2);}
+
+/* ── 튜토리얼 하이라이트 ── */
+.tut-overlay{position:fixed;inset:0;z-index:400;pointer-events:none;}
+.tut-highlight{position:fixed;border-radius:14px;box-shadow:0 0 0 4000px rgba(0,0,0,0.55);z-index:401;pointer-events:none;transition:all 0.4s cubic-bezier(.4,0,.2,1);}
+.tut-tooltip{position:fixed;z-index:402;background:var(--espresso);color:var(--cream);border-radius:14px;padding:14px 16px;max-width:260px;font-size:13px;line-height:1.6;box-shadow:0 8px 30px rgba(0,0,0,0.4);border:2px solid var(--gold);animation:tut-pop 0.3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes tut-pop{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}
+.tut-tooltip-title{font-family:'Jua',sans-serif;font-size:15px;color:var(--gold);margin-bottom:6px;}
+.tut-tooltip-step{font-size:10px;opacity:0.55;margin-bottom:5px;}
+.tut-arrow{width:12px;height:12px;background:var(--espresso);transform:rotate(45deg);position:absolute;border-left:2px solid var(--gold);border-bottom:2px solid var(--gold);}
+.tut-arrow.up{top:-7px;left:50%;transform:translateX(-50%) rotate(135deg);border-left:none;border-bottom:none;border-top:2px solid var(--gold);border-right:2px solid var(--gold);}
+.tut-btn-row{display:flex;gap:8px;margin-top:10px;}
+.tut-btn{background:var(--gold);color:var(--espresso);border:none;border-radius:8px;padding:6px 14px;font-family:'Jua',sans-serif;font-size:12px;cursor:pointer;flex:1;}
+.tut-btn-skip{background:transparent;color:rgba(255,248,240,0.5);border:1px solid rgba(255,248,240,0.2);border-radius:8px;padding:6px 10px;font-family:'Gowun Dodum',sans-serif;font-size:11px;cursor:pointer;}
+
+/* ── 가게 꾸미기 테마 ── */
+.deco-item{background:rgba(107,66,38,0.06);border:1.5px solid rgba(200,149,108,0.2);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:12px;transition:all 0.15s;}
+.deco-item.owned{border-color:rgba(212,160,23,0.5);background:rgba(212,160,23,0.08);}
+.deco-item.active{border-color:var(--grass);background:rgba(90,138,60,0.1);}
+.deco-preview{font-size:26px;min-width:36px;text-align:center;}
+.deco-info{flex:1;}
+.deco-name{font-weight:700;font-size:12px;}
+.deco-desc{font-size:10px;color:var(--latte);margin-top:1px;}
+
+/* ── 테마별 카페 topbar ── */
+body.theme-cozy   .cafe-topbar{background:linear-gradient(135deg,#5C3317,#8B5E3C);}
+body.theme-modern .cafe-topbar{background:linear-gradient(135deg,#1a252f,#2c3e50);}
+body.theme-nature .cafe-topbar{background:linear-gradient(135deg,#1e5631,#2e7d32);}
+body.theme-luxury .cafe-topbar{background:linear-gradient(135deg,#2c1a00,#7d5a00);}
+
+/* ── 테마별 progress bar ── */
+body.theme-cozy   .prog-fill{background:linear-gradient(90deg,#C8956C,#F4C430);}
+body.theme-modern .prog-fill{background:linear-gradient(90deg,#2980b9,#6dd5fa);}
+body.theme-nature .prog-fill{background:linear-gradient(90deg,#27ae60,#a8e063);}
+body.theme-luxury .prog-fill{background:linear-gradient(90deg,#b8860b,#FFD700);}
+
+/* ── 테마별 패널 테두리 ── */
+body.theme-cozy   .panel{border-color:rgba(200,120,60,0.35);}
+body.theme-modern .panel{border-color:rgba(41,128,185,0.25);}
+body.theme-nature .panel{border-color:rgba(46,125,50,0.3);}
+body.theme-luxury .panel{border-color:rgba(212,160,23,0.45);}
+
+/* ── 모바일 패널 기본 배경 ── */
+.mob-panel-bg{background:linear-gradient(135deg,var(--espresso),#5C3A1E);}
+body.theme-cozy   .mob-panel-bg{background:linear-gradient(135deg,#5C3317,#8B5E3C);}
+body.theme-modern .mob-panel-bg{background:linear-gradient(135deg,#1a252f,#2c3e50);}
+body.theme-nature .mob-panel-bg{background:linear-gradient(135deg,#1e5631,#2e7d32);}
+body.theme-luxury .mob-panel-bg{background:linear-gradient(135deg,#2c1a00,#7d5a00);}
+/* ── 모바일 진행도 바 ── */
+.mob-progress-bar{background:linear-gradient(90deg,#5A8A3C,#F4C430);}
+body.theme-cozy   .mob-progress-bar{background:linear-gradient(90deg,#C8956C,#F4C430);}
+body.theme-modern .mob-progress-bar{background:linear-gradient(90deg,#2980b9,#6dd5fa);}
+body.theme-nature .mob-progress-bar{background:linear-gradient(90deg,#27ae60,#a8e063);}
+body.theme-luxury .mob-progress-bar{background:linear-gradient(90deg,#b8860b,#FFD700);}
+/* ── 모바일 일러스트 ── */
+.mob-illustration{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 6px;margin-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.1);min-height:0;}
+.mob-illustration:empty{display:none;margin:0;padding:0;border:none;}
+.mob-illust-scene{display:flex;gap:4px;align-items:center;}
+.mob-illust-scene span{font-size:17px;animation:sceneFloat 3s ease-in-out infinite;}
+.mob-illust-scene span:nth-child(2){animation-delay:0.5s;}
+.mob-illust-scene span:nth-child(3){animation-delay:1s;}
+.mob-illust-label{font-size:10px;color:rgba(255,255,255,0.65);font-family:'Jua',sans-serif;}
+.mob-prop-row{display:flex;gap:3px;}
+.mob-prop-row span{font-size:13px;}
+
+/* ── 가게 일러스트 배너 (모바일 메인탭과 동일 스타일) ── */
+#cafe-illustration{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 12px 8px;margin:0;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+  min-height:0;
+  transition:background 0.7s;
+}
+#cafe-illustration:empty{display:none;}
+#cafe-illustration .cafe-scene{display:flex;gap:5px;align-items:center;}
+#cafe-illustration .cafe-scene span{font-size:20px;animation:sceneFloat 3s ease-in-out infinite;}
+#cafe-illustration .cafe-scene span:nth-child(2){animation-delay:0.5s;}
+#cafe-illustration .cafe-scene span:nth-child(3){animation-delay:1s;}
+#cafe-illustration .scene-label{font-size:11px;color:rgba(255,255,255,0.65);font-family:'Jua',sans-serif;}
+#cafe-illustration .prop-row{display:flex;gap:3px;}
+#cafe-illustration .prop-row span{font-size:16px;}
+/* 소품 배지는 일러스트 블록 안 prop-row 로 표시 */
+@keyframes sceneFloat{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-4px);}
+}
+
+/* 플로팅 텍스트 */
+.float-text{position:fixed;pointer-events:none;z-index:500;font-family:'Jua',sans-serif;font-size:16px;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,0.3);animation:floatUp 1.2s ease-out forwards;}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1);}60%{opacity:1;transform:translateY(-50px) scale(1.1);}100%{opacity:0;transform:translateY(-80px) scale(0.9);}}
+/* 화면 흔들림 */
+@keyframes screenShake{0%,100%{transform:translate(0,0);}20%{transform:translate(-4px,2px);}40%{transform:translate(4px,-2px);}60%{transform:translate(-3px,3px);}80%{transform:translate(3px,-1px);}}
+.shake{animation:screenShake 0.4s ease;}
+
+/* 음식 팡 연출 */
+@keyframes foodPop{0%{opacity:1;transform:scale(0.5) translateY(0);}50%{opacity:1;transform:scale(1.4) translateY(-20px);}100%{opacity:0;transform:scale(1) translateY(-50px);}}
+
+/* 대회 배너 pulse */
+.contest-banner { animation: contestPulse 2s ease-in-out infinite; }
+@keyframes contestPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(192,57,43,0.3); }
+  50%     { box-shadow: 0 0 0 6px rgba(192,57,43,0); }
+}
+
+/* ───────────────────────────────
+   모바일 반응형 (768px 이하)
+─────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* grid → block 으로 변경해야 sticky 헤더가 작동 */
+  #app { display: block; padding: 0 8px 72px; }
+
+  /* 헤더 상단 고정 */
+  header {
+    position: sticky; top: 0; z-index: 90;
+    padding: 8px 12px; gap: 8px;
+    border-radius: 0 0 12px 12px;
+    margin-bottom: 6px;
+  }
+
+  .brand-name { font-size: 15px; }
+  .brand-sub, #season-badge { display: none; }
+  #save-status { display: none; }
+  .stage-badge { font-size: 11px; padding: 3px 8px; }
+  .stats-bar { gap: 8px; }
+  .stat { font-size: 12px; }
+  #game-time { font-size: 11px; padding: 2px 7px; }
+  .header-btns { display: none; }
+
+  /* 3열 그리드 해제 */
+  #game-main { display: block; }
+
+  /* 각 열 기본 스타일 + 숨김 */
+  #col-farm, #col-cafe, #col-manage {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+  }
+  /* 활성 열만 표시 */
+  #col-farm.tab-show   { display: flex; }
+  #col-cafe.tab-show   { display: flex; }
+  #col-manage.tab-show { display: flex; }
+
+  /* 밭 크게 */
+  .plot { font-size: 26px; }
+  .plot-label { font-size: 10px; }
+
+  /* 인벤토리 3열 */
+  .inv-grid { grid-template-columns: repeat(3, 1fr); }
+
+  /* 메뉴 4열 + 카드 압축 */
+  .menu-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+  .menu-card { padding: 5px 3px; }
+  .menu-ingr { display: none; }
+  .menu-action { margin-top: 2px; }
+  .menu-learn-btn { font-size: 8px; padding: 2px 3px; }
+  .menu-name { font-size: 8px; }
+
+  /* 카페탭: 방문손님 상단으로 */
+  .cafe-body { display: flex; flex-direction: column; }
+  #section-customers { order: -1; }
+
+  /* 하단 탭바 */
+  #mob-bar {
+    display: flex;
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 999;
+    background: rgba(255,248,240,0.98);
+    border-top: 2px solid rgba(200,149,108,0.25);
+    box-shadow: 0 -3px 12px rgba(59,31,15,0.1);
+    padding: 5px 4px calc(5px + env(safe-area-inset-bottom));
+  }
+  .mbt {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 6px 2px; border: none; border-radius: 10px;
+    background: transparent; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.1s;
+  }
+  .mbt.on { background: rgba(107,66,38,0.1); }
+  .mbt-i { font-size: 22px; line-height: 1; }
+  .mbt-l { font-size: 10px; color: var(--soil); font-weight: 600; }
+  .mbt.on .mbt-l { color: var(--espresso); }
+}
+
+/* 데스크탑: 탭바 숨김, 모든 열 표시 */
+@media (min-width: 769px) {
+  #mob-bar { display: none; }
+  #col-farm, #col-cafe, #col-manage {
+    display: flex !important;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
