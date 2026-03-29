@@ -3821,15 +3821,11 @@ function renderFarm() {
     const crop=CROPS[p.crop];
     if (p.stage==='ready') return `<div class="plot ready" onclick="plotClick(${i})" title="클릭 → 즉시 수확!">${crop.emoji}<div class="plot-label">수확!</div></div>`;
     const elapsed=(Date.now()-p.plantedAt)/1000;
-    const pct=Math.min(100,elapsed/(p.growTime*sm)*100);
-    const stageEmoji = pct < 33 ? '🌱' : pct < 66 ? '🌿' : crop.emoji;
     const remSec = Math.max(0, Math.ceil(p.growTime*sm - elapsed));
     const remLabel = remSec >= 60 ? `${Math.ceil(remSec/60)}분` : `${remSec}초`;
-    return `<div class="plot growing" onclick="plotClick(${i})" title="${crop.name} — ${remLabel} 후 수확" data-plotidx="${i}">
-      <div style="font-size:14px;line-height:1;">${stageEmoji}</div>
-      <div style="font-size:9px;color:#fff;font-weight:700;margin-top:1px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px;">${crop.name}</div>
-      <div class="plot-label" style="font-size:9px;">${remLabel}</div>
-      <div class="plot-bar"><div class="plot-bar-fill" style="width:${pct}%"></div></div>
+    return `<div class="plot growing" onclick="plotClick(${i})" title="${crop.name} — ${remLabel} 후 수확" data-plotidx="${i}" style="justify-content:center;gap:4px;">
+      <div style="font-size:20px;line-height:1;">${crop.emoji}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.9);font-weight:700;padding-bottom:18px;">${remLabel}</div>
     </div>`;
   }).join('');
   // 즉시수확 버튼: HTML 문자열 대신 DOM으로 직접 삽입 (따옴표 충돌 완전 방지)
@@ -3842,7 +3838,7 @@ function renderFarm() {
     var costLabel = cost >= 10000 ? Math.round(cost/1000)+'천' : cost.toLocaleString();
     var btn = document.createElement('button');
     btn.textContent = '⚡' + costLabel;
-    btn.style.cssText = 'position:absolute;bottom:2px;right:2px;font-size:9px;padding:1px 4px;background:rgba(212,160,23,0.85);color:#fff;border:none;border-radius:4px;cursor:pointer;line-height:1.4;z-index:2;';
+    btn.style.cssText = 'position:absolute;bottom:3px;left:50%;transform:translateX(-50%);font-size:9px;padding:1px 6px;background:rgba(212,160,23,0.9);color:#fff;border:none;border-radius:4px;cursor:pointer;line-height:1.5;z-index:2;white-space:nowrap;';
     (function(idx, c){ btn.addEventListener('click', function(e){ e.stopPropagation(); instantHarvest(idx, c); }); })(i, cost);
     el.appendChild(btn);
   });
