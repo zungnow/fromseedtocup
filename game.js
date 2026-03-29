@@ -446,14 +446,14 @@ const STAFF_DEFS = {
 const STAGE_DATA = [
   {name:'🌱 농장',       building:'🏕️',desc:'작물을 재배하고 재료를 모아보세요',           repReq:0},
   {name:'🛖 노점',       building:'🛖', desc:'길거리 노점으로 첫 장사를 시작해보세요!',    repReq:0},
-  {name:'🥪 토스트점',   building:'🏠', desc:'작은 토스트 가게를 운영해보세요',            repReq:500},
-  {name:'🍱 분식점',     building:'🏪', desc:'떡볶이, 김밥으로 손님을 모아보세요',         repReq:1200},
-  {name:'☕ 카페',       building:'☕', desc:'본격 카페! 커피와 디저트를 선보이세요',       repReq:3000},
-  {name:'🍰 디저트카페', building:'🎂', desc:'달콤한 디저트로 감성 카페를 꾸려보세요',     repReq:7000},
-  {name:'🍝 비스트로',   building:'🍝', desc:'파스타와 수프로 유럽식 감성을 더하세요',     repReq:16000},
-  {name:'🍽️ 레스토랑',  building:'🍽️',desc:'스테이크와 코스 요리로 격조를 높이세요',     repReq:35000},
-  {name:'🥂 파인다이닝', building:'🥂', desc:'트러플과 프라임 스테이크, 최고급 요리',      repReq:60000},
-  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드로 성장했어요!',      repReq:100000},
+  {name:'🥪 토스트점',   building:'🏠', desc:'작은 토스트 가게를 운영해보세요',            repReq:800},
+  {name:'🍱 분식점',     building:'🏪', desc:'떡볶이, 김밥으로 손님을 모아보세요',         repReq:2500},
+  {name:'☕ 카페',       building:'☕', desc:'본격 카페! 커피와 디저트를 선보이세요',       repReq:6000},
+  {name:'🍰 디저트카페', building:'🎂', desc:'달콤한 디저트로 감성 카페를 꾸려보세요',     repReq:14000},
+  {name:'🍝 비스트로',   building:'🍝', desc:'파스타와 수프로 유럽식 감성을 더하세요',     repReq:30000},
+  {name:'🍽️ 레스토랑',  building:'🍽️',desc:'스테이크와 코스 요리로 격조를 높이세요',     repReq:60000},
+  {name:'🥂 파인다이닝', building:'🥂', desc:'트러플과 프라임 스테이크, 최고급 요리',      repReq:100000},
+  {name:'🏢 프랜차이즈', building:'🏢', desc:'전국 프랜차이즈 브랜드로 성장했어요!',      repReq:160000},
 ];
 
 // SPECIAL GUEST types
@@ -778,6 +778,7 @@ function tick() {
         G.satisfaction=Math.max(0,G.satisfaction-0.15);
         removed=true;
         addLog(`😤 ${c.name}님이 기다리다 떠났어요`);
+        updateDailyChallengeStats('custleft');
       }
     }
     if (removed && G.customers.length===0) showCustEmpty();
@@ -1498,8 +1499,11 @@ function serveCustomer(custId, isAuto, staffName) {
   updateDailyChallengeStats('serve');
   updateDailyChallengeStats('earn', price);
   updateDailyChallengeStats('menu', cust.order);
+  if (cust.order2) updateDailyChallengeStats('menu', cust.order2);
   if (cust.type==='vip')     updateDailyChallengeStats('vip');
   if (cust.type==='regular') updateDailyChallengeStats('regular');
+  if (cust.type==='blogger') updateDailyChallengeStats('blogger');
+  if (cust.order2)           updateDailyChallengeStats('combo');
 
   if (cust.type==='vip') { 
     if(!G.vipServed) G.vipServed=0; G.vipServed++;
@@ -1528,6 +1532,8 @@ function serveCustomer(custId, isAuto, staffName) {
   G.satisfaction=Math.min(5,(G.satisfaction*(G.totalServed-1)+newSat)/G.totalServed);
   // 일일 도전과제: 만족도 최솟값 트래킹
   updateDailyChallengeStats('sat', G.satisfaction);
+  // 별점 2점 이하 트래킹
+  if (Math.round(newSat) <= 2) updateDailyChallengeStats('lowstar');
   G.reputation+=Math.round(newSat*(td?.repMult||1)*2.5);
 
   // 단골 선호 메뉴 갱신
@@ -2154,6 +2160,7 @@ function fulfillSupplyOrder(orderId) {
   G.totalMoneyEarned += order.reward;
   G.reputation += order.rep;
   order.done = true;
+  updateDailyChallengeStats('supply');
   addLog(`📦 납품 완료! ${order.emoji} ${order.name} +${order.reward.toLocaleString()}원 +${order.rep}명성`);
   showNotif(`📦 납품 성공! 💰+${order.reward.toLocaleString()}원 ⭐+${order.rep}명성`);
   floatText(`📦+${order.reward.toLocaleString()}`, window.innerWidth/2-60, window.innerHeight/3, '#27ae60');
@@ -2454,14 +2461,38 @@ function checkQuests() { if (G.quests?.length) renderQuestPanel(); }
 
 // ─── 일일 도전과제 시스템 ───────────────────────────────────────
 const DAILY_CHALLENGES = [
-  {id:'dc_serve10',   desc:'오늘 손님 10명 서빙하기',        check:(s)=>s.servedToday>=10,  reward:{money:5000}},
-  {id:'dc_earn5k',    desc:'오늘 매출 5,000원 달성',         check:(s)=>s.earnedToday>=5000, reward:{money:3000}},
-  {id:'dc_sat45',     desc:'만족도 4.5 이상 유지하기',       check:(s)=>s.minSat>=4.5,      reward:{money:4000}},
-  {id:'dc_harvest3',  desc:'작물 3종 이상 수확하기',         check:(s)=>s.harvestTypes>=3,   reward:{money:5000}},
-  {id:'dc_vip',       desc:'VIP 손님 1명 이상 서빙',        check:(s)=>s.vipServed>=1,      reward:{money:8000, rep:50}},
-  {id:'dc_noRival',   desc:'경쟁가게에 손님 뺏기지 않기',   check:(s)=>s.rivalSteal===0,    reward:{money:6000}},
-  {id:'dc_regular3',  desc:'단골 손님 3명 이상 서빙',       check:(s)=>s.regularServed>=3,  reward:{money:5000}},
-  {id:'dc_menu3',     desc:'다른 메뉴 3종 이상 판매',       check:(s)=>s.menuVariety>=3,    reward:{money:4000}},
+  // 기존
+  {id:'dc_serve10',    desc:'오늘 손님 10명 서빙하기',          check:(s)=>s.servedToday>=10,      reward:{money:5000}},
+  {id:'dc_serve15',    desc:'오늘 손님 15명 서빙하기',          check:(s)=>s.servedToday>=15,      reward:{money:8000, rep:30}},
+  {id:'dc_earn5k',     desc:'오늘 매출 5,000원 달성',           check:(s)=>s.earnedToday>=5000,    reward:{money:3000}},
+  {id:'dc_earn30k',    desc:'오늘 매출 30,000원 달성',          check:(s)=>s.earnedToday>=30000,   reward:{money:12000, rep:40}},
+  {id:'dc_earn80k',    desc:'오늘 매출 80,000원 달성',          check:(s)=>s.earnedToday>=80000,   reward:{money:25000, rep:80}},
+  {id:'dc_sat45',      desc:'만족도 4.5 이상 유지하기',         check:(s)=>s.minSat>=4.5,          reward:{money:4000}},
+  {id:'dc_sat48',      desc:'만족도 4.8 이상 유지하기',         check:(s)=>s.minSat>=4.8,          reward:{money:10000, rep:50}},
+  {id:'dc_harvest3',   desc:'작물 3종 이상 수확하기',           check:(s)=>s.harvestTypes>=3,      reward:{money:5000}},
+  {id:'dc_harvest8',   desc:'작물 8번 이상 수확하기',           check:(s)=>s.harvestCount>=8,      reward:{money:8000, rep:20}},
+  {id:'dc_harvest15',  desc:'작물 15번 이상 수확하기',          check:(s)=>s.harvestCount>=15,     reward:{money:15000, rep:40}},
+  {id:'dc_vip',        desc:'VIP 손님 1명 이상 서빙',           check:(s)=>s.vipServed>=1,         reward:{money:8000, rep:50}},
+  {id:'dc_vip3',       desc:'VIP 손님 3명 이상 서빙',           check:(s)=>s.vipServed>=3,         reward:{money:20000, rep:100}},
+  {id:'dc_noRival',    desc:'경쟁가게에 손님 뺏기지 않기',      check:(s)=>s.rivalSteal===0,       reward:{money:6000}},
+  {id:'dc_regular3',   desc:'단골 손님 3명 이상 서빙',          check:(s)=>s.regularServed>=3,     reward:{money:5000}},
+  {id:'dc_regular6',   desc:'단골 손님 6명 이상 서빙',          check:(s)=>s.regularServed>=6,     reward:{money:12000, rep:60}},
+  {id:'dc_menu3',      desc:'다른 메뉴 3종 이상 판매',          check:(s)=>s.menuVariety>=3,       reward:{money:4000}},
+  {id:'dc_menu5',      desc:'다른 메뉴 5종 이상 판매',          check:(s)=>s.menuVariety>=5,       reward:{money:10000, rep:40}},
+  {id:'dc_menu7',      desc:'다른 메뉴 7종 이상 판매',          check:(s)=>s.menuVariety>=7,       reward:{money:18000, rep:70}},
+  // 신규 — 별점 유지
+  {id:'dc_nolow',      desc:'별점 2점 이하 손님 없이 서빙',     check:(s)=>s.servedToday>=5 && s.lowStarCount===0,  reward:{money:12000, rep:60}},
+  {id:'dc_allstar',    desc:'모든 손님에게 별점 4점 이상 받기', check:(s)=>s.servedToday>=8 && s.lowStarCount===0,  reward:{money:20000, rep:100}},
+  // 신규 — 연속 서빙 콤보
+  {id:'dc_combo5',     desc:'콤보 메뉴 5세트 판매',             check:(s)=>s.comboServed>=5,       reward:{money:15000, rep:50}},
+  {id:'dc_combo10',    desc:'콤보 메뉴 10세트 판매',            check:(s)=>s.comboServed>=10,      reward:{money:28000, rep:100}},
+  // 신규 — 블로거
+  {id:'dc_blogger',    desc:'📸 블로거 손님 서빙하기',          check:(s)=>s.bloggerServed>=1,     reward:{rep:150, money:10000}},
+  {id:'dc_blogger2',   desc:'📸 블로거 손님 2명 서빙',          check:(s)=>s.bloggerServed>=2,     reward:{rep:300, money:20000}},
+  // 신규 — 납품
+  {id:'dc_supply',     desc:'📦 납품 주문 1건 완료하기',        check:(s)=>s.supplyDone>=1,        reward:{money:15000, rep:30}},
+  // 신규 — 무결점 하루
+  {id:'dc_noleave',    desc:'손님이 기다리다 떠나지 않기',       check:(s)=>s.servedToday>=5 && s.custLeft===0, reward:{money:18000, rep:80}},
 ];
 
 function getDailyChallenge() {
@@ -2471,7 +2502,7 @@ function getDailyChallenge() {
       day: G.day,
       id: DAILY_CHALLENGES[idx].id,
       done: false,
-      stats: {servedToday:0, earnedToday:0, minSat:999, harvestTypes:0, vipServed:0, rivalSteal:0, regularServed:0, menuVariety:0, menus:new Set()}
+      stats: {servedToday:0, earnedToday:0, minSat:999, harvestTypes:0, harvestCount:0, vipServed:0, rivalSteal:0, regularServed:0, menuVariety:0, menus:new Set(), lowStarCount:0, comboServed:0, bloggerServed:0, supplyDone:0, custLeft:0}
     };
   }
   return G.dailyChallenge;
@@ -2486,14 +2517,19 @@ function updateDailyChallengeStats(type, value) {
   const dc = getDailyChallenge();
   if (dc.done) return;
   const s = dc.stats;
-  if (type==='serve')   { s.servedToday=(s.servedToday||0)+1; }
-  if (type==='earn')    { s.earnedToday=(s.earnedToday||0)+(value||0); }
-  if (type==='sat')     { s.minSat=Math.min(s.minSat||999, value||0); }
-  if (type==='harvest') { s.harvestTypes=new Set((dc.stats._harvestKeys||[])).size; dc.stats._harvestKeys=(dc.stats._harvestKeys||[]); if(!dc.stats._harvestKeys.includes(value)){dc.stats._harvestKeys.push(value);s.harvestTypes=dc.stats._harvestKeys.length;} }
-  if (type==='vip')     { s.vipServed=(s.vipServed||0)+1; }
-  if (type==='rival')   { s.rivalSteal=(s.rivalSteal||0)+1; }
-  if (type==='regular') { s.regularServed=(s.regularServed||0)+1; }
-  if (type==='menu')    { if(!s.menus.has(value)){s.menus.add(value);s.menuVariety=s.menus.size;} }
+  if (type==='serve')    { s.servedToday=(s.servedToday||0)+1; }
+  if (type==='earn')     { s.earnedToday=(s.earnedToday||0)+(value||0); }
+  if (type==='sat')      { s.minSat=Math.min(s.minSat||999, value||0); }
+  if (type==='harvest')  { s.harvestTypes=new Set((dc.stats._harvestKeys||[])).size; dc.stats._harvestKeys=(dc.stats._harvestKeys||[]); if(!dc.stats._harvestKeys.includes(value)){dc.stats._harvestKeys.push(value);s.harvestTypes=dc.stats._harvestKeys.length;} s.harvestCount=(s.harvestCount||0)+1; }
+  if (type==='vip')      { s.vipServed=(s.vipServed||0)+1; }
+  if (type==='rival')    { s.rivalSteal=(s.rivalSteal||0)+1; }
+  if (type==='regular')  { s.regularServed=(s.regularServed||0)+1; }
+  if (type==='menu')     { if(!s.menus.has(value)){s.menus.add(value);s.menuVariety=s.menus.size;} }
+  if (type==='lowstar')  { s.lowStarCount=(s.lowStarCount||0)+1; }
+  if (type==='combo')    { s.comboServed=(s.comboServed||0)+1; }
+  if (type==='blogger')  { s.bloggerServed=(s.bloggerServed||0)+1; }
+  if (type==='supply')   { s.supplyDone=(s.supplyDone||0)+1; }
+  if (type==='custleft') { s.custLeft=(s.custLeft||0)+1; }
   checkDailyChallenge();
 }
 
@@ -2718,6 +2754,7 @@ function loadGame() {
   G.interiorOwned  = Array.isArray(d.interiorOwned) ? d.interiorOwned : [];
   G._interiorApplied = d._interiorApplied && typeof d._interiorApplied === 'object' ? d._interiorApplied : {};
   G._regDeepSeen    = d._regDeepSeen    && typeof d._regDeepSeen    === 'object' ? d._regDeepSeen    : {};
+  G.boosterLog      = d.boosterLog     && typeof d.boosterLog     === 'object' ? d.boosterLog     : {};
 
   // Set / Array 복원
   G.learnedRecipes    = Array.isArray(d.learnedRecipes)    ? d.learnedRecipes    : ['egg_toast'];
@@ -5659,6 +5696,8 @@ setInterval(function() {
   function makeCustHTML() {
     return G.customers.map(function(c) {
       var recipe = RECIPES[c.order] || {};
+      var r2 = c.order2 ? RECIPES[c.order2] : null;
+      var orderText = (recipe.emoji||'') + ' ' + (recipe.name||'') + (r2 ? ' <span style="color:#F4C430;">+ ' + r2.emoji + ' ' + r2.name + '</span>' : '');
       var pc = c.patience > 60 ? '#5A8A3C' : c.patience > 30 ? '#F4C430' : '#e74c3c';
       var td = SPECIAL_TYPES[c.type];
       var tag = td ? '<span style="font-size:9px;background:rgba(255,255,255,0.15);color:white;padding:1px 5px;border-radius:5px;margin-left:3px;">' + td.label + '</span>' : '';
@@ -5673,7 +5712,7 @@ setInterval(function() {
         '<span style="font-size:20px;">' + c.emoji + '</span>' +
         '<div style="flex:1;min-width:0;">' +
           '<div style="font-size:11px;font-weight:600;color:white;">' + c.name + tag + regBadge + favBadge + '</div>' +
-          '<div style="font-size:10px;color:rgba(255,248,240,0.6);">' + (recipe.emoji||'') + ' ' + (recipe.name||'') + '</div>' +
+          '<div style="font-size:10px;color:rgba(255,248,240,0.6);">' + orderText + '</div>' +
           '<div style="height:3px;background:rgba(255,255,255,0.15);border-radius:2px;margin-top:3px;">' +
             '<div style="height:100%;width:' + c.patience + '%;background:' + pc + ';border-radius:2px;transition:width 0.8s;"></div>' +
           '</div>' +
