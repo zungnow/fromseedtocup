@@ -1031,7 +1031,7 @@ function plotClick(idx) {
   if (p.stage==='growing') {
     const sm=G.upgrades.includes('fertilizer')?0.7:1;
     const rem=Math.max(0,Math.ceil(p.growTime*sm-(Date.now()-p.plantedAt)/1000));
-    showNotif(`🌱 ${CROPS[p.crop].name} 성장 중... 약 ${rem}초 남음`); return;
+    return; // 성장 중 팝업 제거 (밭 클릭마다 떠서 불편)
   }
   openPlantModal(idx);
 }
@@ -1061,9 +1061,8 @@ function harvestPlot(idx) {
 
 function harvestAll() {
   const readyPlots = G.plots.map((p,i)=>({p,i})).filter(({p})=>p.stage==='ready');
-  if (readyPlots.length === 0) { showNotif('🌱 수확할 작물이 없어요!'); return; }
+  if (readyPlots.length === 0) { return; }
   readyPlots.forEach(({i}) => harvestPlot(i));
-  showNotif(`🎉 ${readyPlots.length}개 밭 한번에 수확!`);
 }
 
 function showCropEncyclo() {
@@ -1145,7 +1144,6 @@ function instantHarvest(idx, cost) {
 function toggleAutoHarvest() {
   G.autoHarvestEnabled = !G.autoHarvestEnabled;
   const onOff = G.autoHarvestEnabled ? 'ON' : 'OFF';
-  showNotif(`🚜 자동수확기 ${onOff}`);
   addLog(`🚜 자동수확기 ${onOff}`);
   renderAutoHarvestBtn();
 }
@@ -2942,7 +2940,18 @@ function _updateNotifPositions() {
 }
 
 function showNotif(msg) {
-  // 팝업 알림 비활성화 — 알림은 알림 패널(logEntries)에서만 확인
+  const el = document.createElement('div');
+  el.className = 'notif';
+  el.textContent = msg;
+  el.style.top = (_getNotifTopStart() + _notifStack.length * NOTIF_GAP) + 'px';
+  document.body.appendChild(el);
+  _notifStack.push(el);
+  setTimeout(() => {
+    el.remove();
+    const idx = _notifStack.indexOf(el);
+    if (idx > -1) _notifStack.splice(idx, 1);
+    _updateNotifPositions();
+  }, 2600);
 }
 // ══════════════════════════════════════════
 //  이벤트 큐 시스템 — 모달/스테이지 알림을 한 번에 하나씩
