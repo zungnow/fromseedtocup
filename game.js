@@ -332,25 +332,25 @@ const SEASONS = [
 ];
 
 const CROPS = {
-  // 기본 작물 — 빠르게, 수확량 2배
-  wheat:    {emoji:'🌾',name:'밀',      growTime:40,  cost:500,  yield:14, gives:'wheat'},
-  strawb:   {emoji:'🍓',name:'딸기',    growTime:70,  cost:1000, yield:10, gives:'strawb'},
-  peach:    {emoji:'🍑',name:'복숭아',  growTime:120, cost:1000, yield:10, gives:'peach'},
-  bean:     {emoji:'🫘',name:'커피콩',  growTime:110, cost:2500, yield:20, gives:'bean'},
-  milk_c:   {emoji:'🥛',name:'유제품',  growTime:60,  cost:3000, yield:20, gives:'milk'},
-  sugar_c:  {emoji:'🍬',name:'설탕수수',growTime:35,  cost:1500, yield:18, gives:'sugar'},
+  // 기본 작물
+  wheat:    {emoji:'🌾',name:'밀',      growTime:40,  cost:500,  yield:14, gives:'wheat',    unlockStage:0},
+  strawb:   {emoji:'🍓',name:'딸기',    growTime:70,  cost:1000, yield:10, gives:'strawb',   unlockStage:0},
+  peach:    {emoji:'🍑',name:'복숭아',  growTime:120, cost:1000, yield:10, gives:'peach',    unlockStage:0},
+  bean:     {emoji:'🫘',name:'커피콩',  growTime:110, cost:2500, yield:20, gives:'bean',     unlockStage:0},
+  milk_c:   {emoji:'🥛',name:'유제품',  growTime:60,  cost:3000, yield:20, gives:'milk',     unlockStage:0},
+  sugar_c:  {emoji:'🍬',name:'설탕수수',growTime:35,  cost:1500, yield:18, gives:'sugar',    unlockStage:0},
   // 2단계 이후
-  egg_c:    {emoji:'🥚',name:'달걀',    growTime:50,  cost:800,  yield:12, gives:'egg'},
+  egg_c:    {emoji:'🥚',name:'달걀',    growTime:50,  cost:800,  yield:12, gives:'egg',      unlockStage:2},
   // 4단계 이후
-  potato_c: {emoji:'🥔',name:'감자',    growTime:110, cost:1200, yield:12, gives:'potato'},
-  tomato_c: {emoji:'🍅',name:'토마토',  growTime:90,  cost:1500, yield:12, gives:'tomato'},
-  mushroom_c:{emoji:'🍄',name:'버섯',   growTime:100, cost:2000, yield:12, gives:'mushroom'},
+  potato_c: {emoji:'🥔',name:'감자',    growTime:110, cost:1200, yield:12, gives:'potato',   unlockStage:4},
+  tomato_c: {emoji:'🍅',name:'토마토',  growTime:90,  cost:1500, yield:12, gives:'tomato',   unlockStage:4},
+  mushroom_c:{emoji:'🍄',name:'버섯',   growTime:100, cost:2000, yield:12, gives:'mushroom', unlockStage:4},
   // 6단계 이후
-  meat_c:   {emoji:'🥩',name:'고기',    growTime:140, cost:5000, yield:6,  gives:'meat'},
-  basil_c:  {emoji:'🌿',name:'허브',    growTime:90,  cost:2000, yield:14, gives:'basil'},
+  meat_c:   {emoji:'🥩',name:'고기',    growTime:140, cost:5000, yield:6,  gives:'meat',     unlockStage:6},
+  basil_c:  {emoji:'🌿',name:'허브',    growTime:90,  cost:2000, yield:14, gives:'basil',    unlockStage:6},
   // 8단계 이후
-  truffle_c:{emoji:'⚫',name:'트러플',  growTime:200, cost:6000, yield:16, gives:'truffle'},
-  cream_c:  {emoji:'🍶',name:'생크림',  growTime:130, cost:4000, yield:20, gives:'cream'},
+  truffle_c:{emoji:'⚫',name:'트러플',  growTime:200, cost:6000, yield:16, gives:'truffle',  unlockStage:8},
+  cream_c:  {emoji:'🍶',name:'생크림',  growTime:130, cost:4000, yield:20, gives:'cream',    unlockStage:8},
 };
 
 const ITEMS = {
@@ -1173,6 +1173,12 @@ function openPlantModal(idx) {
         ${Object.entries(CROPS).map(([k,c]) => {
           const isSeasonal = season.dayCrops.includes(k);
           const noMoney = G.money < c.cost;
+          const locked = (c.unlockStage||0) > G.stage;
+          if (locked) return `<div style="padding:8px 4px;border-radius:10px;border:1.5px solid rgba(107,66,38,0.12);background:rgba(107,66,38,0.04);opacity:0.4;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <span style="font-size:24px;">${c.emoji}</span>
+            <span style="font-size:9px;font-weight:700;color:var(--espresso);">${c.name}</span>
+            <span style="font-size:8px;color:var(--latte);">🔒 ${c.unlockStage}단계</span>
+          </div>`;
           return `<button onclick="${noMoney?'':` plantCrop(${idx},'${k}')`}"
             style="padding:8px 4px;border-radius:10px;
               border:1.5px solid ${isSeasonal?'#5dade2':'rgba(107,66,38,0.2)'};
@@ -1191,6 +1197,14 @@ function openPlantModal(idx) {
       <p style="font-size:11px;color:var(--latte);margin-bottom:8px;">${season.emoji} ${season.name} 추천 작물: ${season.dayCrops.filter(k=>CROPS[k]).map(k=>CROPS[k].emoji+CROPS[k].name).join(', ')}</p>
       <div class="seed-picker" style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;">${Object.entries(CROPS).map(([k,c])=>{
         const isSeasonal=season.dayCrops.includes(k);
+        const locked=(c.unlockStage||0)>G.stage;
+        if (locked) return `<div class="seed-row" style="opacity:0.4;">
+          <span style="font-size:22px;">${c.emoji}</span>
+          <div class="seed-row-info">
+            <div class="seed-row-name">${c.name}</div>
+            <div class="seed-row-detail">🔒 ${c.unlockStage}단계 해금</div>
+          </div>
+        </div>`;
         return `<div class="seed-row" style="${isSeasonal?'border:1.5px solid rgba(93,173,226,0.5);background:rgba(93,173,226,0.07)':''}">
           <span style="font-size:22px;">${c.emoji}</span>
           <div class="seed-row-info">
