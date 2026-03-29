@@ -1792,9 +1792,9 @@ function syncAllBanners() {
 
     // 날씨
     if (G.weather) {
-      html += `<div style="background:linear-gradient(135deg,#2980b9,#1a5276);color:white;border-radius:10px;padding:8px 12px;font-size:11px;margin-bottom:4px;">
-        <span style="font-size:16px;">${G.weather.emoji}</span> <strong>${G.weather.name}</strong> 진행 중
-        <span style="font-size:10px;opacity:0.7;">Day ${G.day} → ${G.weather.endDay}</span>
+      html += `<div style="background:linear-gradient(135deg,#2980b9,#1a5276);color:white;border-radius:10px;padding:8px 12px;font-size:11px;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;gap:6px;">
+        <div style="display:flex;align-items:center;gap:5px;"><span style="font-size:16px;">${G.weather.emoji}</span> <strong>${G.weather.name}</strong> 진행 중</div>
+        <span style="font-size:10px;opacity:0.7;white-space:nowrap;">Day ${G.day} → ${G.weather.endDay}</span>
       </div>`;
     }
 
@@ -2781,6 +2781,20 @@ function loadGame() {
   G._lastSavedTime = Date.now();
   updateSaveStatus(true);
 
+  // 명성 요구치 변경 대응 — 현재 명성으로 올바른 단계 재계산
+  if (G.cafeOpen && G.stage >= 1) {
+    let correctStage = 1;
+    for (let i = 1; i < STAGE_DATA.length; i++) {
+      if (G.reputation >= STAGE_DATA[i].repReq) correctStage = i;
+      else break;
+    }
+    if (correctStage < G.stage) {
+      G.stage = correctStage;
+      addLog(`⚠️ 명성 기준 변경으로 단계가 ${STAGE_DATA[G.stage].name}(으)로 조정됐어요`);
+      renderAll();
+    }
+  }
+
   // 오프라인 작물 성장 계산
   applyOfflineCropGrowth(d.savedTimestamp);
 }
@@ -3326,9 +3340,9 @@ function renderCafeInfo() {
 function updateProgressBar() {
   const cur=G.reputation, prev=STAGE_DATA[G.stage].repReq;
   const next=STAGE_DATA[G.stage+1]?.repReq||prev;
-  const pct=G.stage>=4?100:Math.min(100,((cur-prev)/(next-prev))*100);
+  const pct=G.stage>=9?100:Math.min(100,prev===next?100:((cur-prev)/(next-prev))*100);
   document.getElementById('progressFill').style.width=pct+'%';
-  document.getElementById('progressText').textContent=G.stage>=9?'🏆 최고 단계!':cur+' / '+next+' 명성';
+  document.getElementById('progressText').textContent=G.stage>=9?'🏆 최고 단계!':cur.toLocaleString()+' / '+next.toLocaleString()+' 명성';
 }
 function updateSatisfaction() {
   const sat=G.satisfaction,full=Math.floor(sat),half=sat%1>=0.5;
