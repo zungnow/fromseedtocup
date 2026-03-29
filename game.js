@@ -437,10 +437,10 @@ const UPGRADES = {
 
 const STAFF_DEFS = {
   parttime: {name:'아르바이트생', emoji:'👧',role:'barista',  desc:'손님 1명 자동 서빙',             hireCost:40000,  dailyCost:1000,  stageReq:1},
-  barista:  {name:'바리스타',    emoji:'☕',role:'barista',   desc:'손님 자동 서빙 (빠름)',           hireCost:45000,  dailyCost:2000, stageReq:4},
+  barista:  {name:'바리스타',    emoji:'☕',role:'patience', desc:'손님 인내심 소모 속도 -20% (대기 시간↑)', hireCost:45000, dailyCost:2000, stageReq:4},
   manager:  {name:'재료 관리자', emoji:'🧑‍💼',role:'manager',  desc:'레시피 기반으로 부족한 재료 스마트 심기',    hireCost:50000,  dailyCost:2000, stageReq:3},
   head_chef:{name:'수석 셰프',   emoji:'👨‍🍳',role:'barista',  desc:'메뉴 판매가 +10% & 자동 서빙',   hireCost:55000, dailyCost:3000, stageReq:6},
-  sommelier:{name:'소믈리에',    emoji:'🍷',role:'barista',   desc:'파인다이닝 손님 만족도 +30%',     hireCost:70000, dailyCost:4000, stageReq:8},
+  sommelier:{name:'소믈리에',    emoji:'🍷',role:'quality',  desc:'VIP·파인다이닝 손님 만족도 +0.5',  hireCost:70000, dailyCost:4000, stageReq:8},
 };
 
 const STAGE_DATA = [
@@ -770,7 +770,7 @@ function tick() {
   if (G.cafeOpen && G.customers.length>0) {
     let removed=false;
     for (let i=G.customers.length-1;i>=0;i--) {
-      G.customers[i].patience-=1.5;
+      G.customers[i].patience -= hasStaff('barista') ? 1.2 : 1.5; // 바리스타: 인내심 소모 -20%
       if (G.customers[i].patience<=0) {
         const c=G.customers[i];
         G.customers.splice(i,1);
@@ -1258,10 +1258,10 @@ function runStaffActions() {
     }
   }
 
-  // BARISTA / PARTTIME: auto-serve one customer (피로도 반영)
-  const autoServe=hasStaff('head_chef')||hasStaff('barista')||hasStaff('parttime');
+  // PARTTIME / HEAD_CHEF: auto-serve one customer (피로도 반영)
+  const autoServe = hasStaff('head_chef') || hasStaff('parttime');
   if (autoServe && G.cafeOpen && G.customers.length>0) {
-    const staffKey = hasStaff('head_chef')?'head_chef':hasStaff('barista')?'barista':'parttime';
+    const staffKey = hasStaff('head_chef') ? 'head_chef' : 'parttime';
     // 피로도 체크 — 불가 시 서빙 중단
     if (!staffFatigueEffect(staffKey)) return;
     // Serve the customer with most patience loss (most urgent)
@@ -1271,7 +1271,7 @@ function runStaffActions() {
     // Check if we have ingredients
     const canServe=Object.entries(recipe.ingredients).every(([item,qty])=>(G.inventory[item]||0)>=qty);
     if (canServe) {
-      const staffName=hasStaff('head_chef')?'수석 셰프':hasStaff('barista')?'바리스타':'아르바이트생';
+      const staffName = hasStaff('head_chef') ? '수석 셰프' : '아르바이트생';
       serveCustomer(target.id, true, staffName);
       // 서빙할 때마다 피로도 +5~8 누적
       addStaffFatigue(staffKey, 5 + Math.floor(Math.random()*4));
@@ -1525,6 +1525,8 @@ function serveCustomer(custId, isAuto, staffName) {
   let newSat=2+Math.round(patPct*3);
   if (G.upgrades.includes('display')) newSat = Math.min(5, newSat + 0.3);
   if (cust.type==='vip') newSat = Math.min(5, newSat + getInteriorBonus('vipSat'));
+  // 소믈리에: VIP + 파인다이닝(stageReq 8+) 손님 만족도 +0.5
+  if (hasStaff('sommelier') && (cust.type==='vip' || (RECIPES[cust.order]?.stageReq >= 8))) newSat = Math.min(5, newSat + 0.5);
   // 단골 선호 메뉴 만족도 보너스
   const favB = getFavMenuBonus(cust.name, cust.order);
   if (favB.sat > 0) newSat = Math.min(5, newSat + favB.sat);
