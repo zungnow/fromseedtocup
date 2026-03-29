@@ -1355,6 +1355,7 @@ function startGame() {
   localStorage.removeItem('emergencyLog');
   localStorage.removeItem('boosterLog');
   localStorage.removeItem('farmcafe_tut_done');
+  localStorage.removeItem('daily_bonus');
   // 스타터 키트: 밀 3개, 설탕 2개, 달걀 2개 무료 지급
   G.inventory.wheat = 3;
   G.inventory.sugar = 2;
@@ -5952,20 +5953,28 @@ function todayKey() {
 }
 
 // 미수령 여부 체크 — 게임 day 기준
+// 미수령 여부 체크 — 실제 날짜 기준
 function isDailyBonusAvailable() {
-  return (G.lastAttendDay || 0) !== G.day;
+  try {
+    const data = JSON.parse(localStorage.getItem('daily_bonus') || '{}');
+    return data.date !== getTodayKey();
+  } catch(e) { return true; }
 }
 
-// 연속 출석일 수 — 전날 수령했으면 streak 유지
+// 연속 출석일 수
 function getDailyStreak() {
-  if (!G.lastAttendDay) return 0;
-  return G.lastAttendDay === G.day - 1 ? (G.attendStreak || 1) : 0;
+  try {
+    const data = JSON.parse(localStorage.getItem('daily_bonus') || '{}');
+    if (!data.date) return 0;
+    const last = new Date(data.date);
+    const today = new Date(getTodayKey());
+    const diff = (today - last) / 86400000;
+    return diff === 1 ? (data.streak || 1) : 0;
+  } catch(e) { return 0; }
 }
 
 function saveDailyBonus(streak) {
-  G.lastAttendDay = G.day;
-  G.attendStreak  = streak;
-  G.boosterLog        = d.boosterLog        ?? {};
+  localStorage.setItem('daily_bonus', JSON.stringify({ date: getTodayKey(), streak }));
 }
 
 // 출석 버튼 상태 갱신
@@ -5989,7 +5998,7 @@ function openDailyBonus() {
   if (!avail) {
     // 이미 수령
     body.innerHTML = `
-      <div class="streak-badge">🔥 ${G.attendStreak || 1}일 연속 출석!</div>
+      <div class="streak-badge">🔥 ${(()=>{try{return JSON.parse(localStorage.getItem('daily_bonus')||'{}').streak||1;}catch(e){return 1;}})()}일 연속 출석!</div>
       <div style="font-size:40px;margin:12px 0;">✅</div>
       <div style="font-size:14px;font-weight:700;color:var(--espresso);margin-bottom:6px;">오늘 이미 수령했어요!</div>
       <div style="font-size:12px;color:var(--latte);">다음 날이 되면 새 보너스가 준비돼요 🌙</div>`;
