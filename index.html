@@ -3917,27 +3917,19 @@ function getEmergencyResetTime() {
   return { h, m, ms };
 }
 
-// ── 단기 부스터 사용 횟수 제한 (자정 기준, 1일 2회) ──
-const BOOSTER_MAX_PER_DAY = 2;
+// ── 단기 부스터 사용 횟수 제한 (게임 day 기준, 1일 5회) ──
+const BOOSTER_MAX_PER_DAY = 5;
 
 function getBoosterLog(key) {
-  try {
-    const raw = localStorage.getItem('boosterLog');
-    const data = raw ? JSON.parse(raw) : {};
-    const today = getTodayKey();
-    return (data[today] || {})[key] || 0;
-  } catch(e) { return 0; }
+  if (!G.boosterLog) G.boosterLog = {};
+  const entry = G.boosterLog[key];
+  if (!entry || entry.day !== G.day) return 0;
+  return entry.count || 0;
 }
 
 function saveBoosterLog(key, count) {
-  try {
-    const today = getTodayKey();
-    const raw = localStorage.getItem('boosterLog');
-    const data = raw ? JSON.parse(raw) : {};
-    if (!data[today]) data[today] = {};
-    data[today][key] = count;
-    localStorage.setItem('boosterLog', JSON.stringify(data));
-  } catch(e) {}
+  if (!G.boosterLog) G.boosterLog = {};
+  G.boosterLog[key] = { day: G.day, count };
 }
 
 function getBoosterRemaining(key) {
@@ -5973,6 +5965,7 @@ function getDailyStreak() {
 function saveDailyBonus(streak) {
   G.lastAttendDay = G.day;
   G.attendStreak  = streak;
+  G.boosterLog        = d.boosterLog        ?? {};
 }
 
 // 출석 버튼 상태 갱신
