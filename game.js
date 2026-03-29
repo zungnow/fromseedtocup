@@ -332,25 +332,27 @@ const SEASONS = [
 ];
 
 const CROPS = {
-  // 기본 작물
+  // 기본 작물 (1단계부터)
   wheat:    {emoji:'🌾',name:'밀',      growTime:40,  cost:500,  yield:14, gives:'wheat',    unlockStage:0},
-  strawb:   {emoji:'🍓',name:'딸기',    growTime:70,  cost:1000, yield:10, gives:'strawb',   unlockStage:0},
-  peach:    {emoji:'🍑',name:'복숭아',  growTime:120, cost:1000, yield:10, gives:'peach',    unlockStage:0},
-  bean:     {emoji:'🫘',name:'커피콩',  growTime:110, cost:2500, yield:20, gives:'bean',     unlockStage:0},
-  milk_c:   {emoji:'🥛',name:'유제품',  growTime:60,  cost:3000, yield:20, gives:'milk',     unlockStage:0},
+  egg_c:    {emoji:'🥚',name:'달걀',    growTime:50,  cost:800,  yield:12, gives:'egg',      unlockStage:0}, // 1단계 계란토스트에 필요
   sugar_c:  {emoji:'🍬',name:'설탕수수',growTime:35,  cost:1500, yield:18, gives:'sugar',    unlockStage:0},
   // 2단계 이후
-  egg_c:    {emoji:'🥚',name:'달걀',    growTime:50,  cost:800,  yield:12, gives:'egg',      unlockStage:2},
+  milk_c:   {emoji:'🥛',name:'유제품',  growTime:60,  cost:3000, yield:20, gives:'milk',     unlockStage:2}, // 2단계 햄치즈토스트에 필요
+  strawb:   {emoji:'🍓',name:'딸기',    growTime:70,  cost:1000, yield:10, gives:'strawb',   unlockStage:2}, // 2단계 딸기잼토스트에 필요
+  bean:     {emoji:'🫘',name:'커피콩',  growTime:110, cost:2500, yield:20, gives:'bean',     unlockStage:2}, // 2단계 콤보메뉴에 필요
+  // 3단계 이후
+  tomato_c: {emoji:'🍅',name:'토마토',  growTime:90,  cost:1500, yield:12, gives:'tomato',   unlockStage:3}, // 3단계 떡볶이에 필요
+  mushroom_c:{emoji:'🍄',name:'버섯',   growTime:100, cost:2000, yield:12, gives:'mushroom', unlockStage:3}, // 3단계 김밥에 필요
+  meat_c:   {emoji:'🥩',name:'고기',    growTime:140, cost:5000, yield:6,  gives:'meat',     unlockStage:3}, // 3단계 순대에 필요
   // 4단계 이후
-  potato_c: {emoji:'🥔',name:'감자',    growTime:110, cost:1200, yield:12, gives:'potato',   unlockStage:4},
-  tomato_c: {emoji:'🍅',name:'토마토',  growTime:90,  cost:1500, yield:12, gives:'tomato',   unlockStage:4},
-  mushroom_c:{emoji:'🍄',name:'버섯',   growTime:100, cost:2000, yield:12, gives:'mushroom', unlockStage:4},
+  peach:    {emoji:'🍑',name:'복숭아',  growTime:120, cost:1000, yield:10, gives:'peach',    unlockStage:4}, // 4단계 복숭아티에 필요
+  // 5단계 이후
+  cream_c:  {emoji:'🍶',name:'생크림',  growTime:130, cost:4000, yield:20, gives:'cream',    unlockStage:5}, // 5단계 케이크에 필요
   // 6단계 이후
-  meat_c:   {emoji:'🥩',name:'고기',    growTime:140, cost:5000, yield:6,  gives:'meat',     unlockStage:6},
-  basil_c:  {emoji:'🌿',name:'허브',    growTime:90,  cost:2000, yield:14, gives:'basil',    unlockStage:6},
+  potato_c: {emoji:'🥔',name:'감자',    growTime:110, cost:1200, yield:12, gives:'potato',   unlockStage:6}, // 6단계 감자수프에 필요
+  basil_c:  {emoji:'🌿',name:'허브',    growTime:90,  cost:2000, yield:14, gives:'basil',    unlockStage:6}, // 6단계 파스타에 필요
   // 8단계 이후
-  truffle_c:{emoji:'⚫',name:'트러플',  growTime:200, cost:6000, yield:16, gives:'truffle',  unlockStage:8},
-  cream_c:  {emoji:'🍶',name:'생크림',  growTime:130, cost:4000, yield:20, gives:'cream',    unlockStage:8},
+  truffle_c:{emoji:'⚫',name:'트러플',  growTime:200, cost:6000, yield:16, gives:'truffle',  unlockStage:8}, // 8단계 트러플파스타에 필요
 };
 
 const ITEMS = {
@@ -3318,17 +3320,19 @@ function renderInventory() {
   }
   el.innerHTML = Object.entries(ITEMS).map(([k,item]) => {
     const qty = G.inventory[k]||0;
-    // 이 재료를 주는 작물 찾기
     const cropKey = Object.keys(CROPS).find(ck => CROPS[ck].gives === k);
-    const canPlant = cropKey && G.money >= CROPS[cropKey].cost && G.plots.some(p=>p.stage==='empty');
+    const crop = cropKey ? CROPS[cropKey] : null;
+    const locked = crop && (crop.unlockStage||0) > G.stage;
+    const canPlant = !locked && cropKey && G.money >= crop.cost && G.plots.some(p=>p.stage==='empty');
     const style = canPlant
       ? 'cursor:pointer;border:1.5px solid rgba(90,138,60,0.4);background:rgba(90,138,60,0.08);'
       : '';
     const onclick = canPlant ? `onclick="quickPlant('${cropKey}')"` : '';
-    return `<div class="inv-chip" ${onclick} style="${style}" title="${canPlant?CROPS[cropKey].name+' 심기':''}">
+    return `<div class="inv-chip" ${onclick} style="${style}" title="${canPlant?crop.name+' 심기':''}">
       <span class="inv-chip-icon">${item.emoji}</span>
       <span class="inv-chip-qty ${qty===0?'low':''}">${qty}</span>
       ${canPlant?'<span style="font-size:8px;color:var(--grass);">+</span>':''}
+      ${locked?`<span style="font-size:8px;color:var(--latte);">🔒</span>`:''}
     </div>`;
   }).join('');
   // 재료 부족 경고 — DOM 조작만, 재렌더링 없음
